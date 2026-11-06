@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Great Darkness</title>
+  <meta name="robots" content="noindex">
+  <style>
+    :root {
+      --archive-red: #5a1717;
+      --archive-red-dark: #250505;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: #000000;
+    }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+      overflow-x: hidden;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+    }
+
+    .late-addendum {
+      width: 96%;
+      max-width: 760px;
+      padding: 5px;
+      background: #000000;
+      border: 2px solid var(--archive-red);
+      box-shadow:
+        5px 5px 0 var(--archive-red-dark),
+        0 0 0 1px #160303;
+    }
+
+    .late-addendum-inner {
+      padding: 13px 10px 15px;
+      background: #000000;
+      border: 1px inset #301010;
+    }
+
+    .late-addendum-label {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 3px 6px;
+      border: 1px solid var(--archive-red);
+      color: #b77878;
+      font-size: 0.58rem;
+      letter-spacing: 1.2px;
+    }
+
+    .great-darkness-title {
+      margin: 0;
+      color: #ffffff;
+      font-family: Impact, "Arial Black", Arial, sans-serif;
+      font-size: clamp(2.2rem, 9vw, 5.2rem);
+      font-weight: normal;
+      letter-spacing: 3px;
+      line-height: 1;
+      text-shadow:
+        2px 2px 0 #333333,
+        0 0 10px rgba(255, 255, 255, 0.15);
+      animation: titleFlicker 2.8s steps(2, start) infinite;
+    }
+
+    .event-date-title {
+      margin: 13px 0 17px;
+      color: #cccccc;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    .timer-line {
+      display: block;
+      margin: 10px 0;
+      color: #ffffff;
+      font-size: clamp(2rem, 8.5vw, 4.8rem);
+      font-weight: bold;
+      line-height: 0.95;
+      white-space: nowrap;
+      text-shadow:
+        2px 2px 0 #333333,
+        0 0 12px rgba(255, 255, 255, 0.12);
+    }
+
+    .timer-label {
+      margin-bottom: 13px;
+      color: #aaaaaa;
+      font-size: 0.72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .divider {
+      margin: 18px 0;
+      border-top: 1px dashed #8b3a3a;
+    }
+
+    @keyframes titleFlicker {
+      0%, 88%, 100% { opacity: 1; }
+      89%, 92% { opacity: 0.62; }
+      93% { opacity: 0.25; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .great-darkness-title { animation: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="late-addendum">
+    <div class="late-addendum-inner">
+
+      <div class="late-addendum-label">
+        [ PUBLIC NOTICE APPENDED TO ORIGINAL SYSTEM RECORD ]
+      </div>
+
+      <h1 class="great-darkness-title">THE GREAT DARKNESS</h1>
+
+      <div class="event-date-title">01 JULY 2031</div>
+
+      <div class="timer-line" id="dateLine">00 : 00 : 00</div>
+      <div class="timer-label">YEARS : MONTHS : DAYS</div>
+
+      <div class="divider"></div>
+
+      <div class="timer-line" id="timeLine">00 : 00 : 00</div>
+      <div class="timer-label">HOURS : MINUTES : SECONDS</div>
+
+    </div>
+  </section>
+
+  <script>
+    // Same countdown as the homepage (HomeView.html): 01 JULY 2031, 12:00 UTC.
+    const targetDate = Date.UTC(2031, 6, 1, 12, 0, 0);
+
+    function format(value) {
+      return String(value).padStart(2, "0").slice(-2);
+    }
+
+    function updateCountdown() {
+      const difference = targetDate - Date.now();
+
+      if (difference <= 0) {
+        document.getElementById("dateLine").textContent = "00 : 00 : 00";
+        document.getElementById("timeLine").textContent = "00 : 00 : 00";
+        return;
+      }
+
+      const totalSeconds = Math.floor(difference / 1000);
+      const totalMinutes = Math.floor(totalSeconds / 60);
+      const totalHours = Math.floor(totalMinutes / 60);
+      const totalDays = Math.floor(totalHours / 24);
+
+      const years = Math.floor(totalDays / 365);
+      const remainingDays = totalDays % 365;
+      const months = Math.floor(remainingDays / 30.44);
+      const days = Math.floor(remainingDays % 30.44);
+
+      document.getElementById("dateLine").textContent =
+        format(years) + " : " + format(months) + " : " + format(days);
+
+      document.getElementById("timeLine").textContent =
+        format(totalHours % 24) + " : " + format(totalMinutes % 60) + " : " + format(totalSeconds % 60);
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+  </script>
+
+</body>
+</html>
