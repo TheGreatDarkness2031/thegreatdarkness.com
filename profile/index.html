@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1.0"
+>
+
+<title>OER // Institutional Profile</title>
+
+<style>
+
+:root {
+  --outer-gray: #404040;
+  --frame-gray: #777777;
+  --light-gray: #b0b0b0;
+  --dark-gray: #1a1a1a;
+  --document-black: #050505;
+  --document-border: #4f4f4f;
+  --title-blue: #000080;
+  --title-blue-dark: #00004f;
+  --white: #ffffff;
+  --body-gray: #c4c4c4;
+  --muted-gray: #888888;
+  --line-gray: #555555;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+  margin: 0;
+  background: #101010;
+  color: var(--body-gray);
+  font-family: "Courier New", Courier, monospace;
+}
+
+body {
+  padding: 24px 12px 32px;
+}
+
+.profile-shell {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 5px;
+  background: var(--outer-gray);
+  border-top: 2px solid #bdbdbd;
+  border-left: 2px solid #bdbdbd;
+  border-right: 2px solid #111111;
+  border-bottom: 2px solid #111111;
+  box-shadow:
+    6px 6px 0 #000000,
+    0 0 22px rgba(255,255,255,0.05);
+}
+
+.profile-window {
+  background: var(--dark-gray);
+  border: 2px inset #8d8d8d;
+}
+
+.title-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 29px;
+  padding: 5px 8px;
+  background:
+    linear-gradient(
+      to right,
+      var(--title-blue),
+      var(--title-blue-dark)
+    );
+  color: var(--white);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.76rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+.title-bar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.title-bar-record {
+  margin-left: 12px;
+  color: #d2d8ff;
+  font-size: 0.61rem;
+  font-weight: normal;
+  letter-spacing: 0.8px;
+  white-space: nowrap;
+}
+
+.menu-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 19px;
+  padding: 6px 10px;
+  background: #c0c0c0;
+  border-top: 1px solid #eeeeee;
+  border-bottom: 2px groove #888888;
+  color: #111111;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.66rem;
+  letter-spacing: 0.4px;
+}
+
+.menu-item {
+  cursor: default;
+  user-select: none;
+}
+
+.document-frame {
+  margin: 9px;
+  padding: 4px;
+  background: #242424;
+  border: 2px outset #777777;
+}
+
+.document-body {
+  padding: 28px clamp(16px, 4vw, 48px) 34px;
+  background: var(--document-black);
+  border: 1px inset var(--document-border);
+  text-align: left;
+}
+
+.profile-seal {
+  display: block;
+  width: min(205px, 58vw);
+  height: auto;
+  margin: 0 auto 18px;
+  background: #000000;
+  filter:
+    grayscale(0.08)
+    contrast(1.05)
+    drop-shadow(0 0 7px rgba(255,255,255,0.12));
+}
+
+.profile-seal-fallback {
+  display: none;
+  width: min(205px, 58vw);
+  margin: 0 auto 18px;
+  padding: 18px 8px;
+  border: 1px solid #555555;
+  color: #888888;
+  font-size: 0.66rem;
+  letter-spacing: 1.5px;
+  text-align: center;
+}
+
+.document-heading {
+  margin: 0;
+  color: var(--white);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: clamp(1.15rem, 3vw, 1.65rem);
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.document-subheading {
+  margin: 11px 0 20px;
+  color: #bdbdbd;
+  font-size: 0.75rem;
+  font-weight: bold;
+  letter-spacing: 2px;
+  text-align: center;
+}
+
+.document-metadata {
+  width: min(100%, 690px);
+  margin: 0 auto;
+  padding: 13px 15px;
+  border: 1px solid #555555;
+  color: #b8b8b8;
+  font-size: 0.69rem;
+  letter-spacing: 0.65px;
+  line-height: 1.85;
+}
+
+.document-metadata strong {
+  color: #f0f0f0;
+  font-weight: bold;
+}
+
+.rule {
+  margin: 25px 0;
+  border: 0;
+  border-top: 1px dashed var(--line-gray);
+}
+
+.profile-section {
+  margin: 0 0 26px;
+}
+
+.profile-section-title {
+  margin: 0 0 13px;
+  color: var(--white);
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.9rem;
+  font-weight: bold;
+  letter-spacing: 1.8px;
+  line-height: 1.45;
+  text-transform: uppercase;
+}
+
+.profile-section-subtitle {
+  margin: -4px 0 13px;
+  color: #d2d2d2;
+  font-size: 0.73rem;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  line-height: 1.55;
+  text-transform: uppercase;
+}
+
+.profile-section p {
+  margin: 0 0 14px;
+  color: var(--body-gray);
+  font-size: 0.78rem;
+  letter-spacing: 0.2px;
+  line-height: 1.78;
+}
+
+.profile-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-list li {
+  margin: 0 0 13px;
+  color: var(--body-gray);
+  font-size: 0.78rem;
+  line-height: 1.72;
+}
+
+.profile-list strong {
+  color: var(--white);
+  font-weight: bold;
+}
+
+.archive-notice {
+  margin: 3px 0 18px;
+  padding: 12px 14px;
+  border: 1px solid #666666;
+  background: #0b0b0b;
+  color: #d0d0d0;
+  font-size: 0.72rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.end-record {
+  margin-top: 30px;
+  padding-top: 22px;
+  border-top: 1px dashed var(--line-gray);
+  color: var(--white);
+  font-size: 0.74rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  line-height: 1.8;
+  text-align: center;
+}
+
+.return-controls {
+  margin-top: 26px;
+  text-align: center;
+}
+
+.return-link {
+  display: inline-block;
+  padding: 9px 13px;
+  background: #2a2a2a;
+  border-top: 2px solid #b0b0b0;
+  border-left: 2px solid #b0b0b0;
+  border-right: 2px solid #111111;
+  border-bottom: 2px solid #111111;
+  color: var(--white);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.69rem;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-decoration: underline;
+}
+
+.return-link:active {
+  border-top-color: #111111;
+  border-left-color: #111111;
+  border-right-color: #b0b0b0;
+  border-bottom-color: #b0b0b0;
+}
+
+.status-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 9px;
+  background: #c0c0c0;
+  border-top: 2px groove #7f7f7f;
+  color: #202020;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 0.57rem;
+  letter-spacing: 0.55px;
+}
+
+.status-bar-left,
+.status-bar-right {
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+
+  body {
+    padding: 10px 5px 22px;
+  }
+
+  .document-body {
+    padding: 23px 15px 28px;
+  }
+
+  .title-bar-record {
+    display: none;
+  }
+
+  .menu-bar {
+    gap: 12px;
+  }
+
+  .document-metadata {
+    padding: 11px;
+    font-size: 0.64rem;
+  }
+
+  .profile-section p,
+  .profile-list li {
+    font-size: 0.74rem;
+  }
+
+  .status-bar {
+    display: block;
+    line-height: 1.65;
+  }
+
+  .status-bar-right {
+    color: #505050;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="profile-shell">
+
+  <div class="profile-window">
+
+    <div class="title-bar">
+
+      <div class="title-bar-label">
+        OER // INSTITUTIONAL PROFILE
+      </div>
+
+      <div class="title-bar-record">
+        CENTRAL RECORDS // READ ONLY
+      </div>
+
+    </div>
+
+    <div class="menu-bar">
+
+      <span class="menu-item">FILE</span>
+      <span class="menu-item">VIEW</span>
+      <span class="menu-item">ARCHIVE</span>
+      <span class="menu-item">HELP</span>
+
+    </div>
+
+    <div class="document-frame">
+
+      <main class="document-body">
+
+        <img
+          id="profileSeal"
+          class="profile-seal"
+          src="https://drive.google.com/thumbnail?id=1IVDEQQHKYkDeU6B1zvxAPTv3ScR5433h&sz=w1000"
+          alt="Operational Event Register seal"
+          onerror="showProfileSealFallback()"
+        >
+
+        <div
+          id="profileSealFallback"
+          class="profile-seal-fallback"
+        >
+          [ OER OFFICIAL SEAL UNAVAILABLE ]
+        </div>
+
+        <h1 class="document-heading">
+          Operational Event Register
+        </h1>
+
+        <div class="document-subheading">
+          OER // INSTITUTIONAL PROFILE
+        </div>
+
+        <div class="document-metadata">
+
+          <strong>DOCUMENT ID:</strong>
+          OER-ORG-1998-001
+          <br>
+
+          <strong>COMMISSIONED:</strong>
+          01 JULY 1998
+          <br>
+
+          <strong>SYSTEM CLASSIFICATION:</strong>
+          EVENT MONITORING &amp; CORRELATION
+          <br>
+
+          <strong>ARCHITECTURE:</strong>
+          CENTRAL COORDINATION / EIGHT REGIONAL NODES
+          <br>
+
+          <strong>RECORD STATUS:</strong>
+          HISTORICAL ARCHIVE
+          <br>
+
+          <strong>ACCESS:</strong>
+          PUBLIC NODE
+
+        </div>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            System Overview
+          </h2>
+
+          <p>
+            The Operational Event Register, or OER, was established to
+            consolidate operational information from multiple sources into a
+            common monitoring and reporting environment.
+          </p>
+
+          <p>
+            Designed to support situational awareness across interconnected
+            systems, OER collected incoming information, maintained
+            operational records, and supported the identification of
+            relationships between events that might otherwise appear
+            unrelated.
+          </p>
+
+          <p>
+            Its central function was correlation. Individual incidents could
+            be recorded and evaluated within a broader operational context,
+            allowing developing patterns and potential relationships to be
+            examined across sources, locations, and reporting periods.
+          </p>
+
+          <p>
+            OER was built on the principle that an event's significance may
+            not be immediately apparent when considered in isolation.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            Origins
+          </h2>
+
+          <div class="profile-section-subtitle">
+            Project NEXUS
+          </div>
+
+          <p>
+            OER originated from work conducted under Project NEXUS, an earlier
+            systems initiative focused on integrating information from
+            distributed sources.
+          </p>
+
+          <p>
+            NEXUS established the technical foundation for the system's data
+            integration, information handling, and correlation capabilities.
+            As development progressed toward operational service, that
+            foundation evolved into a dedicated monitoring and reporting
+            environment.
+          </p>
+
+          <p>
+            OER was formally commissioned on 1 July 1998, establishing a
+            centralized system for the collection, consolidation, and
+            correlation of operational information.
+          </p>
+
+          <p>
+            Although OER became a distinct operational system, its underlying
+            architecture retained elements of the work that preceded it.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            System Architecture
+          </h2>
+
+          <div class="profile-section-subtitle">
+            Central Coordination. Regional Observation.
+          </div>
+
+          <p>
+            The original OER architecture consisted of OER Central and eight
+            regional nodes.
+          </p>
+
+          <p>
+            OER Central served as the primary coordination and correlation
+            environment. It consolidated information from regional sources,
+            maintained the broader operational picture, and provided a common
+            point from which incoming events could be evaluated in relation to
+            one another.
+          </p>
+
+          <p>
+            The eight regional nodes provided the distributed component of the
+            architecture. Their role was to support the collection and
+            transmission of regional information, extending the system's
+            visibility beyond a single location or reporting environment.
+          </p>
+
+          <p>
+            This arrangement allowed OER to operate across multiple sources
+            while retaining a centralized view of reported events.
+          </p>
+
+          <p>
+            The architecture also introduced an ongoing operational dependency:
+            the quality and continuity of the central picture relied on the
+            availability, connectivity, and integrity of the systems and
+            sources contributing to it.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            Operational Function
+          </h2>
+
+          <p>
+            OER was designed to support several interconnected functions:
+          </p>
+
+          <ul class="profile-list">
+
+            <li>
+              <strong>EVENT MONITORING:</strong>
+              Collecting and maintaining information about reported
+              operational events.
+            </li>
+
+            <li>
+              <strong>DATA INTEGRATION:</strong>
+              Bringing information from separate sources into a common
+              environment.
+            </li>
+
+            <li>
+              <strong>EVENT CORRELATION:</strong>
+              Identifying potential relationships between incidents across
+              sources and time.
+            </li>
+
+            <li>
+              <strong>OPERATIONAL AWARENESS:</strong>
+              Providing a consolidated view of developing conditions.
+            </li>
+
+            <li>
+              <strong>RECORD PRESERVATION:</strong>
+              Retaining information for subsequent review, comparison, and
+              historical analysis.
+            </li>
+
+          </ul>
+
+          <p>
+            These functions were intended to complement one another. Monitoring
+            provided the incoming information; integration established a common
+            context; correlation helped identify relationships; and record
+            preservation allowed those relationships to be examined beyond the
+            immediate reporting period.
+          </p>
+
+          <p>
+            The resulting operational picture was dependent on the information
+            available to the system. Missing data, delayed reporting,
+            incompatible sources, and interruptions in regional connectivity
+            could affect the completeness of that picture.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            Operational History
+          </h2>
+
+          <p>
+            OER's continued operation required more than maintaining its
+            central systems. Its effectiveness depended on the supporting
+            infrastructure, regional reporting capabilities, data interfaces,
+            communications paths, and technical processes that connected its
+            components.
+          </p>
+
+          <p>
+            Over an extended operational lifespan, these dependencies required
+            ongoing maintenance and adjustment. Interfaces needed to remain
+            compatible, data integrity required verification, and the system's
+            records depended on the continued availability of the sources from
+            which they were assembled.
+          </p>
+
+          <p>
+            As with other distributed information systems, individual
+            components could remain functional even when the wider environment
+            supporting them became less complete.
+          </p>
+
+          <p>
+            The distinction between a functioning component and a fully
+            functioning system remained an important consideration in assessing
+            OER's operational state.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            Archival Status
+          </h2>
+
+          <div class="archive-notice">
+            NOTICE: SURVIVING DOCUMENTATION IS INCOMPLETE.
+          </div>
+
+          <p>
+            The surviving OER record is incomplete.
+          </p>
+
+          <p>
+            Gaps in historical documentation and variations in the availability
+            of surviving information limit the extent to which every period of
+            operation can be reconstructed with certainty.
+          </p>
+
+          <p>
+            The absence of a record does not necessarily establish that an
+            event did not occur. Similarly, the continued presence of a system
+            component or surviving record does not, by itself, establish the
+            condition of the wider architecture.
+          </p>
+
+          <p>
+            Historical information must therefore be considered in the context
+            of its source, continuity, and known limitations.
+          </p>
+
+          <p>
+            This profile summarizes the system's intended purpose and original
+            architecture. It does not constitute a complete operational
+            history.
+          </p>
+
+        </section>
+
+        <hr class="rule">
+
+        <section class="profile-section">
+
+          <h2 class="profile-section-title">
+            Legacy and Continuity
+          </h2>
+
+          <p>
+            OER was designed to identify relationships between events across
+            distributed information sources and preserve an operational picture
+            that could not be obtained from any single source alone.
+          </p>
+
+          <p>
+            Its underlying challenge remains relevant wherever interconnected
+            systems must be monitored, separate streams of information must be
+            evaluated together, and developing conditions must be understood
+            across time.
+          </p>
+
+          <p>
+            The original architecture, commissioning records, and surviving
+            technical documentation remain useful references for understanding
+            the system's design and intended function.
+          </p>
+
+        </section>
+
+        <div class="end-record">
+
+          END OF INSTITUTIONAL PROFILE
+          <br>
+
+          OER // OPERATIONAL EVENT REGISTER
+          <br>
+
+          COMMISSIONED 01 JULY 1998
+
+        </div>
+
+
+      </main>
+
+    </div>
+
+    <div class="status-bar">
+
+      <div class="status-bar-left">
+        READ ONLY // ARCHIVAL COPY // OER CENTRAL RECORDS
+      </div>
+
+      <div class="status-bar-right">
+        DOCUMENT OER-ORG-1998-001
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+function showProfileSealFallback() {
+
+  var seal =
+    document.getElementById(
+      "profileSeal"
+    );
+
+  var fallback =
+    document.getElementById(
+      "profileSealFallback"
+    );
+
+  if (seal) {
+    seal.style.display =
+      "none";
+  }
+
+  if (fallback) {
+    fallback.style.display =
+      "block";
+  }
+}
+
+</script>
+
+</body>
+</html>

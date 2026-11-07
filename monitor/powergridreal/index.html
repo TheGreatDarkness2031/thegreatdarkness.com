@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>The Great Darkness - Real Power Grid Monitor</title>
+
+<style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+body {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.grid-real-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.header-title {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    color: #FF3030;
+    text-shadow:
+        0 0 8px
+        rgba(255, 48, 48, 0.4);
+}
+
+.header-subtitle {
+    margin-top: 8px;
+    font-size: 13px;
+    letter-spacing: 2px;
+    color: #aaaaaa;
+}
+
+
+/* ============================================================
+   OVERALL STATUS
+   ============================================================ */
+
+.status-panel {
+    border: 2px solid #ffffff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.health-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+}
+
+.health-value {
+    font-size: 54px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.status-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.status-nominal {
+    color: #00ff00;
+}
+
+.status-watch {
+    color: #ffff00;
+}
+
+.status-elevated {
+    color: #ff9900;
+}
+
+.status-critical {
+    color: #ff0000;
+}
+
+.status-unknown {
+    color: #888888;
+}
+
+.status-details {
+    margin-top: 12px;
+    color: #cccccc;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+}
+
+
+/* ============================================================
+   MESSAGE
+   ============================================================ */
+
+.message {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ffffff;
+    margin-bottom: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+
+/* ============================================================
+   SECTORS
+   ============================================================ */
+
+.sector-panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+}
+
+.sector-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.sector {
+    border: 1px solid #ffffff;
+    padding: 14px 10px;
+    text-align: center;
+    min-height: 225px;
+    box-sizing: border-box;
+}
+
+.sector-number {
+    color: #777777;
+    font-size: 11px;
+    letter-spacing: 2px;
+}
+
+.sector-name {
+    min-height: 34px;
+    margin-top: 6px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.sector-health {
+    margin: 10px 0 5px;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.sector-status {
+    min-height: 18px;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.sector-data {
+    margin-top: 10px;
+    color: #bbbbbb;
+    font-size: 10px;
+    line-height: 1.7;
+    text-align: left;
+}
+
+.sector-bar {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    margin-top: 10px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+}
+
+.sector-bar-fill {
+    height: 100%;
+    width: 0%;
+    background: #00ff00;
+}
+
+.health-green {
+    color: #00ff00;
+}
+
+.health-yellow {
+    color: #ffff00;
+}
+
+.health-orange {
+    color: #ff9900;
+}
+
+.health-red {
+    color: #ff0000;
+}
+
+.health-gray {
+    color: #888888;
+}
+
+.sector-bar-fill.health-green {
+    background: #00ff00;
+}
+
+.sector-bar-fill.health-yellow {
+    background: #ffff00;
+}
+
+.sector-bar-fill.health-orange {
+    background: #ff9900;
+}
+
+.sector-bar-fill.health-red {
+    background: #ff0000;
+}
+
+.sector-bar-fill.health-gray {
+    background: #888888;
+}
+
+
+/* ============================================================
+   REPORTING FRESHNESS (matches TempView)
+   ============================================================ */
+
+.freshness-current {
+    color: #00ff00;
+}
+
+.freshness-lag-one {
+    color: #ffff00;
+}
+
+.freshness-lag-two {
+    color: #ff9900;
+}
+
+.freshness-stale {
+    color: #ff0000;
+}
+
+.freshness-unavailable {
+    color: #888888;
+}
+
+.sector-freshness {
+    min-height: 16px;
+    margin-top: 11px;
+    padding-top: 8px;
+    border-top: 1px dotted #555555;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.45;
+}
+
+.sector-freshness-time {
+    min-height: 15px;
+    margin-top: 4px;
+    color: #aaaaaa;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    line-height: 1.45;
+}
+
+
+/* ============================================================
+   DATA LEGEND
+   ============================================================ */
+
+.legend-panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.legend-line {
+    color: #bbbbbb;
+    font-size: 12px;
+    line-height: 1.9;
+}
+
+.legend-line strong {
+    color: #ffffff;
+}
+
+
+/* ============================================================
+   FOOTER / CLOSE
+   ============================================================ */
+
+.footer {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 15px;
+}
+
+.close-controls {
+    text-align: center;
+    margin-top: 18px;
+    padding-bottom: 10px;
+}
+
+.close-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 9px 24px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .header-title {
+        font-size: 22px;
+    }
+
+    .health-value {
+        font-size: 42px;
+    }
+
+    .sector-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 450px) {
+
+    .sector-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="grid-real-container">
+
+    <div class="header">
+
+        <div class="header-title">
+            REAL POWER GRID MONITOR
+        </div>
+
+        <div class="header-subtitle">
+            THE GREAT DARKNESS // EIA REGIONAL DEMAND SYSTEM
+        </div>
+
+    </div>
+
+
+    <div class="status-panel">
+
+        <div class="health-label">
+            CALCULATED GRID HEALTH
+        </div>
+
+        <div
+            id="overallHealth"
+            class="health-value health-gray"
+        >
+            --%
+        </div>
+
+        <div
+            id="overallStatus"
+            class="status-text status-unknown"
+        >
+            STATUS: INITIALIZING
+        </div>
+
+        <div
+            id="overallDetails"
+            class="status-details"
+        >
+            REPORTING SECTORS: --
+        </div>
+
+    </div>
+
+
+    <div
+        id="message"
+        class="message"
+    >
+        EIA REGIONAL DATA MONITOR INITIALIZING...
+    </div>
+
+
+    <div class="sector-panel">
+
+        <div class="section-title">
+            REGIONAL GRID SECTORS
+        </div>
+
+        <div
+            id="sectorGrid"
+            class="sector-grid"
+        ></div>
+
+    </div>
+
+
+    <div class="legend-panel">
+
+        <div class="section-title">
+            REPORTED GRID STRESS MODEL
+        </div>
+
+        <div class="legend-line">
+            <strong>ACTUAL DEMAND:</strong>
+            reported regional electrical demand from EIA.
+        </div>
+
+        <div class="legend-line">
+            <strong>REFERENCE DEMAND:</strong>
+            current comparison value used for sector reporting.
+        </div>
+
+        <div class="legend-line">
+            <strong>DEMAND DEVIATION:</strong>
+            actual demand versus the available reference demand.
+        </div>
+
+        <div class="legend-line">
+            <strong>HOURLY RAMP:</strong>
+            change in reported actual demand since the prior reporting hour.
+        </div>
+
+        <div class="legend-line">
+            <strong>GRID HEALTH:</strong>
+            calculated sector health, not an official outage declaration.
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        EIA REGIONAL DEMAND DATA // LIVE REAL-DATA LAYER
+    </div>
+
+
+    <div class="close-controls">
+
+        <button
+            type="button"
+            class="close-button"
+            onclick="closePowerGridRealView(); return false;"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+var latestGridData =
+    null;
+
+
+/* ============================================================
+   LOAD REAL GRID DATA
+   ============================================================ */
+
+function loadPowerGridRealStatus() {
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+
+            if (!result) {
+
+                showMessage(
+                    "REAL GRID DATA UNAVAILABLE."
+                );
+
+                return;
+            }
+
+            latestGridData =
+                result;
+
+            updatePowerGridRealView(
+                result
+            );
+
+        })
+        .withFailureHandler(function(error) {
+
+            showMessage(
+                "REAL GRID ERROR: " +
+                getErrorMessage(error)
+            );
+
+        })
+        .getPowerGridRealStatus();
+
+}
+
+
+/* ============================================================
+   UPDATE VIEW
+   ============================================================ */
+
+function updatePowerGridRealView(result) {
+
+    var healthElement =
+        document.getElementById(
+            "overallHealth"
+        );
+
+    var statusElement =
+        document.getElementById(
+            "overallStatus"
+        );
+
+    var detailsElement =
+        document.getElementById(
+            "overallDetails"
+        );
+
+    var gridHealth =
+        Number(
+            result.gridHealth
+        );
+
+    var status =
+        String(
+            result.alertLevel ||
+            "UNKNOWN"
+        )
+            .trim()
+            .toUpperCase();
+
+    if (
+        result.success &&
+        isFinite(gridHealth)
+    ) {
+
+        healthElement.textContent =
+            gridHealth.toFixed(1) +
+            "%";
+
+        healthElement.className =
+            "health-value " +
+            getHealthColorClass(
+                gridHealth,
+                status
+            );
+
+        statusElement.textContent =
+            "STATUS: " +
+            status;
+
+        statusElement.className =
+            "status-text " +
+            getStatusClass(
+                status
+            );
+
+        detailsElement.textContent =
+            "REPORTING SECTORS: " +
+            Number(
+                result.reportingSectors || 0
+            ) +
+            " // AVG DEMAND DEVIATION: " +
+            formatPercent(
+                result.averageDemandDeviation
+            ) +
+            " // LAST UPDATE: " +
+            formatDateTime(
+                result.timestamp
+            );
+
+        if (result.overallState === "RETAINED") {
+
+            showMessage(
+                "INSUFFICIENT CURRENT SECTOR DATA // " +
+                "RETAINING LAST VALID STATUS: " +
+                formatReportingDateTime(
+                    result.lastValidAt
+                ) +
+                " UTC"
+            );
+
+        } else if (
+            Number(result.reportingSectors || 0) <
+            Number(result.totalSectors || 0)
+        ) {
+
+            showMessage(
+                "PARTIAL SECTOR DATA // DEGRADED: " +
+                Number(result.reportingSectors || 0) +
+                " OF " +
+                Number(result.totalSectors || 0) +
+                " SECTORS REPORTING."
+            );
+
+        } else {
+
+            showMessage(
+                "REAL EIA GRID DATA ACTIVE."
+            );
+        }
+
+    } else if (result.overallState === "DEGRADED") {
+
+        healthElement.textContent =
+            "--%";
+
+        healthElement.className =
+            "health-value health-gray";
+
+        statusElement.textContent =
+            "STATUS: DEGRADED";
+
+        statusElement.className =
+            "status-text status-unknown";
+
+        detailsElement.textContent =
+            "REPORTING SECTORS: " +
+            Number(
+                result.reportingSectors || 0
+            ) +
+            (
+                result.lastValidAt
+                    ? " // LAST VALID: " +
+                      formatReportingDateTime(
+                          result.lastValidAt
+                      ) +
+                      " UTC"
+                    : ""
+            );
+
+        showMessage(
+            "INSUFFICIENT CURRENT SECTOR DATA // GRID STATUS DEGRADED."
+        );
+
+    } else {
+
+        healthElement.textContent =
+            "--%";
+
+        healthElement.className =
+            "health-value health-gray";
+
+        statusElement.textContent =
+            "STATUS: INSUFFICIENT DATA";
+
+        statusElement.className =
+            "status-text status-unknown";
+
+        detailsElement.textContent =
+            "REPORTING SECTORS: " +
+            Number(
+                result.reportingSectors || 0
+            );
+
+        showMessage(
+            "WAITING FOR VALID EIA SECTOR DATA."
+        );
+    }
+
+    buildSectorCards(
+        result.sectors || []
+    );
+}
+
+
+/* ============================================================
+   BUILD SECTOR CARDS
+   ============================================================ */
+
+function buildSectorCards(sectors) {
+
+    var grid =
+        document.getElementById(
+            "sectorGrid"
+        );
+
+    if (!grid) {
+        return;
+    }
+
+    grid.innerHTML =
+        "";
+
+    if (
+        !Array.isArray(sectors) ||
+        sectors.length === 0
+    ) {
+
+        grid.innerHTML =
+            "<div class=\"sector\">" +
+            "NO SECTOR DATA" +
+            "</div>";
+
+        return;
+    }
+
+    sectors.forEach(
+        function(sector) {
+
+            var card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "sector";
+
+            var health =
+                Number(
+                    sector.gridHealth
+                );
+
+            var status =
+                String(
+                    sector.status ||
+                    "UNKNOWN"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            var healthClass =
+                getHealthColorClass(
+                    health,
+                    status
+                );
+
+            var healthWidth =
+                isFinite(health)
+                    ? Math.max(
+                        0,
+                        Math.min(
+                            100,
+                            health
+                        )
+                      )
+                    : 0;
+
+            var freshness =
+                String(
+                    sector.dataFreshness ||
+                    "NO_REPORT_AVAILABLE"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            var freshnessLabel =
+                String(
+                    sector.dataFreshnessLabel ||
+                    "NO REPORT AVAILABLE"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            var reportTimeLabel =
+                sector.lastSuccessfulReportAt
+                    ? "LAST COMPLETED: " +
+                      formatReportingDateTime(
+                          sector.lastSuccessfulReportAt
+                      )
+                    : "EXPECTED: " +
+                      formatReportingDateTime(
+                          sector.expectedCompletedReportAt
+                      );
+
+            card.innerHTML =
+                "<div class=\"sector-number\">" +
+                "SECTOR " +
+                escapeHtml(
+                    sector.sector
+                ) +
+                "</div>" +
+
+                "<div class=\"sector-name\">" +
+                escapeHtml(
+                    sector.name
+                ) +
+                "</div>" +
+
+                "<div class=\"sector-health " +
+                healthClass +
+                "\">" +
+                (
+                    isFinite(health)
+                        ? health.toFixed(1) +
+                          "%"
+                        : "--%"
+                ) +
+                "</div>" +
+
+                "<div class=\"sector-status " +
+                getStatusClass(
+                    status
+                ) +
+                "\">" +
+                status +
+                "</div>" +
+
+                "<div class=\"sector-bar\">" +
+                    "<div class=\"sector-bar-fill " +
+                    healthClass +
+                    "\" style=\"width:" +
+                    healthWidth +
+                    "%;\"></div>" +
+                "</div>" +
+
+                "<div class=\"sector-data\">" +
+                "ACTUAL: " +
+                formatMw(
+                    sector.actualDemand
+                ) +
+                "<br>" +
+
+                "REFERENCE: " +
+                formatMw(
+                    sector.forecastDemand
+                ) +
+                "<br>" +
+
+                "DEVIATION: " +
+                formatPercent(
+                    sector.demandDeviationPercent
+                ) +
+                "<br>" +
+
+                (
+                    isFinite(sector.typicalErrorPct) &&
+                    sector.typicalErrorPct !== null &&
+                    Math.abs(sector.typicalErrorPct) >= 1
+                        ? "TYPICAL: " +
+                          formatPercent(
+                              sector.typicalErrorPct
+                          ) +
+                          "<br>"
+                        : ""
+                ) +
+
+                "RAMP: " +
+                formatPercent(
+                    sector.hourlyRampPercent
+                ) +
+                "<br>" +
+
+                "PERIOD: " +
+                escapeHtml(
+                    sector.reportingPeriod ||
+                    "--"
+                ) +
+                "<br>" +
+
+                "DATA: " +
+                escapeHtml(
+                    sector.dataStatus ||
+                    "UNKNOWN"
+                ) +
+                "</div>" +
+
+                "<div class=\"sector-freshness " +
+                getFreshnessClass_(
+                    freshness
+                ) +
+                "\">" +
+                escapeHtml(
+                    freshnessLabel
+                ) +
+                "</div>" +
+
+                "<div class=\"sector-freshness-time\">" +
+                escapeHtml(
+                    reportTimeLabel
+                ) +
+                "</div>";
+
+            grid.appendChild(card);
+        }
+    );
+}
+
+
+/* ============================================================
+   STATUS COLORS
+   ============================================================ */
+
+function getHealthColorClass(
+    health,
+    status
+) {
+
+    if (!isFinite(health)) {
+        return "health-gray";
+    }
+
+    switch (
+        String(status || "")
+            .trim()
+            .toUpperCase()
+    ) {
+
+        case "CRITICAL":
+            return "health-red";
+
+        case "ELEVATED":
+            return "health-orange";
+
+        case "WATCH":
+            return "health-yellow";
+
+        default:
+            return "health-green";
+    }
+}
+
+
+function getStatusClass(status) {
+
+    switch (
+        String(status || "")
+            .trim()
+            .toUpperCase()
+    ) {
+
+        case "CRITICAL":
+            return "status-critical";
+
+        case "ELEVATED":
+            return "status-elevated";
+
+        case "WATCH":
+            return "status-watch";
+
+        case "NOMINAL":
+            return "status-nominal";
+
+        default:
+            return "status-unknown";
+    }
+}
+
+
+function getFreshnessClass_(
+    freshness
+) {
+
+    switch (freshness) {
+
+        case "CURRENT":
+            return "freshness-current";
+
+        case "LAG_1_HOUR":
+            return "freshness-lag-one";
+
+        case "LAG_2_HOURS":
+            return "freshness-lag-two";
+
+        case "STALE_3_PLUS_HOURS":
+            return "freshness-stale";
+
+        default:
+            return "freshness-unavailable";
+    }
+}
+
+
+/* ============================================================
+   FORMATTERS
+   ============================================================ */
+
+
+// UTC, same format as TempView (MM/DD/YYYY HH:MM).
+function formatReportingDateTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    var date =
+        new Date(value);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    function format(number) {
+        return String(number)
+            .padStart(2, "0");
+    }
+
+    return (
+        format(date.getUTCMonth() + 1) +
+        "/" +
+        format(date.getUTCDate()) +
+        "/" +
+        date.getUTCFullYear() +
+        " " +
+        format(date.getUTCHours()) +
+        ":" +
+        format(date.getUTCMinutes())
+    );
+}
+
+function formatMw(value) {
+
+    var number =
+        Number(value);
+
+    if (!isFinite(number)) {
+        return "--";
+    }
+
+    return (
+        Math.round(number)
+            .toLocaleString() +
+        " MW"
+    );
+}
+
+
+function formatPercent(value) {
+
+    var number =
+        Number(value);
+
+    if (!isFinite(number)) {
+        return "--";
+    }
+
+    return (
+        (
+            number > 0
+                ? "+"
+                : ""
+        ) +
+        number.toFixed(1) +
+        "%"
+    );
+}
+
+
+function formatDateTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    var date =
+        new Date(value);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return "--";
+    }
+
+    return date.toLocaleString();
+}
+
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function getErrorMessage(error) {
+
+    if (
+        error &&
+        error.message
+    ) {
+        return error.message;
+    }
+
+    return String(
+        error || "UNKNOWN ERROR"
+    );
+}
+
+
+function showMessage(message) {
+
+    var element =
+        document.getElementById(
+            "message"
+        );
+
+    if (element) {
+        element.textContent =
+            message;
+    }
+}
+
+
+/* ============================================================
+   CLOSE
+   ============================================================ */
+
+function closePowerGridRealView() {
+
+    window.close();
+}
+
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+loadPowerGridRealStatus();
+
+
+/* ============================================================
+   LIVE POLLING
+   ============================================================ */
+
+setInterval(
+    loadPowerGridRealStatus,
+    60000
+);
+
+</script>
+
+</body>
+</html>

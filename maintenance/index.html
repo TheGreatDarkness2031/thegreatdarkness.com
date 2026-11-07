@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<title>NEXUS // Maintenance Log</title>
+  <base target="_top">
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      color: #000000;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+    }
+
+    body {
+      padding: 18px 6px;
+    }
+
+    .nexus-window {
+      width: 760px;
+      margin: 0 auto;
+      padding: 3px;
+      box-sizing: border-box;
+      background: #c0c0c0;
+      border-top: 3px solid #ffffff;
+      border-left: 3px solid #ffffff;
+      border-right: 3px solid #404040;
+      border-bottom: 3px solid #404040;
+    }
+
+    .title-bar {
+      padding: 4px 6px;
+      background: #000080;
+      color: #ffffff;
+      font-size: 13px;
+      font-weight: bold;
+      line-height: 16px;
+      letter-spacing: 0.4px;
+    }
+
+    .title-bar-right {
+      float: right;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+      font-weight: normal;
+    }
+
+    .title-bar-close {
+      float: right;
+      min-width: 18px;
+      width: 18px;
+      min-height: 18px;
+      height: 18px;
+      margin: -1px 0 0 8px;
+      padding: 0;
+      background: #c0c0c0;
+      color: #000000;
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 12px;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .title-bar-close:active {
+      padding: 1px 0 0 1px;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    .window-content {
+      padding: 8px;
+    }
+
+    .archive-heading {
+      margin-bottom: 8px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1.55;
+    }
+
+    .archive-heading-muted {
+      color: #444444;
+      font-weight: normal;
+    }
+
+    .bevel-inset {
+      background: #ffffff;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    .bevel-outset {
+      background: #c0c0c0;
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+    }
+
+    .filter-panel {
+      margin-bottom: 8px;
+      padding: 7px;
+    }
+
+    .filter-title {
+      margin-bottom: 6px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .filter-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .filter-table td {
+      padding: 3px;
+      vertical-align: middle;
+    }
+
+    .filter-label {
+      width: 76px;
+      text-align: right;
+      white-space: nowrap;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    input,
+    select,
+    button {
+      box-sizing: border-box;
+      border-radius: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      height: 22px;
+      padding: 2px 4px;
+      background: #ffffff;
+      color: #000000;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    button {
+      min-width: 96px;
+      min-height: 24px;
+      padding: 3px 8px;
+      background: #c0c0c0;
+      color: #000000;
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active {
+      padding: 4px 7px 2px 9px;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    button:disabled {
+      color: #777777;
+      cursor: default;
+    }
+
+    .button-cell {
+      width: 116px;
+      text-align: center;
+    }
+
+    .status-line {
+      min-height: 20px;
+      margin: 8px 0;
+      padding: 4px 6px;
+      box-sizing: border-box;
+      background: #000000;
+      color: #00ff00;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+    }
+
+    .status-line.error {
+      color: #ff6666;
+    }
+
+    .index-title,
+    .record-view-title {
+      padding: 4px 6px;
+      background: #000080;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+    }
+
+    .record-list {
+      height: 330px;
+      overflow-y: auto;
+      background: #ffffff;
+    }
+
+    .record-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+    }
+
+    .record-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    .record-table th {
+      padding: 4px;
+      background: #808080;
+      color: #ffffff;
+      border-right: 1px solid #404040;
+      border-bottom: 1px solid #404040;
+      text-align: left;
+      font-weight: bold;
+    }
+
+    .record-table td {
+      overflow: hidden;
+      padding: 4px;
+      border-right: 1px solid #d0d0d0;
+      border-bottom: 1px solid #d0d0d0;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .record-table tr {
+      cursor: pointer;
+    }
+
+    .record-table tbody tr:hover {
+      background: #e0e0e0;
+    }
+
+    .record-table tbody tr.selected {
+      background: #000080;
+      color: #ffffff;
+    }
+
+    .record-id {
+      color: #000080;
+      font-weight: bold;
+    }
+
+    .selected .record-id {
+      color: #ffffff;
+    }
+
+    .record-empty {
+      padding: 20px;
+      color: #444444;
+      text-align: center;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+    }
+
+    .pagination-panel {
+      margin-top: 8px;
+      padding: 6px;
+    }
+
+    .pagination-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .pagination-table td {
+      vertical-align: middle;
+    }
+
+    .pagination-status {
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+    }
+
+    .pagination-controls {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .pagination-controls button {
+      min-width: 62px;
+      margin-left: 4px;
+      padding-left: 6px;
+      padding-right: 6px;
+    }
+
+    .record-view {
+      margin-top: 10px;
+    }
+
+    .record-view-body {
+      min-height: 180px;
+      padding: 8px;
+      background: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .record-view-meta {
+      width: 100%;
+      margin-bottom: 8px;
+      border-collapse: collapse;
+    }
+
+    .record-view-meta td {
+      padding: 2px 4px;
+      vertical-align: top;
+    }
+
+    .record-view-label {
+      width: 94px;
+      color: #000080;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .record-entry-divider {
+      margin: 8px 0;
+      border-top: 1px dashed #808080;
+    }
+
+    .record-entry {
+      color: #000000;
+      white-space: pre-wrap;
+    }
+
+    .record-placeholder {
+      color: #555555;
+      font-style: italic;
+    }
+
+    .record-navigation {
+      margin-top: 6px;
+      padding: 5px;
+      text-align: right;
+    }
+
+    .record-navigation-label {
+      float: left;
+      padding: 5px 2px 0 2px;
+      color: #333333;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .record-navigation button {
+      min-width: 118px;
+      margin-left: 5px;
+    }
+
+    .footer {
+      margin-top: 9px;
+      padding: 4px 2px 1px;
+      color: #777777;
+      text-align: center;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+    }
+
+    @media (max-width: 790px) {
+      body {
+        padding: 6px 0;
+      }
+
+      .nexus-window {
+        width: 100%;
+      }
+
+      .title-bar-right {
+        display: none;
+      }
+
+      .filter-label {
+        width: 58px;
+      }
+
+      .record-list {
+        height: 300px;
+      }
+
+      .pagination-controls {
+        white-space: normal;
+      }
+
+      .pagination-controls button {
+        margin-top: 3px;
+      }
+
+      .record-navigation {
+        text-align: center;
+      }
+
+      .record-navigation-label {
+        float: none;
+        display: block;
+        padding-bottom: 4px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="nexus-window">
+
+    <div class="title-bar">
+
+      NEXUS MAINTENANCE LOG v1.3
+
+      <button
+        class="title-bar-close"
+        type="button"
+        onclick="exitMaintenanceLog()"
+        title="Close Maintenance Log"
+      >
+        X
+      </button>
+
+      <span class="title-bar-right">
+        ARCHIVE ACCESS ACTIVE
+      </span>
+
+    </div>
+
+    <div class="window-content">
+
+      <div class="archive-heading">
+        SYSTEM DEVELOPMENT / OPERATIONS ARCHIVE<br>
+        <span class="archive-heading-muted">
+          RECORD INDEX: NEXUS ORIGIN THROUGH CURRENT OPERATIONS
+        </span>
+      </div>
+
+      <div class="filter-panel bevel-outset">
+
+        <div class="filter-title">
+          RECORD INDEX CONTROLS
+        </div>
+
+        <table class="filter-table">
+
+          <tr>
+            <td class="filter-label">
+              SEARCH:
+            </td>
+
+            <td colspan="3">
+              <input
+                id="searchInput"
+                type="text"
+                autocomplete="off"
+                placeholder="Search record text, systems, personnel..."
+              >
+            </td>
+
+            <td
+              class="button-cell"
+              rowspan="2"
+            >
+              <button
+                id="applyButton"
+                type="button"
+              >
+                UPDATE INDEX
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="filter-label">
+              ERA:
+            </td>
+
+            <td>
+              <select id="eraSelect">
+                <option value="">ALL</option>
+              </select>
+            </td>
+
+            <td class="filter-label">
+              ACTION:
+            </td>
+
+            <td>
+              <select id="actionSelect">
+                <option value="">ALL</option>
+              </select>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="filter-label">
+              SYSTEM:
+            </td>
+
+            <td>
+              <select id="systemSelect">
+                <option value="">ALL</option>
+              </select>
+            </td>
+
+            <td class="filter-label">
+              AUTHOR:
+            </td>
+
+            <td>
+              <select id="authorSelect">
+                <option value="">ALL</option>
+              </select>
+            </td>
+
+            <td class="button-cell">
+              <button
+                id="clearButton"
+                type="button"
+              >
+                CLEAR
+              </button>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="filter-label">
+              SORT:
+            </td>
+
+            <td>
+              <select id="sortSelect">
+                <option value="date">DATE</option>
+                <option value="id">RECORD ID</option>
+                <option value="era">ERA</option>
+                <option value="action">ACTION</option>
+                <option value="system">SYSTEM</option>
+                <option value="author">AUTHOR</option>
+              </select>
+            </td>
+
+            <td class="filter-label">
+              ORDER:
+            </td>
+
+            <td>
+              <select id="directionSelect">
+                <option value="desc">NEWEST FIRST</option>
+                <option value="asc">OLDEST FIRST</option>
+              </select>
+            </td>
+
+            <td class="button-cell">
+              <button
+                id="recordListButton"
+                type="button"
+              >
+                REFRESH
+              </button>
+            </td>
+          </tr>
+
+        </table>
+
+      </div>
+
+      <div
+        id="statusLine"
+        class="status-line bevel-inset"
+      >
+        INITIALIZING MAINTENANCE ARCHIVE INDEX...
+      </div>
+
+      <div class="bevel-inset">
+
+        <div class="index-title">
+          MAINTENANCE RECORD INDEX
+        </div>
+
+        <div
+          id="recordList"
+          class="record-list"
+        >
+          <div class="record-empty">
+            RETRIEVING RECORD INDEX...
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pagination-panel bevel-outset">
+
+        <table class="pagination-table">
+          <tr>
+            <td
+              id="paginationStatus"
+              class="pagination-status"
+            >
+              PAGE DATA UNAVAILABLE
+            </td>
+
+            <td class="pagination-controls">
+
+              <button
+                id="firstButton"
+                type="button"
+                disabled
+              >
+                FIRST
+              </button>
+
+              <button
+                id="previousButton"
+                type="button"
+                disabled
+              >
+                BACK
+              </button>
+
+              <button
+                id="nextButton"
+                type="button"
+                disabled
+              >
+                NEXT
+              </button>
+
+              <button
+                id="lastButton"
+                type="button"
+                disabled
+              >
+                END
+              </button>
+
+            </td>
+          </tr>
+        </table>
+
+      </div>
+
+      <div class="record-view bevel-inset">
+
+        <div
+          id="recordViewTitle"
+          class="record-view-title"
+        >
+          RECORD VIEW
+        </div>
+
+        <div
+          id="recordViewBody"
+          class="record-view-body"
+        >
+          <div class="record-placeholder">
+            SELECT A RECORD FROM THE INDEX TO DISPLAY ITS FULL ENTRY.
+          </div>
+        </div>
+
+      </div>
+
+      <div class="record-navigation bevel-outset">
+
+        <span class="record-navigation-label">
+          RECORD NAVIGATION:
+        </span>
+
+        <button
+          id="previousRecordButton"
+          type="button"
+          disabled
+        >
+          ▲ PRIOR RECORD
+        </button>
+
+        <button
+          id="nextRecordButton"
+          type="button"
+          disabled
+        >
+          ▼ NEXT RECORD
+        </button>
+
+      </div>
+
+      <div class="footer">
+        NEXUS MAINTENANCE ARCHIVE //
+        ORIGINAL RECORD TEXT PRESERVED WHERE AVAILABLE //
+        DISPLAY MODE: INDEX VIEW
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    var maintenanceState = {
+      page: 1,
+      pageSize: 25,
+      era: "",
+      action: "",
+      system: "",
+      author: "",
+      search: "",
+      sortBy: "date",
+      sortDirection: "desc"
+    };
+
+    var maintenancePagination = {
+      page: 1,
+      pageSize: 25,
+      totalRecords: 0,
+      totalPages: 1,
+      startRecord: 0,
+      endRecord: 0
+    };
+
+    var selectedMaintenanceRecordId =
+      "";
+
+    var currentMaintenanceRecords =
+      [];
+
+    var pendingMaintenanceRecordSelection =
+      "";
+
+    var maintenanceElements = {
+      searchInput:
+        document.getElementById(
+          "searchInput"
+        ),
+
+      eraSelect:
+        document.getElementById(
+          "eraSelect"
+        ),
+
+      actionSelect:
+        document.getElementById(
+          "actionSelect"
+        ),
+
+      systemSelect:
+        document.getElementById(
+          "systemSelect"
+        ),
+
+      authorSelect:
+        document.getElementById(
+          "authorSelect"
+        ),
+
+      sortSelect:
+        document.getElementById(
+          "sortSelect"
+        ),
+
+      directionSelect:
+        document.getElementById(
+          "directionSelect"
+        ),
+
+      applyButton:
+        document.getElementById(
+          "applyButton"
+        ),
+
+      clearButton:
+        document.getElementById(
+          "clearButton"
+        ),
+
+      recordListButton:
+        document.getElementById(
+          "recordListButton"
+        ),
+
+      firstButton:
+        document.getElementById(
+          "firstButton"
+        ),
+
+      previousButton:
+        document.getElementById(
+          "previousButton"
+        ),
+
+      nextButton:
+        document.getElementById(
+          "nextButton"
+        ),
+
+      lastButton:
+        document.getElementById(
+          "lastButton"
+        ),
+
+      previousRecordButton:
+        document.getElementById(
+          "previousRecordButton"
+        ),
+
+      nextRecordButton:
+        document.getElementById(
+          "nextRecordButton"
+        ),
+
+      statusLine:
+        document.getElementById(
+          "statusLine"
+        ),
+
+      recordList:
+        document.getElementById(
+          "recordList"
+        ),
+
+      paginationStatus:
+        document.getElementById(
+          "paginationStatus"
+        ),
+
+      recordViewTitle:
+        document.getElementById(
+          "recordViewTitle"
+        ),
+
+      recordViewBody:
+        document.getElementById(
+          "recordViewBody"
+        )
+    };
+
+
+    function initializeMaintenanceLogView() {
+
+      bindMaintenanceLogEvents_();
+      loadMaintenanceLogData_();
+    }
+
+
+    function bindMaintenanceLogEvents_() {
+
+      maintenanceElements.applyButton.addEventListener(
+        "click",
+        function() {
+          applyMaintenanceLogFilters_();
+        }
+      );
+
+      maintenanceElements.recordListButton.addEventListener(
+        "click",
+        function() {
+          applyMaintenanceLogFilters_();
+        }
+      );
+
+      maintenanceElements.clearButton.addEventListener(
+        "click",
+        function() {
+          clearMaintenanceLogFilters_();
+        }
+      );
+
+      maintenanceElements.firstButton.addEventListener(
+        "click",
+        function() {
+
+          if (
+            maintenancePagination.page <= 1
+          ) {
+            return;
+          }
+
+          maintenanceState.page = 1;
+
+          selectedMaintenanceRecordId =
+            "";
+
+          pendingMaintenanceRecordSelection =
+            "";
+
+          loadMaintenanceLogData_();
+        }
+      );
+
+      maintenanceElements.previousButton.addEventListener(
+        "click",
+        function() {
+
+          if (
+            maintenancePagination.page <= 1
+          ) {
+            return;
+          }
+
+          maintenanceState.page =
+            maintenancePagination.page - 1;
+
+          selectedMaintenanceRecordId =
+            "";
+
+          pendingMaintenanceRecordSelection =
+            "";
+
+          loadMaintenanceLogData_();
+        }
+      );
+
+      maintenanceElements.nextButton.addEventListener(
+        "click",
+        function() {
+
+          if (
+            maintenancePagination.page >=
+            maintenancePagination.totalPages
+          ) {
+            return;
+          }
+
+          maintenanceState.page =
+            maintenancePagination.page + 1;
+
+          selectedMaintenanceRecordId =
+            "";
+
+          pendingMaintenanceRecordSelection =
+            "";
+
+          loadMaintenanceLogData_();
+        }
+      );
+
+      maintenanceElements.lastButton.addEventListener(
+        "click",
+        function() {
+
+          if (
+            maintenancePagination.page >=
+            maintenancePagination.totalPages
+          ) {
+            return;
+          }
+
+          maintenanceState.page =
+            maintenancePagination.totalPages;
+
+          selectedMaintenanceRecordId =
+            "";
+
+          pendingMaintenanceRecordSelection =
+            "";
+
+          loadMaintenanceLogData_();
+        }
+      );
+
+      maintenanceElements.previousRecordButton.addEventListener(
+        "click",
+        function() {
+          navigateMaintenanceRecord_(-1);
+        }
+      );
+
+      maintenanceElements.nextRecordButton.addEventListener(
+        "click",
+        function() {
+          navigateMaintenanceRecord_(1);
+        }
+      );
+
+      maintenanceElements.searchInput.addEventListener(
+        "keydown",
+        function(event) {
+
+          if (
+            event.key === "Enter"
+          ) {
+            applyMaintenanceLogFilters_();
+          }
+
+        }
+      );
+    }
+
+
+    function applyMaintenanceLogFilters_() {
+
+      maintenanceState.page = 1;
+
+      maintenanceState.search =
+        maintenanceElements.searchInput.value
+          .trim();
+
+      maintenanceState.era =
+        maintenanceElements.eraSelect.value;
+
+      maintenanceState.action =
+        maintenanceElements.actionSelect.value;
+
+      maintenanceState.system =
+        maintenanceElements.systemSelect.value;
+
+      maintenanceState.author =
+        maintenanceElements.authorSelect.value;
+
+      maintenanceState.sortBy =
+        maintenanceElements.sortSelect.value;
+
+      maintenanceState.sortDirection =
+        maintenanceElements.directionSelect.value;
+
+      selectedMaintenanceRecordId =
+        "";
+
+      pendingMaintenanceRecordSelection =
+        "";
+
+      loadMaintenanceLogData_();
+    }
+
+
+    function clearMaintenanceLogFilters_() {
+
+      maintenanceState = {
+        page: 1,
+        pageSize: 25,
+        era: "",
+        action: "",
+        system: "",
+        author: "",
+        search: "",
+        sortBy: "date",
+        sortDirection: "desc"
+      };
+
+      selectedMaintenanceRecordId =
+        "";
+
+      pendingMaintenanceRecordSelection =
+        "";
+
+      maintenanceElements.searchInput.value = "";
+      maintenanceElements.eraSelect.value = "";
+      maintenanceElements.actionSelect.value = "";
+      maintenanceElements.systemSelect.value = "";
+      maintenanceElements.authorSelect.value = "";
+      maintenanceElements.sortSelect.value = "date";
+      maintenanceElements.directionSelect.value = "desc";
+
+      loadMaintenanceLogData_();
+    }
+
+
+    function loadMaintenanceLogData_() {
+
+      setMaintenanceLogLoading_(
+        true
+      );
+
+      google.script.run
+        .withSuccessHandler(
+          function(data) {
+            renderMaintenanceLogData_(data);
+          }
+        )
+        .withFailureHandler(
+          function(error) {
+            renderMaintenanceLogError_(error);
+          }
+        )
+        .getMaintenanceLogData(
+          maintenanceState
+        );
+    }
+
+
+    function renderMaintenanceLogData_(
+      data
+    ) {
+
+      if (
+        !data ||
+        !data.success
+      ) {
+
+        renderMaintenanceLogError_(
+          "INVALID ARCHIVE RESPONSE."
+        );
+
+        return;
+      }
+
+      maintenancePagination =
+        data.pagination;
+
+      updateMaintenanceSelectOptions_(
+        data.filters
+      );
+
+      renderMaintenanceStatus_(
+        data
+      );
+
+      renderMaintenanceRecordIndex_(
+        data.records
+      );
+
+      renderMaintenancePagination_(
+        data.pagination
+      );
+
+      setMaintenanceLogLoading_(
+        false
+      );
+    }
+
+
+    function updateMaintenanceSelectOptions_(
+      filters
+    ) {
+
+      updateMaintenanceSelect_(
+        maintenanceElements.eraSelect,
+        filters.eras || [],
+        maintenanceState.era
+      );
+
+      updateMaintenanceSelect_(
+        maintenanceElements.actionSelect,
+        filters.actions || [],
+        maintenanceState.action
+      );
+
+      updateMaintenanceSelect_(
+        maintenanceElements.systemSelect,
+        filters.systems || [],
+        maintenanceState.system
+      );
+
+      updateMaintenanceSelect_(
+        maintenanceElements.authorSelect,
+        filters.authors || [],
+        maintenanceState.author
+      );
+    }
+
+
+    function updateMaintenanceSelect_(
+      select,
+      values,
+      selectedValue
+    ) {
+
+      var existingValues =
+        Array.prototype.map.call(
+          select.options,
+          function(option) {
+            return option.value;
+          }
+        );
+
+      var desiredValues =
+        [""].concat(values);
+
+      var rebuild =
+        existingValues.length !==
+        desiredValues.length;
+
+      if (!rebuild) {
+
+        for (
+          var i = 0;
+          i < desiredValues.length;
+          i++
+        ) {
+
+          if (
+            existingValues[i] !==
+            desiredValues[i]
+          ) {
+            rebuild = true;
+            break;
+          }
+        }
+      }
+
+      if (rebuild) {
+
+        select.innerHTML = "";
+
+        var defaultOption =
+          document.createElement(
+            "option"
+          );
+
+        defaultOption.value = "";
+        defaultOption.textContent = "ALL";
+
+        select.appendChild(
+          defaultOption
+        );
+
+        values.forEach(
+          function(value) {
+
+            var option =
+              document.createElement(
+                "option"
+              );
+
+            option.value = value;
+            option.textContent = value;
+
+            select.appendChild(
+              option
+            );
+          }
+        );
+      }
+
+      select.value =
+        selectedValue || "";
+    }
+
+
+    function renderMaintenanceStatus_(
+      data
+    ) {
+
+      var total =
+        data.pagination.totalRecords;
+
+      var start =
+        data.pagination.startRecord;
+
+      var end =
+        data.pagination.endRecord;
+
+      maintenanceElements.statusLine.className =
+        "status-line bevel-inset";
+
+      if (total === 0) {
+
+        maintenanceElements.statusLine.textContent =
+          "INDEX QUERY COMPLETE // NO RECORDS MATCH CURRENT CRITERIA.";
+
+        return;
+      }
+
+      maintenanceElements.statusLine.textContent =
+        "INDEX QUERY COMPLETE // DISPLAYING RECORDS " +
+        start +
+        " THROUGH " +
+        end +
+        " OF " +
+        total +
+        ".";
+    }
+
+
+    function renderMaintenanceRecordIndex_(
+      records
+    ) {
+
+      currentMaintenanceRecords =
+        records || [];
+
+      maintenanceElements.recordList.innerHTML =
+        "";
+
+      if (
+        currentMaintenanceRecords.length === 0
+      ) {
+
+        var empty =
+          document.createElement(
+            "div"
+          );
+
+        empty.className =
+          "record-empty";
+
+        empty.textContent =
+          "NO RECORDS FOUND.";
+
+        maintenanceElements.recordList.appendChild(
+          empty
+        );
+
+        renderMaintenanceRecordPlaceholder_();
+
+        return;
+      }
+
+      if (
+        pendingMaintenanceRecordSelection ===
+        "first"
+      ) {
+
+        selectedMaintenanceRecordId =
+          currentMaintenanceRecords[0].id;
+
+        pendingMaintenanceRecordSelection =
+          "";
+
+      } else if (
+        pendingMaintenanceRecordSelection ===
+        "last"
+      ) {
+
+        selectedMaintenanceRecordId =
+          currentMaintenanceRecords[
+            currentMaintenanceRecords.length - 1
+          ].id;
+
+        pendingMaintenanceRecordSelection =
+          "";
+      }
+
+      var table =
+        document.createElement(
+          "table"
+        );
+
+      table.className =
+        "record-table";
+
+      table.innerHTML =
+        "<thead>" +
+          "<tr>" +
+            "<th style=\"width:78px;\">RECORD</th>" +
+            "<th style=\"width:84px;\">DATE</th>" +
+            "<th style=\"width:68px;\">ERA</th>" +
+            "<th>SYSTEM</th>" +
+            "<th style=\"width:118px;\">ACTION</th>" +
+          "</tr>" +
+        "</thead>";
+
+      var body =
+        document.createElement(
+          "tbody"
+        );
+
+      currentMaintenanceRecords.forEach(
+        function(record) {
+
+          var row =
+            document.createElement(
+              "tr"
+            );
+
+          row.dataset.recordId =
+            record.id;
+
+          if (
+            selectedMaintenanceRecordId ===
+            record.id
+          ) {
+            row.className = "selected";
+          }
+
+          row.appendChild(
+            buildMaintenanceCell_(
+              "ML-" +
+              String(record.id)
+                .padStart(6, "0"),
+              "record-id"
+            )
+          );
+
+          row.appendChild(
+            buildMaintenanceCell_(
+              record.date ||
+              "UNKNOWN"
+            )
+          );
+
+          row.appendChild(
+            buildMaintenanceCell_(
+              record.era ||
+              "UNKNOWN"
+            )
+          );
+
+          row.appendChild(
+            buildMaintenanceCell_(
+              record.system ||
+              "UNSPECIFIED"
+            )
+          );
+
+          row.appendChild(
+            buildMaintenanceCell_(
+              record.action ||
+              "UNSPECIFIED"
+            )
+          );
+
+          row.addEventListener(
+            "click",
+            function() {
+              selectMaintenanceRecord_(
+                record,
+                body
+              );
+            }
+          );
+
+          body.appendChild(row);
+        }
+      );
+
+      table.appendChild(body);
+
+      maintenanceElements.recordList.appendChild(
+        table
+      );
+
+      var selectedRecord =
+        currentMaintenanceRecords.find(
+          function(record) {
+
+            return (
+              record.id ===
+              selectedMaintenanceRecordId
+            );
+          }
+        );
+
+      if (selectedRecord) {
+
+        renderMaintenanceRecordView_(
+          selectedRecord
+        );
+
+      } else {
+
+        renderMaintenanceRecordPlaceholder_();
+      }
+
+      updateMaintenanceRecordNavigation_();
+    }
+
+
+    function buildMaintenanceCell_(
+      text,
+      className
+    ) {
+
+      var cell =
+        document.createElement(
+          "td"
+        );
+
+      cell.className =
+        className || "";
+
+      cell.textContent =
+        text || "";
+
+      return cell;
+    }
+
+
+    function selectMaintenanceRecord_(
+      record,
+      body
+    ) {
+
+      selectedMaintenanceRecordId =
+        record.id;
+
+      renderMaintenanceSelectedRow_(
+        body,
+        record.id
+      );
+
+      renderMaintenanceRecordView_(
+        record
+      );
+
+      updateMaintenanceRecordNavigation_();
+    }
+
+
+    function renderMaintenanceSelectedRow_(
+      body,
+      recordId
+    ) {
+
+      Array.prototype.forEach.call(
+        body.rows,
+        function(row) {
+
+          row.className =
+            row.dataset.recordId ===
+            recordId
+              ? "selected"
+              : "";
+        }
+      );
+    }
+
+
+    function renderMaintenanceRecordPlaceholder_() {
+
+      maintenanceElements.recordViewTitle.textContent =
+        "RECORD VIEW";
+
+      maintenanceElements.recordViewBody.innerHTML =
+        "";
+
+      var placeholder =
+        document.createElement(
+          "div"
+        );
+
+      placeholder.className =
+        "record-placeholder";
+
+      placeholder.textContent =
+        "SELECT A RECORD FROM THE INDEX TO DISPLAY ITS FULL ENTRY.";
+
+      maintenanceElements.recordViewBody.appendChild(
+        placeholder
+      );
+
+      updateMaintenanceRecordNavigation_();
+    }
+
+
+    function renderMaintenanceRecordView_(
+      record
+    ) {
+
+      maintenanceElements.recordViewTitle.textContent =
+        "RECORD ML-" +
+        String(record.id)
+          .padStart(6, "0");
+
+      maintenanceElements.recordViewBody.innerHTML =
+        "";
+
+      var metaTable =
+        document.createElement(
+          "table"
+        );
+
+      metaTable.className =
+        "record-view-meta";
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "DATE:",
+        record.date
+      );
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "ERA:",
+        record.era
+      );
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "AUTHOR:",
+        record.author
+      );
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "ROLE:",
+        record.role
+      );
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "SYSTEM:",
+        record.system
+      );
+
+      appendMaintenanceMetaRow_(
+        metaTable,
+        "ACTION:",
+        record.action
+      );
+
+      maintenanceElements.recordViewBody.appendChild(
+        metaTable
+      );
+
+      var divider =
+        document.createElement(
+          "div"
+        );
+
+      divider.className =
+        "record-entry-divider";
+
+      maintenanceElements.recordViewBody.appendChild(
+        divider
+      );
+
+      var entry =
+        document.createElement(
+          "div"
+        );
+
+      entry.className =
+        "record-entry";
+
+      entry.textContent =
+        record.entry ||
+        "NO ENTRY TEXT AVAILABLE.";
+
+      maintenanceElements.recordViewBody.appendChild(
+        entry
+      );
+    }
+
+
+    function appendMaintenanceMetaRow_(
+      table,
+      label,
+      value
+    ) {
+
+      var row =
+        document.createElement(
+          "tr"
+        );
+
+      var labelCell =
+        document.createElement(
+          "td"
+        );
+
+      labelCell.className =
+        "record-view-label";
+
+      labelCell.textContent =
+        label;
+
+      var valueCell =
+        document.createElement(
+          "td"
+        );
+
+      valueCell.textContent =
+        value || "UNSPECIFIED";
+
+      row.appendChild(labelCell);
+      row.appendChild(valueCell);
+
+      table.appendChild(row);
+    }
+
+
+    function navigateMaintenanceRecord_(
+      direction
+    ) {
+
+      if (
+        !currentMaintenanceRecords ||
+        currentMaintenanceRecords.length === 0
+      ) {
+        return;
+      }
+
+      var currentIndex =
+        currentMaintenanceRecords.findIndex(
+          function(record) {
+
+            return (
+              record.id ===
+              selectedMaintenanceRecordId
+            );
+          }
+        );
+
+      if (currentIndex === -1) {
+        return;
+      }
+
+      var nextIndex =
+        currentIndex + direction;
+
+      if (
+        nextIndex >= 0 &&
+        nextIndex <
+        currentMaintenanceRecords.length
+      ) {
+
+        var nextRecord =
+          currentMaintenanceRecords[
+            nextIndex
+          ];
+
+        var tableBody =
+          maintenanceElements.recordList.querySelector(
+            "tbody"
+          );
+
+        if (tableBody) {
+
+          selectMaintenanceRecord_(
+            nextRecord,
+            tableBody
+          );
+        }
+
+        return;
+      }
+
+      if (
+        direction < 0 &&
+        maintenancePagination.page > 1
+      ) {
+
+        maintenanceState.page =
+          maintenancePagination.page - 1;
+
+        selectedMaintenanceRecordId =
+          "";
+
+        pendingMaintenanceRecordSelection =
+          "last";
+
+        loadMaintenanceLogData_();
+
+        return;
+      }
+
+      if (
+        direction > 0 &&
+        maintenancePagination.page <
+        maintenancePagination.totalPages
+      ) {
+
+        maintenanceState.page =
+          maintenancePagination.page + 1;
+
+        selectedMaintenanceRecordId =
+          "";
+
+        pendingMaintenanceRecordSelection =
+          "first";
+
+        loadMaintenanceLogData_();
+      }
+    }
+
+
+    function updateMaintenanceRecordNavigation_() {
+
+      var currentIndex =
+        currentMaintenanceRecords.findIndex(
+          function(record) {
+
+            return (
+              record.id ===
+              selectedMaintenanceRecordId
+            );
+          }
+        );
+
+      var hasSelection =
+        currentIndex !== -1;
+
+      maintenanceElements.previousRecordButton.disabled =
+        !hasSelection ||
+        (
+          currentIndex === 0 &&
+          maintenancePagination.page <= 1
+        );
+
+      maintenanceElements.nextRecordButton.disabled =
+        !hasSelection ||
+        (
+          currentIndex ===
+          currentMaintenanceRecords.length - 1 &&
+          maintenancePagination.page >=
+          maintenancePagination.totalPages
+        );
+    }
+
+
+    function renderMaintenancePagination_(
+      pageData
+    ) {
+
+      maintenanceElements.paginationStatus.textContent =
+        pageData.totalRecords === 0
+          ? "NO MATCHING RECORDS."
+          : (
+              "PAGE " +
+              pageData.page +
+              " OF " +
+              pageData.totalPages +
+              " // " +
+              pageData.totalRecords +
+              " RECORDS"
+            );
+
+      maintenanceElements.firstButton.disabled =
+        pageData.page <= 1;
+
+      maintenanceElements.previousButton.disabled =
+        pageData.page <= 1;
+
+      maintenanceElements.nextButton.disabled =
+        pageData.page >=
+        pageData.totalPages;
+
+      maintenanceElements.lastButton.disabled =
+        pageData.page >=
+        pageData.totalPages;
+    }
+
+
+    function setMaintenanceLogLoading_(
+      loading
+    ) {
+
+      maintenanceElements.applyButton.disabled =
+        loading;
+
+      maintenanceElements.recordListButton.disabled =
+        loading;
+
+      maintenanceElements.clearButton.disabled =
+        loading;
+
+      maintenanceElements.firstButton.disabled =
+        loading ||
+        maintenancePagination.page <= 1;
+
+      maintenanceElements.previousButton.disabled =
+        loading ||
+        maintenancePagination.page <= 1;
+
+      maintenanceElements.nextButton.disabled =
+        loading ||
+        maintenancePagination.page >=
+        maintenancePagination.totalPages;
+
+      maintenanceElements.lastButton.disabled =
+        loading ||
+        maintenancePagination.page >=
+        maintenancePagination.totalPages;
+
+      maintenanceElements.previousRecordButton.disabled =
+        true;
+
+      maintenanceElements.nextRecordButton.disabled =
+        true;
+
+      if (loading) {
+
+        maintenanceElements.statusLine.className =
+          "status-line bevel-inset";
+
+        maintenanceElements.statusLine.textContent =
+          "ACCESSING MAINTENANCE ARCHIVE...";
+
+        maintenanceElements.recordList.innerHTML =
+          '<div class="record-empty">' +
+          'RETRIEVING RECORD INDEX...' +
+          '</div>';
+      }
+
+      if (!loading) {
+        updateMaintenanceRecordNavigation_();
+      }
+    }
+
+
+    function renderMaintenanceLogError_(
+      error
+    ) {
+
+      var message =
+        error &&
+        error.message
+          ? error.message
+          : String(
+              error ||
+              "UNKNOWN ERROR."
+            );
+
+      maintenanceElements.statusLine.className =
+        "status-line bevel-inset error";
+
+      maintenanceElements.statusLine.textContent =
+        "ARCHIVE ACCESS ERROR // " +
+        message;
+
+      maintenanceElements.recordList.innerHTML =
+        '<div class="record-empty">' +
+        'RECORD INDEX UNAVAILABLE.' +
+        '</div>';
+
+      currentMaintenanceRecords =
+        [];
+
+      selectedMaintenanceRecordId =
+        "";
+
+      renderMaintenanceRecordPlaceholder_();
+
+      setMaintenanceLogLoading_(
+        false
+      );
+    }
+
+
+    initializeMaintenanceLogView();
+
+function exitMaintenanceLog() {
+
+  if (
+    window.parent &&
+    window.parent !== window
+  ) {
+
+    window.parent.postMessage(
+      {
+        type:
+          "NEXUS_MAINTENANCE_CLOSE"
+      },
+      "*"
+    );
+
+    return;
+  }
+
+  window.close();
+}
+
+
+  </script>
+
+</body>
+</html>

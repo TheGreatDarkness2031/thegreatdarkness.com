@@ -1,0 +1,2987 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<title>The Great Darkness - Pong</title>
+  <base target="_top">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+      overflow-x: hidden;
+    }
+
+    body {
+      padding: 8px 0 35px;
+    }
+
+    h1 {
+      margin: 5px 0 8px;
+      font-size: 2rem;
+      letter-spacing: 3px;
+      color: #00ff00;
+      text-shadow: 0 0 8px #00ff00;
+    }
+
+    .subtitle {
+      color: #777;
+      font-size: .8rem;
+      margin-bottom: 12px;
+    }
+
+    .screen {
+      width: 100%;
+    }
+
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    canvas {
+      display: block;
+      width: 94%;
+      max-width: 500px;
+      height: auto;
+      margin: 0 auto;
+      background: #000;
+      border: 2px solid #333;
+      touch-action: none;
+    }
+
+    .controls {
+      width: 94%;
+      max-width: 500px;
+      margin: 14px auto 0;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .control-button {
+      flex: 1;
+      height: 90px;
+      background: #000;
+      color: #00ff00;
+      border: 2px solid #00aa00;
+      font-family: "Courier New", monospace;
+      font-size: 1.35rem;
+      font-weight: bold;
+      cursor: pointer;
+      touch-action: none;
+    }
+
+    .control-button:active {
+      background: #222;
+    }
+
+    .game-button {
+      display: inline-block;
+      background: #000;
+      color: #00ff00;
+      border: 2px solid #00aa00;
+      padding: 14px 28px;
+      font-family: "Courier New", monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      letter-spacing: 2px;
+      margin: 5px;
+      touch-action: manipulation;
+    }
+
+    .game-button:hover {
+      color: #ffff00;
+      border-color: #ffff00;
+      background: #111;
+    }
+
+    .game-button:active {
+      background: #222;
+    }
+
+    .difficulty-label {
+      color: #777;
+      font-size: .8rem;
+      letter-spacing: 2px;
+      margin: 14px 0 6px;
+    }
+
+    .difficulty-row {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      width: 94%;
+      max-width: 500px;
+      margin: 0 auto 12px;
+    }
+
+    .difficulty-button {
+      flex: 1;
+      background: #000;
+      color: #00ff00;
+      border: 2px solid #00aa00;
+      padding: 12px 4px;
+      font-family: "Courier New", monospace;
+      font-size: .95rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    .difficulty-button:hover {
+      color: #ffff00;
+      border-color: #ffff00;
+    }
+
+    .difficulty-button.selected {
+      color: #ffff00;
+      border-color: #ffff00;
+      background: #222;
+    }
+
+    .back-button {
+      display: inline-block;
+      margin-top: 25px;
+      padding: 12px 20px;
+      color: #fff;
+      background: #000;
+      border: 2px solid #888;
+      text-decoration: none;
+      font-size: .85rem;
+      font-weight: bold;
+    }
+
+    .back-button:hover {
+      color: #fff;
+      border-color: #fff;
+      background: #111;
+    }
+
+    .game-over {
+      margin-top: 15px;
+      color: #fff;
+      font-size: 1.1rem;
+    }
+
+    .game-over-score {
+      color: #00ff00;
+      font-size: 1.4rem;
+      margin: 8px 0;
+    }
+
+    .game-over-message {
+      color: #777;
+      font-size: .8rem;
+      margin: 10px 0 15px;
+    }
+
+    @media (max-width: 600px) {
+
+      body {
+        padding: 4px 0 30px;
+      }
+
+      h1 {
+        margin: 2px 0 5px;
+        font-size: clamp(1.8rem, 8vw, 2.5rem);
+      }
+
+      .subtitle {
+        font-size: .78rem;
+        margin-bottom: 8px;
+      }
+
+      canvas {
+        width: 94%;
+        max-width: 500px;
+      }
+
+      .controls {
+        width: 94%;
+        max-width: 500px;
+        margin-top: 12px;
+        gap: 8px;
+      }
+
+      .control-button {
+        height: 90px;
+        font-size: 1.35rem;
+      }
+
+      .game-button {
+        width: 80vw;
+        padding: 18px 8px;
+        font-size: 1rem;
+        margin: 6px auto;
+      }
+
+      .back-button {
+        width: 80vw;
+        padding: 15px 10px;
+        margin-top: 18px;
+      }
+
+      .game-over {
+        margin-top: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="startScreen" class="screen">
+
+    <h1>PONG</h1>
+    <div class="subtitle">CLASSIC DARKNESS ARCADE</div>
+
+    <style>
+
+  /* ==========================================================
+     SHARED ARCADE LEADERBOARD
+     ========================================================== */
+
+  .shared-leaderboard {
+
+    width: 90%;
+    max-width: 420px;
+
+    margin: 18px auto 24px;
+
+    padding: 16px 18px;
+
+    box-sizing: border-box;
+
+    background: #050505;
+
+    border: 2px solid #00ff00;
+
+    box-shadow:
+      0 0 8px rgba(0, 255, 0, 0.35),
+      inset 0 0 12px rgba(0, 255, 0, 0.08);
+
+  }
+
+
+  /* ==========================================================
+     TITLE
+     ========================================================== */
+
+  .shared-leaderboard-title {
+
+    color: #ffff00;
+
+    font-size: 1.5rem;
+
+    font-weight: bold;
+
+    letter-spacing: 3px;
+
+    margin-bottom: 12px;
+
+    padding-bottom: 12px;
+
+    border-bottom: 2px solid #333;
+
+    text-align: center;
+
+    text-shadow:
+      0 0 6px rgba(255, 255, 0, 0.5);
+
+  }
+
+
+  /* ==========================================================
+     SCROLLING SCORE WINDOW
+     ========================================================== */
+
+  .shared-leaderboard-scores {
+
+    height: 330px;
+
+    overflow-y: auto;
+
+    overflow-x: hidden;
+
+    scroll-behavior: smooth;
+
+    scrollbar-width: thin;
+
+    scrollbar-color: #00aa00 #111;
+
+  }
+
+
+  .shared-leaderboard-scores::-webkit-scrollbar {
+
+    width: 9px;
+
+  }
+
+
+  .shared-leaderboard-scores::-webkit-scrollbar-track {
+
+    background: #111;
+
+  }
+
+
+  .shared-leaderboard-scores::-webkit-scrollbar-thumb {
+
+    background: #00aa00;
+
+    border-radius: 4px;
+
+  }
+
+
+  .shared-leaderboard-scores::-webkit-scrollbar-thumb:hover {
+
+    background: #00ff00;
+
+  }
+
+
+  /* ==========================================================
+     SCORE ROW
+     ========================================================== */
+
+  .shared-score-row {
+
+    display: grid;
+
+    grid-template-columns:
+      48px
+      1fr
+      88px;
+
+    align-items: center;
+
+    min-height: 46px;
+
+    padding: 6px 5px;
+
+    box-sizing: border-box;
+
+    color: #ffffff;
+
+    font-size: 1.15rem;
+
+    border-bottom: 1px solid #202020;
+
+  }
+
+
+  .shared-score-row:last-child {
+
+    border-bottom: none;
+
+  }
+
+
+  /* ==========================================================
+     RANK
+     ========================================================== */
+
+  .shared-score-rank {
+
+    text-align: left;
+
+    color: #aaaaaa;
+
+    font-size: 1.1rem;
+
+    font-weight: bold;
+
+  }
+
+
+  /* ==========================================================
+     NAME
+     ========================================================== */
+
+  .shared-score-name {
+
+    min-width: 0;
+
+    text-align: left;
+
+    color: #00ff00;
+
+    font-size: 1.15rem;
+
+    font-weight: bold;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+
+    white-space: nowrap;
+
+    text-shadow:
+      0 0 4px rgba(0, 255, 0, 0.25);
+
+  }
+
+
+  /* ==========================================================
+     SCORE
+     ========================================================== */
+
+  .shared-score-value {
+
+    text-align: right;
+
+    color: #ffff00;
+
+    font-size: 1.15rem;
+
+    font-weight: bold;
+
+    text-shadow:
+      0 0 4px rgba(255, 255, 0, 0.25);
+
+  }
+
+
+  /* ==========================================================
+     EMPTY / LOADING
+     ========================================================== */
+
+  .shared-empty-score {
+
+    color: #777777;
+
+    text-align: center;
+
+    padding: 20px 0;
+
+    font-size: 1rem;
+
+    letter-spacing: 1px;
+
+  }
+
+
+  /* ==========================================================
+     MOBILE
+     ========================================================== */
+
+  @media (max-width: 600px) {
+
+    .shared-leaderboard {
+
+      width: 94%;
+
+      max-width: 420px;
+
+      padding: 16px 14px;
+
+      margin: 14px auto 20px;
+
+    }
+
+
+    .shared-leaderboard-title {
+
+      font-size: 1.6rem;
+
+      letter-spacing: 3px;
+
+      margin-bottom: 12px;
+
+      padding-bottom: 11px;
+
+    }
+
+
+    .shared-leaderboard-scores {
+
+      height: 360px;
+
+    }
+
+
+    .shared-score-row {
+
+      grid-template-columns:
+        50px
+        1fr
+        92px;
+
+      min-height: 52px;
+
+      padding: 7px 5px;
+
+      font-size: 1.35rem;
+
+    }
+
+
+    .shared-score-rank {
+
+      font-size: 1.25rem;
+
+    }
+
+
+    .shared-score-name {
+
+      font-size: 1.35rem;
+
+    }
+
+
+    .shared-score-value {
+
+      font-size: 1.35rem;
+
+    }
+
+
+    .shared-empty-score {
+
+      padding: 26px 0;
+
+      font-size: 1.1rem;
+
+    }
+
+  }
+
+</style>
+
+
+<!-- ==========================================================
+     SHARED LEADERBOARD
+     ========================================================== -->
+
+<div class="shared-leaderboard">
+
+  <div class="shared-leaderboard-title">
+    [ TOP X ]
+  </div>
+
+  <div class="shared-leaderboard-scores">
+
+    <div class="shared-empty-score">
+      LOADING...
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+  /* ==========================================================
+     LOAD LEADERBOARD
+
+     focusRank:
+       null / undefined = start at #1
+       number = center that rank in the window
+     ========================================================== */
+
+  function loadLeaderboard(
+    gameName,
+    focusRank
+  ) {
+
+    const boards =
+      document.querySelectorAll(
+        ".shared-leaderboard"
+      );
+
+
+    if (!boards.length) {
+
+      console.error(
+        "Shared leaderboard element not found."
+      );
+
+      return;
+
+    }
+
+
+    boards.forEach(
+      function(board) {
+
+        const leaderboard =
+          board.querySelector(
+            ".shared-leaderboard-scores"
+          );
+
+
+        if (!leaderboard) {
+
+          return;
+
+        }
+
+
+        /*
+         * Every normal leaderboard load starts
+         * at the top unless a specific rank was
+         * supplied.
+         */
+
+        leaderboard.scrollTop = 0;
+
+
+        if (!gameName) {
+
+          leaderboard.innerHTML =
+            '<div class="shared-empty-score">' +
+            'LEADERBOARD UNAVAILABLE' +
+            '</div>';
+
+          return;
+
+        }
+
+
+        leaderboard.innerHTML =
+          '<div class="shared-empty-score">' +
+          'LOADING...' +
+          '</div>';
+
+
+        google.script.run
+
+          .withSuccessHandler(
+            function(scores) {
+
+              leaderboard.innerHTML = "";
+
+
+              if (
+                !scores ||
+                scores.length === 0
+              ) {
+
+                leaderboard.innerHTML =
+                  '<div class="shared-empty-score">' +
+                  'NO SCORES YET' +
+                  '</div>';
+
+                return;
+
+              }
+
+
+              /* ------------------------------------------------
+                 UPDATE TITLE USING ACTUAL SCORE COUNT
+                 ------------------------------------------------ */
+
+              const title =
+                board.querySelector(
+                  ".shared-leaderboard-title"
+                );
+
+
+              if (title) {
+
+                title.textContent =
+                  "[ TOP " +
+                  scores.length +
+                  " ]";
+
+              }
+
+
+              /* ------------------------------------------------
+                 BUILD SCORE ROWS
+                 ------------------------------------------------ */
+
+              scores.forEach(
+                function(entry, index) {
+
+                  const row =
+                    document.createElement(
+                      "div"
+                    );
+
+                  row.className =
+                    "shared-score-row";
+
+
+                  /*
+                   * Store the actual rank on the row.
+                   * This lets us find the player's row
+                   * after the leaderboard has rendered.
+                   */
+
+                  row.dataset.rank =
+                    String(index + 1);
+
+
+                  const rank =
+                    document.createElement(
+                      "div"
+                    );
+
+                  rank.className =
+                    "shared-score-rank";
+
+                  rank.textContent =
+                    (index + 1) + ".";
+
+
+                  const name =
+                    document.createElement(
+                      "div"
+                    );
+
+                  name.className =
+                    "shared-score-name";
+
+                  name.textContent =
+                    entry.name || "";
+
+
+                  const value =
+                    document.createElement(
+                      "div"
+                    );
+
+                  value.className =
+                    "shared-score-value";
+
+                  value.textContent =
+                    entry.score !== undefined &&
+                    entry.score !== null
+                      ? entry.score
+                      : "";
+
+
+                  row.appendChild(rank);
+
+                  row.appendChild(name);
+
+                  row.appendChild(value);
+
+                  leaderboard.appendChild(row);
+
+                }
+              );
+
+
+              /* ------------------------------------------------
+                 POSITION LEADERBOARD
+
+                 No focusRank:
+                   Start at #1.
+
+                 focusRank:
+                   Put that player's row approximately
+                   in the center of the visible window.
+                 ------------------------------------------------ */
+
+              setTimeout(
+                function() {
+
+                  if (
+                    focusRank === undefined ||
+                    focusRank === null ||
+                    !Number.isFinite(
+                      Number(focusRank)
+                    )
+                  ) {
+
+                    leaderboard.scrollTop = 0;
+
+                    return;
+
+                  }
+
+
+                  const targetRank =
+                    Math.floor(
+                      Number(focusRank)
+                    );
+
+
+                  if (
+                    targetRank < 1
+                  ) {
+
+                    leaderboard.scrollTop = 0;
+
+                    return;
+
+                  }
+
+
+                  const targetRow =
+                    leaderboard.querySelector(
+                      '[data-rank="' +
+                      targetRank +
+                      '"]'
+                    );
+
+
+                  if (!targetRow) {
+
+                    leaderboard.scrollTop = 0;
+
+                    return;
+
+                  }
+
+
+                  const rowCenter =
+                    targetRow.offsetTop +
+                    (
+                      targetRow.offsetHeight /
+                      2
+                    );
+
+
+                  const windowCenter =
+                    leaderboard.clientHeight /
+                    2;
+
+
+                  let targetScroll =
+                    rowCenter -
+                    windowCenter;
+
+
+                  const maxScroll =
+                    leaderboard.scrollHeight -
+                    leaderboard.clientHeight;
+
+
+                  targetScroll =
+                    Math.max(
+                      0,
+                      Math.min(
+                        targetScroll,
+                        maxScroll
+                      )
+                    );
+
+
+                  leaderboard.scrollTop =
+                    targetScroll;
+
+                },
+                50
+              );
+
+            }
+          )
+
+          .withFailureHandler(
+            function(error) {
+
+              console.error(
+                "Leaderboard error:",
+                error
+              );
+
+
+              leaderboard.innerHTML =
+                '<div class="shared-empty-score">' +
+                'LEADERBOARD UNAVAILABLE' +
+                '</div>';
+
+            }
+          )
+
+          // Every kept score (Config hall_of_fame_count).
+          .getGameBoardScores(
+            gameName
+          );
+
+      }
+    );
+
+  }
+
+</script>
+
+    <div class="difficulty-label">SELECT DIFFICULTY</div>
+
+    <div class="difficulty-row">
+
+      <button
+        id="diff-easy"
+        class="difficulty-button"
+        onclick="selectDifficulty('easy')">
+        EASY
+      </button>
+
+      <button
+        id="diff-medium"
+        class="difficulty-button selected"
+        onclick="selectDifficulty('medium')">
+        MEDIUM
+      </button>
+
+      <button
+        id="diff-hard"
+        class="difficulty-button"
+        onclick="selectDifficulty('hard')">
+        HARD
+      </button>
+
+    </div>
+
+    <button class="game-button" onclick="startGame()">
+      START GAME
+    </button>
+
+    <br>
+
+    <a class="back-button" href="/arcade/">
+      BACK TO ARCADE
+    </a>
+
+  </div>
+
+
+  <div id="gameScreen" class="screen" style="display:none;">
+
+    <h1>PONG</h1>
+
+    <div class="game-area">
+
+      <canvas id="gameCanvas" width="500" height="600"></canvas>
+
+      <div class="controls">
+
+        <button
+          id="upButton"
+          class="control-button">
+          ▲
+        </button>
+
+        <button
+          id="downButton"
+          class="control-button">
+          ▼
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div id="gameOverScreen" class="screen" style="display:none;">
+
+    <h1 id="gameOverTitle">GAME OVER</h1>
+
+    <div class="game-over">
+
+      <div class="game-over-score">
+        SCORE: <span id="finalScore">0</span>
+      </div>
+
+      <div class="game-over-message">
+        USE PLAY AGAIN BELOW
+      </div>
+
+      <button class="game-button" onclick="startGame()">
+        PLAY AGAIN
+      </button>
+
+      <br>
+
+      <button class="game-button" onclick="showStartScreen()">
+        CHANGE DIFFICULTY
+      </button>
+
+      <br>
+
+      <a class="back-button" href="/arcade/">
+        BACK TO ARCADE
+      </a>
+
+    </div>
+
+  </div>
+
+
+  <style>
+  /* ==========================================================
+     SHARED HIGH SCORE SCREEN
+     ========================================================== */
+
+  #highScoreScreen {
+    display: none;
+
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+
+    margin: 0;
+    padding: 30px 20px;
+
+    background: #000;
+
+    border: none;
+    box-shadow: none;
+
+    text-align: center;
+
+    overflow-y: auto;
+
+    font-family: "Courier New", Courier, monospace;
+
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+
+
+  /* ==========================================================
+     TITLE
+     ========================================================== */
+
+  #highScoreScreen h2 {
+    margin: 0 0 22px;
+
+    font-size: 2.1rem;
+    letter-spacing: 3px;
+
+    color: #ffff00;
+
+    text-shadow:
+      0 0 8px rgba(255, 255, 0, 0.5);
+  }
+
+
+  /* ==========================================================
+     SCORE
+     ========================================================== */
+
+  .high-score-number {
+    font-size: 2rem;
+
+    margin-bottom: 32px;
+
+    color: #00ff00;
+
+    font-weight: bold;
+
+    text-shadow:
+      0 0 8px rgba(0, 255, 0, 0.4);
+  }
+
+
+  /* ==========================================================
+     NAME PROMPT
+     ========================================================== */
+
+  .enter-name {
+    color: #aaa;
+
+    font-size: 1.15rem;
+
+    margin-bottom: 14px;
+
+    letter-spacing: 2px;
+  }
+
+
+  /* ==========================================================
+     NAME INPUT
+     ========================================================== */
+
+  #highScoreNameInput {
+    width: 100%;
+    max-width: 360px;
+
+    min-height: 58px;
+
+    padding: 14px;
+
+    background: #000;
+
+    color: #00ff00;
+
+    border: 2px solid #777;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 1.6rem;
+
+    text-align: center;
+
+    text-transform: uppercase;
+
+    outline: none;
+  }
+
+  #highScoreNameInput:focus {
+    border-color: #ffff00;
+
+    box-shadow:
+      0 0 10px rgba(255, 255, 0, 0.25);
+  }
+
+
+  /* ==========================================================
+     SUBMIT BUTTON
+     ========================================================== */
+
+  #submitScoreButton {
+    display: inline-block;
+
+    min-width: 180px;
+
+    background: #000;
+
+    color: #00ff00;
+
+    border: 2px solid #00aa00;
+
+    padding: 16px 32px;
+
+    font-family: "Courier New", monospace;
+
+    font-size: 1.2rem;
+
+    font-weight: bold;
+
+    cursor: pointer;
+
+    letter-spacing: 3px;
+
+    margin: 22px 5px 5px;
+
+    touch-action: manipulation;
+  }
+
+  #submitScoreButton:hover {
+    color: #ffff00;
+
+    border-color: #ffff00;
+
+    background: #111;
+  }
+
+  #submitScoreButton:active {
+    background: #222;
+  }
+
+  #submitScoreButton:disabled {
+    color: #555;
+
+    border-color: #444;
+
+    cursor: default;
+  }
+
+
+  /* ==========================================================
+     MESSAGE
+     ========================================================== */
+
+  #submitMessage {
+    min-height: 24px;
+
+    margin-top: 15px;
+
+    color: #aaa;
+
+    font-size: 1rem;
+
+    letter-spacing: 1px;
+  }
+
+
+  /* ==========================================================
+     MOBILE
+     ========================================================== */
+
+  @media (max-width: 600px) {
+
+    #highScoreScreen {
+      padding: 30px 18px;
+    }
+
+
+    #highScoreScreen h2 {
+      font-size: clamp(1.8rem, 8vw, 2.4rem);
+
+      letter-spacing: 3px;
+
+      margin-bottom: 24px;
+    }
+
+
+    .high-score-number {
+      font-size: clamp(1.8rem, 7vw, 2.2rem);
+
+      margin-bottom: 34px;
+    }
+
+
+    .enter-name {
+      font-size: 1.1rem;
+
+      margin-bottom: 15px;
+
+      letter-spacing: 2px;
+    }
+
+
+    #highScoreNameInput {
+      width: 90%;
+
+      max-width: 380px;
+
+      min-height: 64px;
+
+      padding: 15px 12px;
+
+      font-size: 1.5rem;
+    }
+
+
+    #submitScoreButton {
+      min-width: 200px;
+
+      padding: 17px 34px;
+
+      font-size: 1.2rem;
+
+      margin-top: 24px;
+    }
+
+
+    #submitMessage {
+      font-size: 1rem;
+
+      margin-top: 16px;
+    }
+  }
+</style>
+
+
+<!-- ==========================================================
+     HIGH SCORE SCREEN
+     ========================================================== -->
+
+<div id="highScoreScreen">
+
+  <h2>NEW HIGH SCORE!</h2>
+
+  <div
+    class="high-score-number"
+    id="highScoreNumber"
+  >
+    SCORE: 0
+  </div>
+
+  <div class="enter-name">
+    ENTER YOUR NAME
+  </div>
+
+  <input
+    id="highScoreNameInput"
+    type="text"
+    maxlength="20"
+    autocomplete="off"
+    autocapitalize="characters"
+    spellcheck="false"
+  >
+
+  <br>
+
+  <button id="submitScoreButton">
+    SUBMIT
+  </button>
+
+  <div id="submitMessage"></div>
+
+</div>
+
+
+<script>
+
+  /* ==========================================================
+     HIGH SCORE STATE
+     ========================================================== */
+
+  let highScoreGameName = "";
+  let highScoreValue = 0;
+
+  let highScorePending = false;
+  let highScoreSubmitting = false;
+
+  let highScoreReturnCallback = null;
+
+  let highScoreNameLength = 20;
+
+
+  /* ==========================================================
+     ELEMENTS
+     ========================================================== */
+
+  const highScoreScreen =
+    document.getElementById("highScoreScreen");
+
+  const highScoreNumber =
+    document.getElementById("highScoreNumber");
+
+  const nameInput =
+    document.getElementById("highScoreNameInput");
+
+  const submitScoreButton =
+    document.getElementById("submitScoreButton");
+
+  const submitMessage =
+    document.getElementById("submitMessage");
+
+
+  /* ==========================================================
+     LOAD NAME LENGTH CONFIGURATION
+     ========================================================== */
+
+  function loadHighScoreNameLength() {
+
+    google.script.run
+
+      .withSuccessHandler(function(length) {
+
+        length =
+          Number(length);
+
+        if (
+          !Number.isFinite(length) ||
+          length < 1
+        ) {
+
+          length = 20;
+
+        }
+
+        highScoreNameLength =
+          Math.floor(length);
+
+        nameInput.maxLength =
+          highScoreNameLength;
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        console.error(
+          "Could not load score name length:",
+          error
+        );
+
+        highScoreNameLength = 20;
+
+        nameInput.maxLength = 20;
+
+      })
+
+      .getHighScoreNameLength();
+
+  }
+
+
+  /* ==========================================================
+     RETURN CALLBACK
+     ========================================================== */
+
+  function setHighScoreReturnCallback(callback) {
+
+    highScoreReturnCallback = callback;
+
+  }
+
+
+  /* ==========================================================
+     SHOW HIGH SCORE SCREEN
+     ========================================================== */
+
+  function showHighScoreScreen(gameName, score) {
+
+    if (!gameName) return;
+
+
+    highScoreGameName = gameName;
+
+    highScoreValue =
+      Number(score) || 0;
+
+    highScorePending = true;
+
+    highScoreSubmitting = false;
+
+
+    highScoreNumber.textContent =
+      "SCORE: " + highScoreValue;
+
+
+    nameInput.value = "";
+
+    submitMessage.textContent = "";
+
+    submitScoreButton.disabled = false;
+
+    submitScoreButton.textContent = "SUBMIT";
+
+
+    /*
+     * IMPORTANT:
+     * This is a real full-screen layer.
+     * It is NOT part of the normal game layout.
+     */
+
+    highScoreScreen.style.display = "flex";
+
+
+    setTimeout(function() {
+
+      nameInput.focus();
+
+    }, 100);
+
+  }
+
+
+  /* ==========================================================
+     HIDE HIGH SCORE SCREEN
+     ========================================================== */
+
+  function hideHighScoreScreen() {
+
+    highScorePending = false;
+
+    highScoreSubmitting = false;
+
+    highScoreScreen.style.display = "none";
+
+  }
+
+
+  /* ==========================================================
+     SUBMIT HIGH SCORE
+     ========================================================== */
+
+  function submitHighScore() {
+
+    if (
+      !highScorePending ||
+      highScoreSubmitting
+    ) {
+      return;
+    }
+
+
+    let playerName =
+      nameInput.value
+        .trim()
+        .toUpperCase()
+        .replace(/:/g, "")
+        .substring(
+          0,
+          highScoreNameLength
+        );
+
+
+    if (!playerName) {
+
+      submitMessage.textContent =
+        "ENTER A NAME FIRST.";
+
+      nameInput.focus();
+
+      return;
+
+    }
+
+
+    highScoreSubmitting = true;
+
+    submitScoreButton.disabled = true;
+
+    submitScoreButton.textContent =
+      "SAVING...";
+
+    submitMessage.textContent =
+      "SUBMITTING SCORE...";
+
+
+    google.script.run
+
+      /*
+       * IMPORTANT:
+       *
+       * submitHighScore() returns:
+       *
+       * {
+       *   success: true,
+       *   rank: 64,
+       *   scores: [...]
+       * }
+       *
+       * We pass that result to the game's
+       * return callback.
+       */
+
+      .withSuccessHandler(function(result) {
+
+        highScorePending = false;
+
+        highScoreSubmitting = false;
+
+        submitMessage.textContent =
+          "SCORE SAVED.";
+
+        submitScoreButton.textContent =
+          "SAVED";
+
+
+        setTimeout(function() {
+
+          hideHighScoreScreen();
+
+
+          if (
+            typeof highScoreReturnCallback ===
+            "function"
+          ) {
+
+            /*
+             * Pass the submission result,
+             * including the player's rank.
+             */
+
+            highScoreReturnCallback(
+              result
+            );
+
+          }
+
+        }, 700);
+
+      })
+
+      .withFailureHandler(function(error) {
+
+        highScoreSubmitting = false;
+
+        submitScoreButton.disabled = false;
+
+        submitScoreButton.textContent =
+          "SUBMIT";
+
+        submitMessage.textContent =
+          "ERROR SAVING SCORE. TRY AGAIN.";
+
+        console.error(error);
+
+      })
+
+      .submitHighScore(
+        highScoreGameName,
+        highScoreValue,
+        playerName
+      );
+
+  }
+
+
+  /* ==========================================================
+     BUTTON
+     ========================================================== */
+
+  submitScoreButton.addEventListener(
+    "click",
+    submitHighScore
+  );
+
+
+  /* ==========================================================
+     ENTER KEY
+     ========================================================== */
+
+  nameInput.addEventListener(
+    "keydown",
+    function(event) {
+
+      event.stopPropagation();
+
+
+      if (event.key === "Enter") {
+
+        event.preventDefault();
+
+        submitHighScore();
+
+      }
+
+    }
+  );
+
+
+  /* ==========================================================
+     NAME INPUT
+     ========================================================== */
+
+  nameInput.addEventListener(
+    "input",
+    function() {
+
+      this.value =
+        this.value
+          .toUpperCase()
+          .replace(/:/g, "")
+          .substring(
+            0,
+            highScoreNameLength
+          );
+
+    }
+  );
+
+
+  /* ==========================================================
+     INITIALIZE
+     ========================================================== */
+
+  loadHighScoreNameLength();
+
+</script>
+
+
+  <script>
+
+    const GAME_NAME = "Pong";
+
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const BASE_WIDTH = 500;
+    const BASE_HEIGHT = 600;
+
+    /*
+     * LEVELS
+     * Score POINTS_PER_LEVEL points to clear a level.
+     * Clearing MAX_LEVEL wins the game.
+     */
+    const POINTS_PER_LEVEL = 3;
+    const MAX_LEVEL = 99;
+
+    /*
+     * DIFFICULTY SETTINGS
+     *
+     * lives          - CPU points allowed before game over
+     * ballBase       - starting ball speed on level 1
+     * ballPerLevel   - ball speed added each level
+     * cpuSpeed       - CPU paddle speed on level 1
+     * cpuPerLevel    - CPU paddle speed added each level
+     * error          - how far (px) the CPU may misjudge the ball on level 1
+     * errorPerLevel  - how much that error shrinks each level
+     * react          - frames between CPU target updates on level 1
+     * mult           - score multiplier
+     */
+    const DIFFICULTIES = {
+
+      easy: {
+        label: "EASY",
+        lives: 5,
+        ballBase: 2,
+        ballPerLevel: 0.25,
+        cpuSpeed: 2.4,
+        cpuPerLevel: 0.18,
+        error: 75,
+        errorPerLevel: 3,
+        react: 16,
+        mult: 1
+      },
+
+      medium: {
+        label: "MEDIUM",
+        lives: 3,
+        ballBase: 5,
+        ballPerLevel: 0.3,
+        cpuSpeed: 3.2,
+        cpuPerLevel: 0.22,
+        error: 55,
+        errorPerLevel: 3,
+        react: 10,
+        mult: 2
+      },
+
+      hard: {
+        label: "HARD",
+        lives: 2,
+        ballBase: 7,
+        ballPerLevel: 0.35,
+        cpuSpeed: 4.0,
+        cpuPerLevel: 0.25,
+        error: 38,
+        errorPerLevel: 2,
+        react: 6,
+        mult: 3
+      }
+
+    };
+
+    let difficultyKey = "medium";
+
+
+    let gameStarted = false;
+    let gameOver = false;
+    let pendingHighScore = false;
+
+    let score = 0;
+    let level = 1;
+    let lives = 3;
+    let levelPoints = 0;
+
+    let pauseFrames = 0;
+    let bannerFrames = 0;
+
+    let playerY = 252;
+
+    let cpuY = 252;
+
+    let ballX = 250;
+    let ballY = 300;
+
+    let ballSpeed = 5;
+    let ballVX = 5;
+    let ballVY = 2.5;
+
+    let cpuTargetY = 300;
+    let cpuAimOffset = 0;
+    let cpuReactTimer = 0;
+
+    let movingUp = false;
+    let movingDown = false;
+
+    let player = {
+      x: 25,
+      y: 252,
+      width: 14,
+      height: 95,
+      speed: 7
+    };
+
+    let cpu = {
+      x: 461,
+      y: 252,
+      width: 14,
+      height: 95,
+      speed: 4.2
+    };
+
+    const BALL_SIZE = 10;
+
+
+    function getDifficulty() {
+      return DIFFICULTIES[difficultyKey];
+    }
+
+
+    function levelBallSpeed() {
+
+      const d = getDifficulty();
+
+      return Math.min(
+        d.ballBase + (level - 1) * d.ballPerLevel,
+        11
+      );
+    }
+
+
+    function levelCpuSpeed() {
+
+      const d = getDifficulty();
+
+      return Math.min(
+        d.cpuSpeed + (level - 1) * d.cpuPerLevel,
+        7.5
+      );
+    }
+
+
+    function levelCpuError() {
+
+      const d = getDifficulty();
+
+      return Math.max(
+        6,
+        d.error - (level - 1) * d.errorPerLevel
+      );
+    }
+
+
+    function levelCpuReact() {
+
+      const d = getDifficulty();
+
+      return Math.max(
+        2,
+        d.react - Math.floor((level - 1) / 2)
+      );
+    }
+
+
+    function selectDifficulty(key) {
+
+      if (!DIFFICULTIES[key]) {
+        return;
+      }
+
+      difficultyKey = key;
+
+      ["easy", "medium", "hard"].forEach(function(k) {
+
+        const button =
+          document.getElementById("diff-" + k);
+
+        if (button) {
+          button.classList.toggle(
+            "selected",
+            k === key
+          );
+        }
+
+      });
+    }
+
+
+    function showStartScreen(focusRank) {
+
+      gameStarted = false;
+      gameOver = false;
+      pendingHighScore = false;
+
+      movingUp = false;
+      movingDown = false;
+
+      document.getElementById("startScreen").style.display = "block";
+      document.getElementById("gameScreen").style.display = "none";
+      document.getElementById("gameOverScreen").style.display = "none";
+
+      loadLeaderboard(GAME_NAME, focusRank);
+    }
+
+
+    function showGameScreen() {
+
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "block";
+      document.getElementById("gameOverScreen").style.display = "none";
+    }
+
+
+    function showGameOverScreen() {
+
+      pendingHighScore = false;
+
+      document.getElementById("startScreen").style.display = "none";
+      document.getElementById("gameScreen").style.display = "none";
+      document.getElementById("gameOverScreen").style.display = "block";
+
+      document.getElementById("finalScore").textContent = score;
+
+      document.getElementById("gameOverTitle").textContent =
+        window.pongWon ? "YOU WIN" : "GAME OVER";
+    }
+
+
+    function resetGame() {
+
+      const d = getDifficulty();
+
+      score = 0;
+      level = 1;
+      lives = d.lives;
+
+      player.y = 252;
+      cpu.y = 252;
+
+      movingUp = false;
+      movingDown = false;
+
+      window.pongWon = false;
+
+      setupLevel();
+
+    }
+
+
+    function setupLevel() {
+
+      levelPoints = 0;
+
+      cpu.speed = levelCpuSpeed();
+
+      player.y = 252;
+      cpu.y = 252;
+
+      resetBall();
+
+      bannerFrames = 90;
+      pauseFrames = 90;
+
+    }
+
+
+    function resetBall(direction) {
+
+      ballX = BASE_WIDTH / 2;
+      ballY = BASE_HEIGHT / 2;
+
+      ballSpeed = levelBallSpeed();
+
+      const horizontalDirection =
+        direction ||
+        (Math.random() < 0.5 ? -1 : 1);
+
+      ballVX = ballSpeed * horizontalDirection;
+
+      ballVY =
+        (Math.random() * 4) - 2;
+
+      cpuAimOffset =
+        (Math.random() * 2 - 1) * levelCpuError();
+
+      cpuReactTimer = 0;
+
+    }
+
+
+    function startGame() {
+
+      hideHighScoreScreen();
+
+      resetGame();
+
+      gameStarted = true;
+      gameOver = false;
+      pendingHighScore = false;
+
+      showGameScreen();
+    }
+
+
+    function update() {
+
+      if (!gameStarted ||
+          gameOver ||
+          pendingHighScore) {
+        return;
+      }
+
+      if (bannerFrames > 0) {
+        bannerFrames--;
+      }
+
+
+      /*
+       * PLAYER
+       */
+
+      if (movingUp) {
+        player.y -= player.speed;
+      }
+
+      if (movingDown) {
+        player.y += player.speed;
+      }
+
+      if (player.y < 0) {
+        player.y = 0;
+      }
+
+      if (player.y + player.height > BASE_HEIGHT) {
+        player.y = BASE_HEIGHT - player.height;
+      }
+
+
+      /*
+       * SERVE / LEVEL PAUSE
+       */
+
+      if (pauseFrames > 0) {
+        pauseFrames--;
+        return;
+      }
+
+
+      /*
+       * CPU
+       *
+       * Only chases the ball when it is coming toward
+       * the CPU. Its target updates every few frames and
+       * includes an aiming error, so it can be beaten.
+       */
+
+      const cpuCenter =
+        cpu.y + cpu.height / 2;
+
+      let cpuTarget;
+      let cpuMoveSpeed;
+
+      if (ballVX > 0) {
+
+        cpuReactTimer--;
+
+        if (cpuReactTimer <= 0) {
+
+          cpuReactTimer = levelCpuReact();
+
+          cpuTargetY =
+            ballY + BALL_SIZE / 2 + cpuAimOffset;
+
+        }
+
+        cpuTarget = cpuTargetY;
+        cpuMoveSpeed = cpu.speed;
+
+      } else {
+
+        cpuTarget = BASE_HEIGHT / 2;
+        cpuMoveSpeed = cpu.speed * 0.5;
+
+      }
+
+      if (cpuCenter < cpuTarget - 6) {
+        cpu.y += cpuMoveSpeed;
+      }
+
+      if (cpuCenter > cpuTarget + 6) {
+        cpu.y -= cpuMoveSpeed;
+      }
+
+      if (cpu.y < 0) {
+        cpu.y = 0;
+      }
+
+      if (cpu.y + cpu.height > BASE_HEIGHT) {
+        cpu.y = BASE_HEIGHT - cpu.height;
+      }
+
+
+      /*
+       * BALL
+       */
+
+      ballX += ballVX;
+      ballY += ballVY;
+
+
+      /*
+       * TOP / BOTTOM
+       */
+
+      if (ballY <= 0) {
+
+        ballY = 0;
+        ballVY *= -1;
+
+      }
+
+
+      if (ballY + BALL_SIZE >= BASE_HEIGHT) {
+
+        ballY = BASE_HEIGHT - BALL_SIZE;
+        ballVY *= -1;
+
+      }
+
+
+      /*
+       * PLAYER COLLISION
+       */
+
+      if (
+        ballX <= player.x + player.width &&
+        ballX + BALL_SIZE >= player.x &&
+        ballY + BALL_SIZE >= player.y &&
+        ballY <= player.y + player.height &&
+        ballVX < 0
+      ) {
+
+        ballX = player.x + player.width;
+
+        ballSpeed =
+          Math.min(
+            ballSpeed + 0.25,
+            levelBallSpeed() + 3
+          );
+
+        ballVX = ballSpeed;
+
+        const hitPosition =
+          (ballY + BALL_SIZE / 2) -
+          (player.y + player.height / 2);
+
+        ballVY = hitPosition * 0.1;
+
+        cpuAimOffset =
+          (Math.random() * 2 - 1) * levelCpuError();
+
+        cpuReactTimer = 0;
+
+      }
+
+
+      /*
+       * CPU COLLISION
+       */
+
+      if (
+        ballX + BALL_SIZE >= cpu.x &&
+        ballX <= cpu.x + cpu.width &&
+        ballY + BALL_SIZE >= cpu.y &&
+        ballY <= cpu.y + cpu.height &&
+        ballVX > 0
+      ) {
+
+        ballX = cpu.x - BALL_SIZE;
+
+        ballSpeed =
+          Math.min(
+            ballSpeed + 0.25,
+            levelBallSpeed() + 3
+          );
+
+        ballVX = -ballSpeed;
+
+        const hitPosition =
+          (ballY + BALL_SIZE / 2) -
+          (cpu.y + cpu.height / 2);
+
+        ballVY = hitPosition * 0.1;
+
+      }
+
+
+      /*
+       * PLAYER MISSES (ball passes left side)
+       */
+
+      if (ballX < -BALL_SIZE) {
+
+        lives--;
+
+        if (lives <= 0) {
+
+          endGame(false);
+          return;
+
+        }
+
+        resetBall(-1);
+        pauseFrames = 45;
+
+        return;
+      }
+
+
+      /*
+       * CPU MISSES (ball passes right side)
+       */
+
+      if (ballX > BASE_WIDTH + BALL_SIZE) {
+
+        const mult = getDifficulty().mult;
+
+        score += 10 * mult;
+
+        levelPoints++;
+
+        if (levelPoints >= POINTS_PER_LEVEL) {
+
+          score += 50 * mult;
+
+          if (level >= MAX_LEVEL) {
+
+            endGame(true);
+            return;
+
+          }
+
+          level++;
+
+          setupLevel();
+
+          return;
+        }
+
+        resetBall(1);
+        pauseFrames = 45;
+
+      }
+
+    }
+
+
+    function endGame(won) {
+
+      if (gameOver || pendingHighScore) {
+        return;
+      }
+
+      gameOver = true;
+      gameStarted = false;
+
+      movingUp = false;
+      movingDown = false;
+
+      window.pongWon = won;
+
+      google.script.run
+        .withSuccessHandler(function(qualifies) {
+
+          if (qualifies) {
+
+            pendingHighScore = true;
+
+            showHighScoreScreen(
+              GAME_NAME,
+              score
+            );
+
+          } else {
+
+            showGameOverScreen();
+
+          }
+
+        })
+        .withFailureHandler(function() {
+
+          showGameOverScreen();
+
+        })
+        .qualifiesForHighScore(
+          GAME_NAME,
+          score
+        );
+    }
+
+
+    function draw() {
+
+      const scale =
+        canvas.width / BASE_WIDTH;
+
+      ctx.save();
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+      ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+      );
+
+      ctx.scale(scale, scale);
+
+
+      /*
+       * BACKGROUND
+       */
+
+      ctx.fillStyle = "#000";
+
+      ctx.fillRect(
+        0,
+        0,
+        BASE_WIDTH,
+        BASE_HEIGHT
+      );
+
+
+      /*
+       * CENTER LINE
+       */
+
+      ctx.fillStyle = "#333";
+
+      for (
+        let y = 0;
+        y < BASE_HEIGHT;
+        y += 24
+      ) {
+
+        ctx.fillRect(
+          BASE_WIDTH / 2 - 2,
+          y,
+          4,
+          12
+        );
+
+      }
+
+
+      /*
+       * LEVEL PROGRESS
+       */
+
+      ctx.fillStyle = "#00ff00";
+
+      ctx.font =
+        'bold 28px "Courier New"';
+
+      ctx.textAlign = "center";
+
+      ctx.fillText(
+        levelPoints + "/" + POINTS_PER_LEVEL,
+        BASE_WIDTH / 2 - 55,
+        42
+      );
+
+      ctx.fillStyle = "#00ffff";
+
+      ctx.fillText(
+        "CPU",
+        BASE_WIDTH / 2 + 55,
+        42
+      );
+
+
+      /*
+       * HUD
+       */
+
+      ctx.font =
+        'bold 14px "Courier New"';
+
+      ctx.fillStyle = "#00ff00";
+
+      ctx.textAlign = "left";
+
+      ctx.fillText(
+        "SCORE " + score,
+        10,
+        20
+      );
+
+      ctx.fillText(
+        "LIVES " + lives,
+        10,
+        38
+      );
+
+      ctx.textAlign = "right";
+
+      ctx.fillText(
+        "LEVEL " + level,
+        BASE_WIDTH - 10,
+        20
+      );
+
+      ctx.fillStyle = "#777";
+
+      ctx.fillText(
+        getDifficulty().label,
+        BASE_WIDTH - 10,
+        38
+      );
+
+
+      /*
+       * PLAYER
+       */
+
+      ctx.fillStyle = "#00ff00";
+
+      ctx.fillRect(
+        player.x,
+        player.y,
+        player.width,
+        player.height
+      );
+
+
+      /*
+       * CPU
+       */
+
+      ctx.fillStyle = "#00ffff";
+
+      ctx.fillRect(
+        cpu.x,
+        cpu.y,
+        cpu.width,
+        cpu.height
+      );
+
+
+      /*
+       * BALL
+       */
+
+      ctx.fillStyle = "#fff";
+
+      ctx.fillRect(
+        ballX,
+        ballY,
+        BALL_SIZE,
+        BALL_SIZE
+      );
+
+
+      /*
+       * LEVEL BANNER
+       */
+
+      if (bannerFrames > 0) {
+
+        ctx.textAlign = "center";
+
+        ctx.font =
+          'bold 40px "Courier New"';
+
+        ctx.fillStyle = "#ffff00";
+
+        ctx.fillText(
+          "LEVEL " + level,
+          BASE_WIDTH / 2,
+          240
+        );
+
+      }
+
+
+      ctx.restore();
+    }
+
+
+    function gameLoop() {
+
+      update();
+      draw();
+
+      requestAnimationFrame(gameLoop);
+    }
+
+
+    function setupHoldButton(id, onStart, onStop) {
+
+      const button =
+        document.getElementById(id);
+
+      function start(e) {
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (button.setPointerCapture) {
+          try {
+            button.setPointerCapture(e.pointerId);
+          } catch (err) {}
+        }
+
+        onStart();
+      }
+
+
+      function stop(e) {
+
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+
+        onStop();
+      }
+
+
+      button.addEventListener(
+        "pointerdown",
+        start
+      );
+
+      button.addEventListener(
+        "pointerup",
+        stop
+      );
+
+      button.addEventListener(
+        "pointercancel",
+        stop
+      );
+
+      button.addEventListener(
+        "lostpointercapture",
+        stop
+      );
+
+      button.addEventListener(
+        "contextmenu",
+        function(e) {
+          e.preventDefault();
+        }
+      );
+
+      button.addEventListener(
+        "dragstart",
+        function(e) {
+          e.preventDefault();
+        }
+      );
+
+      button.addEventListener(
+        "selectstart",
+        function(e) {
+          e.preventDefault();
+        }
+      );
+    }
+
+
+    setupHoldButton(
+      "upButton",
+      function() {
+        movingUp = true;
+      },
+      function() {
+        movingUp = false;
+      }
+    );
+
+
+    setupHoldButton(
+      "downButton",
+      function() {
+        movingDown = true;
+      },
+      function() {
+        movingDown = false;
+      }
+    );
+
+
+    document.addEventListener(
+      "keydown",
+      function(e) {
+
+        if (!gameStarted ||
+            gameOver ||
+            pendingHighScore) {
+          return;
+        }
+
+        if (
+          e.key === "ArrowUp" ||
+          e.key.toLowerCase() === "w"
+        ) {
+
+          e.preventDefault();
+          movingUp = true;
+
+        }
+
+
+        if (
+          e.key === "ArrowDown" ||
+          e.key.toLowerCase() === "s"
+        ) {
+
+          e.preventDefault();
+          movingDown = true;
+
+        }
+
+      }
+    );
+
+
+    document.addEventListener(
+      "keyup",
+      function(e) {
+
+        if (
+          e.key === "ArrowUp" ||
+          e.key.toLowerCase() === "w"
+        ) {
+          movingUp = false;
+        }
+
+        if (
+          e.key === "ArrowDown" ||
+          e.key.toLowerCase() === "s"
+        ) {
+          movingDown = false;
+        }
+
+      }
+    );
+
+
+    window.addEventListener(
+      "blur",
+      function() {
+
+        movingUp = false;
+        movingDown = false;
+
+      }
+    );
+
+
+    setHighScoreReturnCallback(
+      function(result) {
+
+        showStartScreen(
+          result && result.rank
+        );
+
+      }
+    );
+
+
+    selectDifficulty("medium");
+
+    resetGame();
+
+    showStartScreen();
+
+    gameLoop();
+
+  </script>
+
+<!-- ==========================================================
+     SHARED GAME FIT (2026-11-06)
+     Included at the end of every arcade game, after its own script.
+     - Computers (mouse, no touch): the on-screen touch buttons are
+       hidden; the keyboard plays.
+     - Touch screens: the keyboard hints are hidden.
+     - The game canvas shrinks (keeping its shape) so the whole game
+       screen fits the window without scrolling. It never grows past
+       the game's own size, and never below MIN_HEIGHT.
+     No less-than characters in the script below (same rule as the
+     Radar's included files).
+     ========================================================== -->
+<style>
+  /* min-height: 100vh plus padding made some pages always scroll. */
+  body {
+    box-sizing: border-box;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .controls,
+    #controls {
+      display: none !important;
+    }
+  }
+
+  @media (hover: none), (pointer: coarse) {
+    .instructions {
+      display: none !important;
+    }
+  }
+
+  /* Phones held sideways: there's no room below the board, so the
+     touch buttons sit in a column on the right, beside it. */
+  @media (pointer: coarse) and (orientation: landscape) and (max-height: 500px) {
+    .controls,
+    #controls {
+      position: fixed !important;
+      right: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%);
+      width: 28vw !important;
+      max-width: 260px !important;
+      margin: 0 !important;
+      z-index: 50;
+    }
+
+    #controls {
+      grid-template-rows: 58px 58px !important;
+    }
+
+    /* Games with FIRE: arrows bottom-left for the left thumb, FIRE
+       bottom-right for the right thumb, either side of the board. */
+    .controls:has(.fire-button) {
+      left: 10px !important;
+      right: 10px !important;
+      top: auto !important;
+      bottom: 12px !important;
+      transform: none;
+      width: auto !important;
+      max-width: none !important;
+      display: flex !important;
+      gap: 10px !important;
+      pointer-events: none;
+    }
+
+    .controls:has(.fire-button) .control-button {
+      pointer-events: auto;
+      flex: 0 0 84px !important;
+      width: 84px !important;
+      height: 70px !important;
+    }
+
+    .controls:has(.fire-button) .fire-button {
+      margin-left: auto !important;
+      flex: 0 0 130px !important;
+      width: 130px !important;
+    }
+
+    .controls .control-button,
+    #controls .control-button,
+    .controls .jump-button {
+      height: 58px !important;
+      min-height: 0 !important;
+      padding: 0 6px !important;
+      width: 100% !important;
+      max-width: none !important;
+      font-size: 1rem !important;
+    }
+
+    h1 {
+      margin-top: 2px !important;
+      margin-bottom: 2px !important;
+      font-size: 1.4rem !important;
+    }
+  }
+
+  /* Short windows (phones held sideways): a tighter start screen. */
+  @media (max-height: 450px) {
+    .subtitle {
+      display: none !important;
+    }
+
+    .shared-leaderboard {
+      margin: 4px auto 8px !important;
+      padding: 6px 12px !important;
+    }
+
+    .shared-leaderboard-title {
+      font-size: 1rem !important;
+      margin-bottom: 4px !important;
+      padding-bottom: 4px !important;
+    }
+
+    .shared-score-row {
+      min-height: 30px !important;
+      padding: 2px 5px !important;
+      font-size: 0.95rem !important;
+    }
+    .game-button,
+    .start-button,
+    .play-again-button,
+    .difficulty-button,
+    .back-button {
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
+      margin-top: 4px !important;
+      margin-bottom: 4px !important;
+    }
+
+    .difficulty-label {
+      margin: 2px 0 !important;
+    }
+  }
+</style>
+<script>
+  (function() {
+
+    var MIN_HEIGHT = 140;
+    var SLACK = 6;
+
+    function gameCanvas() {
+      return document.querySelector("canvas");
+    }
+
+    function shown(el) {
+      return !!el && el.offsetParent !== null;
+    }
+
+    // Lowest point of everything on the page except the canvas,
+    // ignoring overlays (fixed / absolute) and hidden elements.
+    // Overlays are skipped together with everything inside them.
+    function contentBottom(skip) {
+      var bottom = 0;
+
+      function walk(parent) {
+        var kids = parent.children;
+
+        for (var i = 0; i !== kids.length; i++) {
+          var el = kids[i];
+
+          if (el === skip) {
+            continue;
+          }
+
+          var cs = getComputedStyle(el);
+
+          if (
+            cs.display === "none" ||
+            cs.position === "fixed" ||
+            cs.position === "absolute"
+          ) {
+            continue;
+          }
+
+          var r = el.getBoundingClientRect();
+
+          if (r.width !== 0 || r.height !== 0) {
+            var b = r.bottom + (parseFloat(cs.marginBottom) || 0);
+
+            if (b > bottom) {
+              bottom = b;
+            }
+          }
+
+          walk(el);
+        }
+      }
+
+      walk(document.body);
+
+      return bottom + window.scrollY;
+    }
+
+    // Start screen: the leaderboard list already scrolls inside its
+    // own box; shrink that box so START stays on screen.
+    var LIST_MIN_HEIGHT = 140;
+    var LIST_MIN_HEIGHT_SHORT = 80;   // windows under 450 px tall
+
+    function fitList() {
+      var list = document.querySelector(".shared-leaderboard-scores");
+
+      if (!shown(list)) {
+        return;
+      }
+
+      list.style.height = "";
+
+      var over =
+        document.documentElement.scrollHeight - window.innerHeight;
+
+      if (over > 0) {
+        var current = list.getBoundingClientRect().height;
+        list.style.height =
+          Math.max(
+            window.innerHeight >= 450 ? LIST_MIN_HEIGHT : LIST_MIN_HEIGHT_SHORT,
+            Math.floor(current - over - SLACK)
+          ) + "px";
+      }
+    }
+
+    function fit() {
+      fitList();
+
+      var canvas = gameCanvas();
+
+      if (!shown(canvas) || !canvas.width) {
+        return;
+      }
+
+      canvas.style.width = "";
+      canvas.style.height = "";
+
+      var natural = canvas.getBoundingClientRect();
+      var ratio = canvas.height / canvas.width;
+
+      // Measure everything else with the canvas collapsed.
+      canvas.style.height = "0px";
+      var other = contentBottom(canvas);
+      canvas.style.height = "";
+
+      var available = window.innerHeight - other - SLACK;
+      var naturalHeight = natural.width * ratio;
+
+      var h = naturalHeight;
+
+      if (naturalHeight > available) {
+        h = Math.max(MIN_HEIGHT, Math.floor(available));
+        setHeight(canvas, h, ratio);
+      }
+
+      // Padding and margins the measurement can't see: trim by
+      // whatever still overflows (two passes at most).
+      for (var pass = 0; pass !== 2; pass++) {
+        var over =
+          document.documentElement.scrollHeight - window.innerHeight;
+
+        if (over > 0 && h > MIN_HEIGHT) {
+          h = Math.max(MIN_HEIGHT, Math.floor(h - over - 1));
+          setHeight(canvas, h, ratio);
+        }
+      }
+    }
+
+    function setHeight(canvas, h, ratio) {
+      canvas.style.height = h + "px";
+      canvas.style.width = Math.floor(h / ratio) + "px";
+    }
+
+    var timer = 0;
+
+    function later() {
+      clearTimeout(timer);
+      timer = setTimeout(fit, 60);
+    }
+
+    window.tgdFitGame = fit;
+
+    window.addEventListener("resize", later);
+    window.addEventListener("orientationchange", later);
+    document.addEventListener("click", later, true);
+    document.addEventListener("keyup", later, true);
+
+    // Screens change without a resize (START, game over): refit when
+    // the canvas appears or the window size changes.
+    var lastSignature = "";
+
+    setInterval(function() {
+      var canvas = gameCanvas();
+      var signature =
+        window.innerWidth + "x" + window.innerHeight + ":" +
+        (shown(canvas) ? "on" : "off") + ":" +
+        (shown(document.querySelector(".shared-leaderboard-scores")) ? "list" : "") + ":" +
+        (canvas ? canvas.width + "x" + canvas.height : "");
+
+      if (signature !== lastSignature) {
+        lastSignature = signature;
+        fit();
+      }
+    }, 400);
+
+    fit();
+  })();
+</script>
+
+
+</body>
+</html>

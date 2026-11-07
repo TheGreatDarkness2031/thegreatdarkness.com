@@ -1,0 +1,3372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>OER // Radar Console</title>
+
+  <style>
+    /* Standalone Radar (Radar uplift step 6). Served at ?page=radar.
+       The Radar itself (screen, blips, console, Source Register) is
+       shared with the homepage through RadarCommonCss / RadarCommonJs. */
+
+    :root {
+      --bg: #000000;
+      --white: #ffffff;
+      --green: #00ff00;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      padding: 6px 10px;
+      overflow-x: hidden;
+      color: var(--white);
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+    }
+
+    /* =========================================================
+       RADAR (shared: HomeView.html and RadarView.html)
+       Included with include("RadarCommonCss") inside <style>.
+       Edit here; both Radars change together.
+       ========================================================= */
+
+    .radar-title,
+    .radar-status {
+      padding: 10px 5px;
+      background: #050505;
+      border: 2px solid #cccccc;
+      color: #00ff00;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .radar-title {
+      border-bottom: 0;
+      color: #cccccc;
+    }
+
+    .radar-status {
+      border-top: 0;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .radar-console-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .radar-screen {
+      position: relative;
+      width: min(88vw, 440px);
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      margin: 0 auto;
+      background:
+        radial-gradient(
+          circle at center,
+          #063b06 0%,
+          #021c02 48%,
+          #000000 100%
+        );
+      border: 4px double #00ff00;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 2px #001500,
+        0 0 15px rgba(0,255,0,0.45),
+        inset 0 0 35px rgba(0,255,0,0.45);
+    }
+
+    .radar-screen::before,
+    .radar-screen::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(0,255,0,0.55);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .radar-screen::before {
+      inset: 12%;
+    }
+
+    .radar-screen::after {
+      inset: 27%;
+    }
+
+    .radar-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .radar-grid::before,
+    .radar-grid::after {
+      content: "";
+      position: absolute;
+      background: rgba(0,255,0,0.55);
+    }
+
+    .radar-grid::before {
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+    }
+
+    .radar-grid::after {
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+    }
+
+    .radar-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 1;
+      width: 100%;
+      height: 1px;
+      background: rgba(0,255,0,0.32);
+      transform-origin: center;
+    }
+
+    .radar-crosshair.horizontal {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .radar-crosshair.vertical {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .radar-sweep {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 3;
+      width: 2px;
+      height: 50%;
+      background: #00ff00;
+      box-shadow:
+        0 0 4px #00ff00,
+        0 0 8px rgba(0,255,0,0.75);
+      transform-origin: 50% 100%;
+      animation: radarSweep 8s linear infinite;
+    }
+
+    @keyframes radarSweep {
+      from {
+        transform: translateX(-50%) rotate(0deg);
+      }
+
+      to {
+        transform: translateX(-50%) rotate(360deg);
+      }
+    }
+
+    .radar-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 5;
+      width: 10px;
+      height: 10px;
+      background: #00ff00;
+      border: 2px solid #001500;
+      border-radius: 50%;
+      box-shadow:
+        0 0 8px #00ff00,
+        0 0 15px rgba(0,255,0,0.8);
+      transform: translate(-50%, -50%);
+    }
+
+    #radarContacts {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .radar-contact {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      background: #00ff00;
+      border: 2px solid #001500;
+      border-radius: 50%;
+      box-shadow:
+        0 0 6px #00ff00,
+        0 0 14px rgba(0,255,0,0.9);
+      transform: translate(-50%, -50%);
+      animation: radarBlink 0.8s steps(2, start) infinite;
+    }
+
+    @keyframes radarBlink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    /* Background contacts: small, half-bright, no glow. */
+    .radar-contact.radar-contact-bg {
+      width: 6px;
+      height: 6px;
+      border-width: 1px;
+      box-shadow: none;
+      animation-name: radarBlinkDim;
+    }
+
+    @keyframes radarBlinkDim {
+      0%, 100% {
+        opacity: 0.5;
+      }
+
+      50% {
+        opacity: 0.15;
+      }
+    }
+
+    /* Source Register (standalone Radar): one light per monitor,
+       label beside it. Large and readable for a watch floor. */
+    .source-register-panel {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+    }
+
+    .source-register-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .source-register {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .source-register-cell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      padding: 5px 8px;
+      background: #141414;
+      border: 1px solid #555555;
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .source-register-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .source-lamp {
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      background: #000000;
+      border: 2px solid #555555;
+      border-radius: 50%;
+    }
+
+    .source-register-cell.light-off .source-register-label {
+      color: #8a8a8a;
+    }
+
+    .source-register-cell.light-future {
+      border-color: #333333;
+    }
+
+    .source-register-cell.light-future .source-register-label {
+      color: #4a4a4a;
+    }
+
+    .source-register-cell.light-future .source-lamp {
+      border-color: #2a2a2a;
+    }
+
+    .source-register-cell.light-down .source-register-label,
+    .source-register-state {
+      color: #ff3030;
+    }
+
+    .source-register-state {
+      margin-left: auto;
+      font-size: 0.62rem;
+      letter-spacing: 0;
+    }
+
+    .source-register-cell.light-down {
+      gap: 6px;
+    }
+
+    .source-register-cell.light-down .source-register-label {
+      overflow: visible;
+      letter-spacing: 0.5px;
+    }
+
+    /* Intentional historical DOWN: hollow ring, slow blink. */
+    .source-lamp.lamp-down {
+      background: transparent;
+      border-width: 3px;
+      animation: lampDownBlink 2.4s steps(2, start) infinite;
+    }
+
+    @keyframes lampDownBlink {
+      50% {
+        opacity: 0.2;
+      }
+    }
+    .radar-console {
+      width: 100%;
+      padding: 10px 12px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+      color: #dddddd;
+      text-align: left;
+    }
+
+    .console-header {
+      margin-bottom: 8px;
+      padding: 6px 4px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .sound-button {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 7px 5px;
+      background: #555555;
+      border: 3px outset #aaaaaa;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .console-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+      padding: 5px 8px;
+      border-bottom: 1px solid #666666;
+    }
+
+    .console-label {
+      width: 90px;
+      flex-shrink: 0;
+      color: #bbbbbb;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    .console-value {
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    .console-online,
+    .console-warning {
+      color: #00ff00;
+    }
+
+    .console-slider {
+      flex: 1;
+      width: auto;
+      margin: 3px 0 0;
+      accent-color: #00ff00;
+      cursor: pointer;
+    }
+
+
+    /* ---- Stacks (step 7) ---- */
+    .radar-stack {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    .radar-stack > .radar-contact {
+      left: 0;
+      top: 0;
+    }
+
+    .radar-stack.inspectable {
+      cursor: pointer;
+    }
+
+    /* Bigger click/hover target than the blip itself. */
+    .radar-stack.inspectable::before {
+      content: "";
+      position: absolute;
+      left: -14px;
+      top: -14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .radar-stack-badge {
+      position: absolute;
+      z-index: 2;
+      padding: 0 3px;
+      background: #000000;
+      border: 1px solid #cccccc;
+      color: #ffffff;
+      font-size: 0.6rem;
+      font-weight: bold;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+
+    /* Several sources at one spot: ring of their colors. */
+    .radar-stack-ring {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      -webkit-mask: radial-gradient(circle, transparent 58%, #000000 60%);
+      mask: radial-gradient(circle, transparent 58%, #000000 60%);
+      pointer-events: none;
+    }
+
+    /* CRITICAL: slow pulsing halo in the source color. */
+    .radar-halo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border: 2px solid #ff3030;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      animation: radarHalo 2s ease-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes radarHalo {
+      0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.6);
+      }
+    }
+
+    /* ---- Contact detail card (standalone Radar) ---- */
+    .radar-detail {
+      position: fixed;
+      z-index: 1000;
+      display: none;
+      width: 340px;
+      max-width: calc(100vw - 24px);
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 8px 10px 10px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+      color: #dddddd;
+      text-align: left;
+    }
+
+    .radar-detail-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      padding: 5px 6px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-close {
+      padding: 0 6px;
+      background: #555555;
+      border: 2px outset #aaaaaa;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .radar-detail-signal {
+      margin-bottom: 6px;
+      color: #00ff00;
+      font-size: 0.68rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .radar-detail-signal.ended {
+      color: #ff9900;
+    }
+
+    .radar-detail-entry {
+      margin-top: 6px;
+      padding: 6px 7px;
+      background: #141414;
+      border: 1px solid #555555;
+    }
+
+    .radar-detail-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-sev {
+      margin-left: auto;
+      color: #cccccc;
+      font-size: 0.68rem;
+    }
+
+    .radar-detail-row {
+      display: flex;
+      gap: 8px;
+      padding: 1px 0;
+      font-size: 0.7rem;
+    }
+
+    .radar-detail-label {
+      flex: 0 0 104px;
+      color: #999999;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-value {
+      color: #ffffff;
+      word-break: break-word;
+    }
+
+    /* ---- Hover card (both Radars): follows the pointer ---- */
+    .radar-hover-card {
+      z-index: 1001;
+      width: 300px;
+      pointer-events: none;
+    }
+
+    .radar-contact-bg,
+    .radar-stack {
+      cursor: default;
+    }
+
+    /* ---- Timeline (step 9) ---- */
+    /* Historical overview: steady blips, so a cluster built up over
+       hours isn't read as contacts active at the same moment. */
+    .radar-history-static .radar-contact {
+      animation: none;
+    }
+
+    .radar-history-static .radar-contact-bg {
+      opacity: 0.35;
+    }
+
+    .radar-detail-signal.archive {
+      color: #00d5e8;
+    }
+
+    /* ---- Monitoring Grid feeds (step 11) ---- */
+
+    /* Contacts that stay lit until the monitor's next run: a slow,
+       steady pulse instead of the quick blink. */
+    .radar-contact.stay-lit {
+      animation: radarSteady 3.2s ease-in-out infinite;
+    }
+
+    @keyframes radarSteady {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
+    /* Space weather: the outline takes the status color. */
+    .radar-screen.ring-watch {
+      border-color: #ffff00;
+      box-shadow: 0 0 0 2px #151500, 0 0 18px rgba(255, 255, 0, 0.45), inset 0 0 30px rgba(255, 255, 0, 0.08);
+    }
+
+    .radar-screen.ring-elevated {
+      border-color: #ff9900;
+      box-shadow: 0 0 0 2px #150a00, 0 0 20px rgba(255, 153, 0, 0.5), inset 0 0 30px rgba(255, 153, 0, 0.1);
+    }
+
+    .radar-screen.ring-critical {
+      border-color: #ff0000;
+      box-shadow: 0 0 0 2px #150000, 0 0 24px rgba(255, 0, 0, 0.6), inset 0 0 34px rgba(255, 0, 0, 0.12);
+      animation: radarRingCritical 2.4s ease-in-out infinite;
+    }
+
+    @keyframes radarRingCritical {
+      50% { box-shadow: 0 0 0 2px #150000, 0 0 8px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.06); }
+    }
+
+    .radar-history-static .radar-contact.stay-lit {
+      animation: none;
+    }
+
+
+    .radar-section {
+      width: 97%;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .radar-title {
+      padding: 6px 5px;
+      color: #cccccc;
+    }
+
+    .radar-console-layout {
+      padding: 6px 0;
+    }
+
+    /* ---- Left: Radar + status line ---- */
+    .radar-main {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .radar-screen {
+      width: min(92vw, 680px);
+      margin: 0;
+    }
+
+    /* Never wider than the Radar, however long the text. */
+    .radar-main .radar-status {
+      width: 0;
+      min-width: 100%;
+      box-sizing: border-box;
+      margin-top: 6px;
+      padding: 4px 5px;
+      border-top: 2px solid #cccccc;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    /* ---- Middle: console controls + playback ---- */
+    .radar-side {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      text-align: left;
+    }
+
+    .radar-side .radar-console {
+      margin: 0;
+    }
+
+    .radar-side .console-row {
+      margin: 3px 0;
+      padding: 3px 8px;
+    }
+
+    .radar-side .sound-button {
+      margin-bottom: 4px;
+      padding: 5px;
+    }
+
+    .radar-readouts {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .radar-readouts > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 6px;
+      background: #2e2e2e;
+      border: 1px solid #666666;
+    }
+
+    .radar-readouts .readout-wide {
+      grid-column: span 2;
+    }
+
+    .radar-readouts .console-label {
+      width: auto;
+      font-size: 0.6rem;
+    }
+
+    .radar-readouts .console-value {
+      font-size: 0.78rem;
+    }
+
+    /* Playback panel (step 9): same frame as the console. */
+    .radar-playback {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .playback-body {
+      display: flex;
+      flex: 1 1 auto;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 6px 8px 2px;
+    }
+
+    .timeline-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timeline-track {
+      position: relative;
+      flex: 1 1 auto;
+      display: flex;
+      align-items: center;
+    }
+
+    .timeline-track .console-slider {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      margin: 0;
+    }
+
+    /* Before history began: hatched band under the slider track. */
+    .timeline-shade {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      height: 8px;
+      transform: translateY(-50%);
+      background: repeating-linear-gradient(45deg, #555555 0 3px, #222222 3px 6px);
+      pointer-events: none;
+    }
+
+    .timeline-ends {
+      display: flex;
+      justify-content: space-between;
+      margin-top: -4px;
+      color: #888888;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+    }
+
+    .timeline-button,
+    .timeline-speed,
+    .timeline-select {
+      height: 32px;
+      padding: 0 8px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.74rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .timeline-button {
+      background: #555555;
+      border: 2px outset #aaaaaa;
+      color: #ffffff;
+    }
+
+    .timeline-button.play {
+      flex: 0 0 96px;
+    }
+
+    .timeline-button.live {
+      flex: 0 0 auto;
+      color: #00ff00;
+    }
+
+    .timeline-button.disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .timeline-speeds {
+      display: flex;
+      flex: 1 1 auto;
+      gap: 4px;
+    }
+
+    .timeline-speed {
+      flex: 1 1 0;
+      padding: 0;
+      background: #2a2a2a;
+      border: 2px outset #777777;
+      color: #bbbbbb;
+    }
+
+    .timeline-speed.active {
+      background: #111111;
+      border-style: inset;
+      color: #00ff00;
+    }
+
+    .timeline-select {
+      flex: 1 1 auto;
+      min-width: 0;
+      background: #111111;
+      border: 2px inset #888888;
+      color: #00ff00;
+    }
+
+    .timeline-select option {
+      background: #111111;
+    }
+
+    .timeline-mode {
+      font-weight: bold;
+    }
+
+    .mode-live { color: #00ff00; }
+    .mode-loading { color: #aaaaaa; }
+    .mode-overview { color: #ff9900; }
+    .mode-playback { color: #00d5e8; }
+    .mode-paused { color: #ffff00; }
+    .mode-ended { color: #ff9900; }
+
+    .playback-readout {
+      padding: 8px 10px 6px;
+      background: #0a0a0a;
+      border: 2px inset #888888;
+      text-align: center;
+    }
+
+    .readout-label {
+      color: #888888;
+      font-size: 0.66rem;
+      letter-spacing: 2px;
+    }
+
+    .readout-time {
+      margin: 2px 0 4px;
+      color: #00ff00;
+      font-size: 1.9rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-shadow: 0 0 6px rgba(0, 255, 0, 0.45);
+    }
+
+    .readout-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: #bbbbbb;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    /* When already live: lit, pressed in, not clickable. */
+    .timeline-button.live.on-air {
+      background: #111111;
+      border-style: inset;
+      color: #00ff00;
+      cursor: default;
+      text-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+    }
+
+    /* ---- Middle: Source Register as one tall list ---- */
+    .radar-register-col .light-future {
+      display: none;  /* unassigned positions: only the real sources */
+    }
+    .radar-register-col {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      text-align: left;
+    }
+
+    .radar-register-col .source-register-panel {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      margin: 0;
+    }
+
+    .radar-register-col .source-register-header {
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      font-size: 0.82rem;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    @media (min-width: 1100px) {
+
+      .radar-console-layout {
+        flex-direction: row;
+        align-items: stretch;
+        justify-content: center;
+        gap: 14px;
+      }
+
+      .radar-screen {
+        /* Fits the window height: title, status line and padding
+           take ~ 96 px. */
+        width: min(44vw, 820px, calc(100vh - 96px));
+        min-width: 380px;
+      }
+
+      .radar-side {
+        flex: 0 1 400px;
+        min-width: 340px;
+      }
+
+      .radar-side .radar-console {
+        flex: 0 0 auto;
+      }
+
+      .radar-side .radar-playback {
+        flex: 1 1 auto;
+      }
+
+      .radar-register-col {
+        flex: 0 0 220px;
+      }
+
+      .radar-register-col .source-register {
+        flex: 1 1 auto;
+        grid-template-columns: 1fr;
+        grid-auto-rows: 1fr;
+        gap: 4px;
+      }
+
+      .radar-register-col .source-register-cell {
+        padding: 2px 8px;
+      }
+    }
+
+    @media (max-width: 520px) {
+
+      .source-register {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }  </style>
+</head>
+
+<body>
+
+  <section class="radar-section">
+
+    <div class="radar-title">
+      === OER RADAR CONSOLE ===
+    </div>
+
+    <div class="radar-console-layout">
+
+      <!-- Left: Radar and status line. -->
+      <div class="radar-main">
+
+        <div class="radar-screen">
+          <div class="radar-grid"></div>
+          <div class="radar-crosshair horizontal"></div>
+          <div class="radar-crosshair vertical"></div>
+          <div class="radar-sweep"></div>
+          <div id="radarContacts"></div>
+          <div class="radar-center"></div>
+        </div>
+
+        <div
+          class="radar-status"
+          id="radarStatus"
+        >
+          INITIALIZING RADAR...
+        </div>
+
+      </div>
+
+      <!-- Middle: Source Register (the color key, beside the Radar). -->
+      <div class="radar-register-col">
+
+        <div class="source-register-panel">
+
+          <div class="source-register-header">
+            <span>=== SOURCES ===</span>
+            <span id="sourceRegisterCount">--</span>
+          </div>
+
+          <div
+            id="sourceRegister"
+            class="source-register"
+          ></div>
+
+        </div>
+
+      </div>
+
+      <!-- Right: console controls and playback (step 9). -->
+      <div class="radar-side">
+
+        <div class="radar-console">
+
+          <div class="console-header">
+            === CONSOLE CONTROLS ===
+          </div>
+
+          <button
+            id="radarSoundButton"
+            class="sound-button"
+            type="button"
+            onclick="toggleRadarSound()"
+          >
+            SOUND: OFF
+          </button>
+
+          <div class="console-row">
+            <span class="console-label">VOLUME</span>
+
+            <input
+              id="radarVolume"
+              class="console-slider"
+              type="range"
+              min="0"
+              max="100"
+              value="35"
+              oninput="updateRadarVolume()"
+            >
+          </div>
+
+          <div class="console-row">
+            <span class="console-label">BRIGHTNESS</span>
+
+            <input
+              id="radarBrightness"
+              class="console-slider"
+              type="range"
+              min="30"
+              max="150"
+              value="100"
+              oninput="updateRadarBrightness()"
+            >
+          </div>
+
+          <div class="console-row">
+            <span class="console-label">SWEEP SPEED</span>
+
+            <input
+              id="radarSweepSpeed"
+              class="console-slider"
+              type="range"
+              min="5"
+              max="15"
+              value="10"
+              oninput="updateRadarSweepSpeed()"
+            >
+
+            <span
+              id="radarSweepSpeedValue"
+              class="console-value"
+            >
+              10 SEC
+            </span>
+          </div>
+
+          <div class="radar-readouts">
+            <div>
+              <span class="console-label">SYSTEM</span>
+              <span class="console-value console-online">ONLINE</span>
+            </div>
+
+            <div>
+              <span class="console-label">SCAN MODE</span>
+              <span class="console-value">CONTINUOUS</span>
+            </div>
+
+            <div>
+              <span class="console-label">CONTACTS</span>
+              <span
+                id="consoleContacts"
+                class="console-value"
+              >
+                00
+              </span>
+            </div>
+
+            <div class="readout-wide">
+              <span class="console-label">THREAT STATUS</span>
+              <span
+                id="consoleThreat"
+                class="console-value console-warning"
+              >
+                MONITORING
+              </span>
+            </div>
+
+            <div>
+              <span class="console-label">LAST SCAN</span>
+              <span
+                id="consoleLastScan"
+                class="console-value"
+              >
+                --
+              </span>
+            </div>
+          </div>
+        </div>
+
+
+        <div class="radar-console radar-playback">
+
+          <div class="source-register-header">
+            <span>=== PLAYBACK ===</span>
+            <span
+              id="radarModeLabel"
+              class="timeline-mode mode-live"
+            >LIVE</span>
+          </div>
+
+          <div class="playback-body">
+
+            <div class="playback-readout">
+              <div id="radarRecordLabel" class="readout-label">REAL TIME</div>
+              <div id="radarRecordTime" class="readout-time">--:--:--</div>
+              <div class="readout-line">
+                <span id="radarRecordDate"></span>
+                <span id="radarRecordNote">LIVE FEED</span>
+              </div>
+            </div>
+
+            <div class="timeline-row">
+              <div class="timeline-track">
+                <div
+                  id="radarTimelineShade"
+                  class="timeline-shade"
+                  title="NO RECORDS"
+                ></div>
+
+                <input
+                  id="radarTimeline"
+                  class="console-slider"
+                  type="range"
+                  min="0"
+                  max="1000"
+                  value="1000"
+                  oninput="radarTimelineScrub_()"
+                >
+              </div>
+            </div>
+
+            <div class="timeline-ends">
+              <span id="radarTimelineStart">-24H</span>
+              <span id="radarTimelineEnd">NOW</span>
+            </div>
+
+            <div class="timeline-row">
+              <button
+                id="radarPlayButton"
+                class="timeline-button play disabled"
+                type="button"
+                onclick="radarTimelinePlay_()"
+              >
+                &#9654; PLAY
+              </button>
+
+              <div
+                id="radarSpeedButtons"
+                class="timeline-speeds"
+              ></div>
+            </div>
+
+            <div class="timeline-row">
+              <button
+                id="radarLiveButton"
+                class="timeline-button live disabled"
+                type="button"
+                onclick="radarReturnToLive_()"
+              >
+                LIVE
+              </button>
+
+              <select
+                id="radarDaySelect"
+                class="timeline-select"
+                onchange="radarTimelineDayChanged_()"
+              >
+                <option value="last24">LAST 24 HOURS</option>
+              </select>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <div
+    id="radarDetail"
+    class="radar-detail"
+  >
+    <div class="radar-detail-top">
+      <span id="radarDetailTitle">=== CONTACT DETAIL ===</span>
+      <button
+        class="radar-detail-close"
+        type="button"
+        onclick="closeRadarDetail_()"
+      >
+        X
+      </button>
+    </div>
+
+    <div
+      id="radarDetailSignal"
+      class="radar-detail-signal"
+    ></div>
+
+    <div id="radarDetailList"></div>
+  </div>
+
+  <script>
+    const API_URL =
+      TGD_API_URL;
+
+    /* Standalone Radar: click a contact or stack for its details. */
+    const RADAR_INSPECT_ENABLED = true;
+
+    /* =======================================================
+       RADAR (shared: HomeView.html and RadarView.html)
+       Included with include("RadarCommonJs") inside the page's
+       main script block. The page must define API_URL. Elements are
+       optional: a page without the Source Register just skips it.
+
+       NEVER use the less-than character in this file (or any file
+       included as script): Google reads included files as HTML and
+       turns it into "&lt;", which breaks the whole page script and
+       leaves the Radar at INITIALIZING. Write "b > a" instead.
+       tests\test_radar_pages.js checks this.
+       ======================================================= */
+
+    let radarRequestCounter = 0;
+    let radarRequestStartedAt = 0;   // 0 = no request on its way
+    const RADAR_REQUEST_GIVE_UP_MS = 20000;
+    // Load control (2026-11-06): no polling while the tab is hidden,
+    // and after failed requests wait 2.5 / 5 / 10 / 20 / 30 s.
+    const RADAR_ERROR_BACKOFF_MAX_MS = 30000;
+    let radarErrorCount = 0;
+    let radarRetryAt = 0;
+    let radarAudioContext = null;
+    let radarOscillator = null;
+    let radarGain = null;
+    let radarSoundEnabled = false;
+
+    /* =======================================================
+       RADAR
+       ======================================================= */
+
+    function initializeRadarAudio() {
+      if (radarAudioContext) {
+        return;
+      }
+
+      radarAudioContext =
+        new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+
+      radarGain =
+        radarAudioContext.createGain();
+
+      radarGain.gain.value = 0;
+
+      radarGain.connect(
+        radarAudioContext.destination
+      );
+    }
+
+    function toggleRadarSound() {
+      initializeRadarAudio();
+
+      const button =
+        document.getElementById(
+          "radarSoundButton"
+        );
+
+      radarSoundEnabled =
+        !radarSoundEnabled;
+
+      if (radarSoundEnabled) {
+        radarAudioContext.resume()
+          .then(
+            function() {
+              startRadarSound();
+
+              button.textContent =
+                "SOUND: ON";
+
+              playRadarPing();
+            }
+          )
+          .catch(
+            function() {
+              radarSoundEnabled = false;
+
+              button.textContent =
+                "SOUND: OFF";
+            }
+          );
+      } else {
+        stopRadarSound();
+
+        button.textContent =
+          "SOUND: OFF";
+      }
+    }
+
+    function startRadarSound() {
+      if (radarOscillator) {
+        return;
+      }
+
+      radarOscillator =
+        radarAudioContext.createOscillator();
+
+      radarOscillator.type = "sine";
+      radarOscillator.frequency.value = 440;
+
+      radarOscillator.connect(radarGain);
+      radarOscillator.start();
+
+      updateRadarVolume();
+    }
+
+    function stopRadarSound() {
+      if (!radarOscillator) {
+        return;
+      }
+
+      radarGain.gain.setTargetAtTime(
+        0,
+        radarAudioContext.currentTime,
+        0.05
+      );
+
+      radarOscillator.stop(
+        radarAudioContext.currentTime + 0.1
+      );
+
+      radarOscillator = null;
+    }
+
+    function playRadarPing() {
+      if (
+        !radarSoundEnabled ||
+        !radarAudioContext
+      ) {
+        return;
+      }
+
+      const oscillator =
+        radarAudioContext.createOscillator();
+
+      const gain =
+        radarAudioContext.createGain();
+
+      const now =
+        radarAudioContext.currentTime;
+
+      oscillator.type = "sine";
+
+      oscillator.frequency.setValueAtTime(
+        900,
+        now
+      );
+
+      oscillator.frequency
+        .exponentialRampToValueAtTime(
+          300,
+          now + 0.18
+        );
+
+      gain.gain.setValueAtTime(
+        0.18,
+        now
+      );
+
+      gain.gain
+        .exponentialRampToValueAtTime(
+          0.001,
+          now + 0.18
+        );
+
+      oscillator.connect(gain);
+
+      gain.connect(
+        radarAudioContext.destination
+      );
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.18);
+    }
+
+    function updateRadarVolume() {
+      if (
+        !radarGain ||
+        !radarAudioContext
+      ) {
+        return;
+      }
+
+      const volume =
+        Number(
+          document.getElementById(
+            "radarVolume"
+          ).value
+        ) / 100;
+
+      radarGain.gain.setTargetAtTime(
+        radarSoundEnabled
+          ? volume * 0.08
+          : 0,
+        radarAudioContext.currentTime,
+        0.03
+      );
+    }
+
+    function updateRadarBrightness() {
+      const screen =
+        document.querySelector(
+          ".radar-screen"
+        );
+
+      if (screen) {
+        screen.style.filter =
+          "brightness(" +
+          document.getElementById(
+            "radarBrightness"
+          ).value +
+          "%)";
+      }
+    }
+
+    function updateRadarSweepSpeed() {
+      const value =
+        document.getElementById(
+          "radarSweepSpeed"
+        ).value;
+
+      const sweep =
+        document.querySelector(
+          ".radar-sweep"
+        );
+
+      const display =
+        document.getElementById(
+          "radarSweepSpeedValue"
+        );
+
+      if (sweep) {
+        sweep.style.animationDuration =
+          value + "s";
+      }
+
+      if (display) {
+        display.textContent =
+          value + " SEC";
+      }
+    }
+
+    /* Source color identifies the system; severity sets the size. */
+    const RADAR_BLIP_SIZES = {
+      1: 9,
+      2: 11,
+      3: 13,
+      4: 16,
+      5: 20
+    };
+
+    function safeRadarColor_(color) {
+      return /^#[0-9A-Fa-f]{6}$/.test(String(color || ""))
+        ? color
+        : "#888888";
+    }
+
+    function styleRadarBlip_(blip, contact) {
+      const color =
+        safeRadarColor_(contact.sourceColor);
+
+      const size =
+        RADAR_BLIP_SIZES[
+          Math.round(Number(contact.radarSeverity))
+        ] || RADAR_BLIP_SIZES[1];
+
+      blip.style.width = size + "px";
+      blip.style.height = size + "px";
+      blip.style.background = color;
+      blip.style.boxShadow =
+        "0 0 6px " + color + ", 0 0 14px " + color;
+    }
+
+    let lastSourceRegisterJson_ = "";
+
+    /* Space weather colors the Radar's outline (null = normal green).
+       Set from the live poll; stays until the next check changes it. */
+    function applyRadarRing_(ring) {
+      const screen = document.querySelector(".radar-screen");
+
+      if (!screen || !screen.classList) {
+        return;
+      }
+
+      const status = ring && ring.status ? String(ring.status).toLowerCase() : "";
+      const wanted = ["watch", "elevated", "critical"].indexOf(status) !== -1 ? "ring-" + status : "";
+
+      ["ring-watch", "ring-elevated", "ring-critical"].forEach(
+        function(c) {
+          if (c !== wanted) {
+            screen.classList.remove(c);
+          }
+        }
+      );
+
+      if (wanted) {
+        screen.classList.add(wanted);
+        screen.title = String(ring.label || "");
+      } else {
+        screen.removeAttribute("title");
+      }
+    }
+
+    function renderSourceRegister_(sources) {
+      const json =
+        JSON.stringify(sources || null);
+
+      if (json === lastSourceRegisterJson_) {
+        return;  /* unchanged: keep the lamps (and their blink) as they are */
+      }
+
+      const panel =
+        document.getElementById("sourceRegister");
+
+      const count =
+        document.getElementById("sourceRegisterCount");
+
+      if (
+        !panel ||
+        !sources ||
+        !Array.isArray(sources.lights)
+      ) {
+        return;
+      }
+
+      lastSourceRegisterJson_ = json;
+
+      panel.innerHTML = "";
+
+      sources.lights.forEach(
+        function(item) {
+          const cell =
+            document.createElement("div");
+
+          const lamp =
+            document.createElement("span");
+
+          const label =
+            document.createElement("span");
+
+          const state =
+            String(item.light || "OFF");
+
+          const color =
+            safeRadarColor_(item.color);
+
+          let stateTag = null;
+
+          lamp.className = "source-lamp";
+          label.className = "source-register-label";
+          label.textContent = String(item.label || "");
+
+          if (state === "ON") {
+            cell.className = "source-register-cell light-on";
+            lamp.style.background = color;
+            lamp.style.borderColor = color;
+            lamp.style.boxShadow = "0 0 5px " + color;
+          } else if (state === "DOWN") {
+            cell.className = "source-register-cell light-down";
+            lamp.className += " lamp-down";
+            lamp.style.borderColor = color;
+            stateTag = document.createElement("span");
+            stateTag.className = "source-register-state";
+            stateTag.textContent = "DOWN";
+          } else if (state === "FUTURE") {
+            cell.className = "source-register-cell light-future";
+          } else {
+            cell.className = "source-register-cell light-off";
+          }
+
+          cell.appendChild(lamp);
+          cell.appendChild(label);
+
+          if (stateTag) {
+            cell.appendChild(stateTag);
+          }
+          panel.appendChild(cell);
+        }
+      );
+
+      if (count) {
+        count.textContent =
+          String(sources.on || 0).padStart(2, "0") +
+          "/" +
+          String(sources.registered || 0).padStart(2, "0") +
+          " LIVE";
+      }
+    }
+
+    /* ---------------------------------------------------------
+       STACKS (Radar uplift step 7)
+       Real contacts within radar_stack_radius (Radar units, 0-100)
+       of each other are drawn as one stack at the most severe
+       member, with a count badge. Display only: stored positions
+       and events are never changed or merged. Background contacts
+       never join a stack.
+       --------------------------------------------------------- */
+    const RADAR_DEFAULT_STACK_RADIUS = 2.5;
+
+    /* Stay-lit monitors (MonitorCore.js) write a new row each run that
+       overlaps the last one. Back-to-back rows of one condition (same
+       source + EventData ck) are shown as one contact: the newest. */
+    function radarEventDataOf_(contact) {
+      if (contact.eventDataParsed_ !== undefined) {
+        return contact.eventDataParsed_;
+      }
+      let d = null;
+      try {
+        d = typeof contact.eventData === "string" ? JSON.parse(contact.eventData || "null") : (contact.eventData || null);
+      } catch (error) {
+        d = null;
+      }
+      contact.eventDataParsed_ = d;
+      return d;
+    }
+
+    function radarIsStayLit_(contact) {
+      const d = radarEventDataOf_(contact);
+      return !!(d && d.stayLit);
+    }
+
+    function mergeRadarStayLit_(contacts) {
+      const newest = {};
+      const out = [];
+
+      (contacts || []).forEach(
+        function(contact) {
+          const d = radarEventDataOf_(contact);
+          if (!d || !d.ck) {
+            out.push(contact);
+            return;
+          }
+          const key = contact.sourceId + "|" + d.ck;
+          if (!newest[key] || Number(contact.birthAt) > Number(newest[key].birthAt)) {
+            newest[key] = contact;
+          }
+        }
+      );
+
+      Object.keys(newest).forEach(function(k) { out.push(newest[k]); });
+      return out;
+    }
+
+    function groupRadarContacts_(contacts, radius) {
+      contacts = mergeRadarStayLit_(contacts);
+      radius = Number(radius);
+
+      if (!Number.isFinite(radius) || 0 > radius) {
+        radius = RADAR_DEFAULT_STACK_RADIUS;
+      }
+
+      const background = [];
+      const real = [];
+
+      (contacts || []).forEach(
+        function(contact) {
+          if (contact.isBackground) {
+            background.push(contact);
+          } else {
+            real.push(contact);
+          }
+        }
+      );
+
+      /* Most severe first, then oldest: the first member of each
+         stack is the one drawn, so the worst event is never hidden. */
+      real.sort(
+        function(a, b) {
+          return (
+            (Number(b.radarSeverity) - Number(a.radarSeverity)) ||
+            (Number(a.birthAt) - Number(b.birthAt))
+          );
+        }
+      );
+
+      const stacks = [];
+
+      real.forEach(
+        function(contact) {
+          let home = null;
+
+          for (let i = 0; stacks.length > i; i++) {
+            const anchor = stacks[i].anchor;
+            const dx = Number(anchor.x) - Number(contact.x);
+            const dy = Number(anchor.y) - Number(contact.y);
+
+            if (radius >= Math.sqrt(dx * dx + dy * dy)) {
+              home = stacks[i];
+              break;
+            }
+          }
+
+          if (home) {
+            home.members.push(contact);
+          } else {
+            stacks.push({
+              anchor: contact,
+              members: [contact]
+            });
+          }
+        }
+      );
+
+      return {
+        stacks: stacks,
+        background: background
+      };
+    }
+
+    function radarContactLabel_(contact) {
+      return (
+        (contact.sourceLabel || "CONTACT") +
+        " // " +
+        (contact.sourceStatus || "UNKNOWN")
+      );
+    }
+
+    function radarStackTitle_(members) {
+      if (members.length === 1) {
+        return radarContactLabel_(members[0]);
+      }
+
+      const shown =
+        members
+          .slice(0, 4)
+          .map(radarContactLabel_)
+          .join(", ");
+
+      return (
+        members.length +
+        " CONTACTS: " +
+        shown +
+        (members.length > 4 ? ", ..." : "")
+      );
+    }
+
+    function radarBlipSize_(contact) {
+      return (
+        RADAR_BLIP_SIZES[
+          Math.round(Number(contact.radarSeverity))
+        ] || RADAR_BLIP_SIZES[1]
+      );
+    }
+
+    function radarInspectEnabled_() {
+      return (
+        typeof RADAR_INSPECT_ENABLED !== "undefined" &&
+        RADAR_INSPECT_ENABLED === true
+      );
+    }
+
+    function buildRadarBackgroundBlip_(contact) {
+      const blip =
+        document.createElement("div");
+
+      blip.className =
+        "radar-contact radar-contact-bg";
+
+      blip.style.left = contact.x + "%";
+      blip.style.top = contact.y + "%";
+      blip.title = "UNIDENTIFIED CONTACT";
+
+      return blip;
+    }
+
+    function buildRadarStackElement_(stack) {
+      const anchor = stack.anchor;
+      const members = stack.members;
+      const size = radarBlipSize_(anchor);
+      const color = safeRadarColor_(anchor.sourceColor);
+
+      const holder =
+        document.createElement("div");
+
+      holder.className = "radar-stack";
+      holder.style.left = anchor.x + "%";
+      holder.style.top = anchor.y + "%";
+      holder.style.zIndex = String(10 + Math.round(Number(anchor.radarSeverity) || 1));
+      /* Hover (mouse) or tap (homepage, touch) shows the details
+         card; the plain browser tooltip is only a fallback label. */
+      holder.setAttribute("aria-label", radarStackTitle_(members));
+      attachRadarHover_(holder, members);
+
+      /* CRITICAL: slow pulsing halo in the source color. */
+      if (Number(anchor.radarSeverity) >= 5) {
+        const halo =
+          document.createElement("div");
+
+        halo.className = "radar-halo";
+        halo.style.width = (size * 2.4) + "px";
+        halo.style.height = (size * 2.4) + "px";
+        halo.style.borderColor = color;
+        holder.appendChild(halo);
+      }
+
+      /* Several sources at one spot: a ring of their colors
+         (concentrated activity; says nothing about cause). */
+      const colors = [];
+
+      members.forEach(
+        function(member) {
+          const c = safeRadarColor_(member.sourceColor);
+
+          if (colors.indexOf(c) === -1) {
+            colors.push(c);
+          }
+        }
+      );
+
+      if (colors.length > 1) {
+        const ring =
+          document.createElement("div");
+
+        const step = 360 / colors.length;
+
+        ring.className = "radar-stack-ring";
+        ring.style.width = (size + 10) + "px";
+        ring.style.height = (size + 10) + "px";
+        ring.style.background =
+          "conic-gradient(" +
+          colors
+            .map(
+              function(c, i) {
+                return c + " " + (i * step) + "deg " + ((i + 1) * step) + "deg";
+              }
+            )
+            .join(", ") +
+          ")";
+        holder.appendChild(ring);
+      }
+
+      const blip =
+        document.createElement("div");
+
+      blip.className = "radar-contact" + (radarIsStayLit_(anchor) ? " stay-lit" : "");
+      styleRadarBlip_(blip, anchor);
+      holder.appendChild(blip);
+
+      if (members.length > 1) {
+        const badge =
+          document.createElement("div");
+
+        badge.className = "radar-stack-badge";
+        badge.style.left = (size / 2 + 3) + "px";
+        badge.style.top = (-size / 2 - 12) + "px";
+        badge.textContent = String(members.length);
+        holder.appendChild(badge);
+      }
+
+      if (radarInspectEnabled_()) {
+        holder.className += " inspectable";
+
+        holder.addEventListener(
+          "click",
+          function(event) {
+            openRadarDetail_(members, event);
+          }
+        );
+      }
+
+      return holder;
+    }
+
+    /* ---------------------------------------------------------
+       HOVER CARD (both Radars): the same details as the contact
+       card, following the pointer while it is over a contact.
+       On a touch screen the homepage shows it on a tap (the
+       standalone Radar opens the full card on a tap instead).
+       --------------------------------------------------------- */
+    const RADAR_HOVER_MAX_ENTRIES = 4;
+    let radarHoverCard_ = null;
+    let radarHoverMembers_ = null;
+
+    function getRadarHoverCard_() {
+      if (!radarHoverCard_) {
+        radarHoverCard_ = document.createElement("div");
+        radarHoverCard_.className = "radar-detail radar-hover-card";
+        radarHoverCard_.setAttribute("aria-hidden", "true");
+        document.body.appendChild(radarHoverCard_);
+      }
+
+      return radarHoverCard_;
+    }
+
+    function showRadarHover_(members, x, y) {
+      const card = getRadarHoverCard_();
+
+      if (radarHoverMembers_ !== members) {
+        radarHoverMembers_ = members;
+        card.innerHTML = "";
+
+        const top = document.createElement("div");
+        top.className = "radar-detail-top";
+        top.textContent =
+          members.length === 1
+            ? "=== CONTACT ==="
+            : "=== " + members.length + " CONTACTS ===";
+        card.appendChild(top);
+
+        members.slice(0, RADAR_HOVER_MAX_ENTRIES).forEach(
+          function(member) {
+            card.appendChild(buildRadarDetailEntry_(member));
+          }
+        );
+
+        if (members.length > RADAR_HOVER_MAX_ENTRIES || radarInspectEnabled_()) {
+          const more = document.createElement("div");
+          more.className = "radar-detail-signal";
+          more.textContent =
+            (members.length > RADAR_HOVER_MAX_ENTRIES
+              ? "+" + (members.length - RADAR_HOVER_MAX_ENTRIES) + " MORE // "
+              : "") +
+            (radarInspectEnabled_() ? "CLICK TO HOLD" : "FULL DETAIL ON THE RADAR CONSOLE");
+          card.appendChild(more);
+        }
+      }
+
+      card.style.display = "block";
+      placeRadarHover_(x, y);
+    }
+
+    function placeRadarHover_(x, y) {
+      const card = radarHoverCard_;
+
+      if (!card || card.style.display !== "block") {
+        return;
+      }
+
+      const w = card.offsetWidth;
+      const h = card.offsetHeight;
+      const gap = 16;
+
+      /* Right of and below the pointer; flipped when it would
+         leave the window. */
+      let left = x + gap;
+      let top = y + gap;
+
+      if (left + w + 8 > window.innerWidth) {
+        left = x - gap - w;
+      }
+
+      if (top + h + 8 > window.innerHeight) {
+        top = y - gap - h;
+      }
+
+      card.style.left = Math.max(8, left) + "px";
+      card.style.top = Math.max(8, top) + "px";
+    }
+
+    function hideRadarHover_() {
+      if (radarHoverCard_) {
+        radarHoverCard_.style.display = "none";
+      }
+
+      radarHoverMembers_ = null;
+    }
+
+    function attachRadarHover_(holder, members) {
+      holder.addEventListener("pointerenter", function(event) {
+        if (event.pointerType === "mouse") {
+          showRadarHover_(members, event.clientX, event.clientY);
+        }
+      });
+
+      holder.addEventListener("pointermove", function(event) {
+        if (event.pointerType === "mouse") {
+          placeRadarHover_(event.clientX, event.clientY);
+        }
+      });
+
+      holder.addEventListener("pointerleave", function(event) {
+        if (event.pointerType === "mouse") {
+          hideRadarHover_();
+        }
+      });
+
+      /* Touch on the homepage (no click card there): a tap shows
+         the card, a tap anywhere else hides it. */
+      holder.addEventListener("pointerup", function(event) {
+        if (event.pointerType !== "mouse" && !radarInspectEnabled_()) {
+          event.stopPropagation();
+          radarHoverMembers_ = null;
+          showRadarHover_(members, event.clientX, event.clientY);
+        }
+      });
+    }
+
+    document.addEventListener("pointerup", function(event) {
+      if (
+        event.pointerType !== "mouse" &&
+        radarHoverCard_ &&
+        !radarHoverCard_.contains(event.target)
+      ) {
+        hideRadarHover_();
+      }
+    });
+
+    /* Elements are kept between polls (keyed by their events), so
+       blinking, halos and the open detail card don't restart every
+       2.5 seconds. */
+    const radarDrawn_ = {};
+
+    /* Last live answer, so the timeline can return to live at once. */
+    let radarLastLiveData_ = null;
+
+    function renderRadarContacts_(container, data) {
+      const grouped =
+        groupRadarContacts_(
+          data.contacts,
+          data.stackRadius
+        );
+
+      const wanted = {};
+
+      grouped.background.forEach(
+        function(contact) {
+          wanted["bg:" + contact.id] = {
+            build: function() {
+              return buildRadarBackgroundBlip_(contact);
+            }
+          };
+        }
+      );
+
+      grouped.stacks.forEach(
+        function(stack) {
+          const key =
+            "st:" +
+            stack.members
+              .map(function(m) { return m.id; })
+              .join(",");
+
+          wanted[key] = {
+            build: function() {
+              return buildRadarStackElement_(stack);
+            }
+          };
+        }
+      );
+
+      Object.keys(radarDrawn_).forEach(
+        function(key) {
+          if (!wanted[key]) {
+            if (radarDrawn_[key].matches(":hover")) {
+              hideRadarHover_();
+            }
+            radarDrawn_[key].remove();
+            delete radarDrawn_[key];
+          }
+        }
+      );
+
+      Object.keys(wanted).forEach(
+        function(key) {
+          if (!radarDrawn_[key]) {
+            radarDrawn_[key] = wanted[key].build();
+            container.appendChild(radarDrawn_[key]);
+          }
+        }
+      );
+
+      return grouped;
+    }
+
+    function clearRadarContacts_() {
+      Object.keys(radarDrawn_).forEach(
+        function(key) {
+          radarDrawn_[key].remove();
+          delete radarDrawn_[key];
+        }
+      );
+    }
+
+    /* ---------------------------------------------------------
+       CONTACT DETAIL (standalone Radar only: the page sets
+       RADAR_INSPECT_ENABLED = true and has #radarDetail)
+       --------------------------------------------------------- */
+    let radarDetailIds_ = null;
+
+    function radarFixed_(value, places) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n.toFixed(places) : "--";
+    }
+
+    function radarSigned_(value, places) {
+      const n = Number(value);
+
+      if (!Number.isFinite(n)) {
+        return "--";
+      }
+
+      return (n > 0 ? "+" : "") + n.toFixed(places);
+    }
+
+    function radarWhole_(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.round(n).toLocaleString("en-US") : "--";
+    }
+
+    function radarLocalTime_(ms) {
+      const n = Number(ms);
+
+      if (!Number.isFinite(n) || 0 >= n) {
+        return "--";
+      }
+
+      return new Date(n).toLocaleString(
+        [],
+        {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          timeZoneName: "short"
+        }
+      );
+    }
+
+    function radarEiaHour_(period) {
+      const m =
+        /^(\d{4}-\d{2}-\d{2})T(\d{2})$/.exec(String(period || ""));
+
+      return m ? m[1] + " " + m[2] + ":00 UTC" : String(period || "--");
+    }
+
+    /* Display-safe details per source (docs/radar-event-schema.md).
+       Internal fields are never shown. New monitors add a case. */
+    function radarDetailRows_(contact) {
+      let d = {};
+
+      try {
+        d = JSON.parse(contact.eventData || "{}") || {};
+      } catch (error) {
+        d = {};
+      }
+
+      const rows = [];
+      const add = function(label, value) {
+        if (value !== undefined && value !== null && value !== "" && value !== "--") {
+          rows.push([label, String(value)]);
+        }
+      };
+
+      if (contact.sourceId === "USGS") {
+        add("MAGNITUDE", radarFixed_(d.magnitude, 1));
+        add("PLACE", d.place);
+        add("DEPTH", Number.isFinite(Number(d.depthKm)) ? radarFixed_(d.depthKm, 1) + " KM" : "");
+        add("LOCATION", Number.isFinite(Number(d.latitude)) ? radarFixed_(d.latitude, 2) + ", " + radarFixed_(d.longitude, 2) : "");
+        add("SECTOR", d.sectorName);
+        add("NEAREST CITY", d.nearestCity ? d.nearestCity + (Number.isFinite(Number(d.distanceKm)) ? " (" + radarWhole_(d.distanceKm) + " KM)" : "") : "");
+        add("USGS EVENT", d.usgsEventId);
+      } else if (contact.sourceId === "EIA") {
+        add("SECTOR", d.sectorName);
+        add("EIA HOUR", d.reportingPeriod ? radarEiaHour_(d.reportingPeriod) : "");
+        add("ACTUAL DEMAND", Number.isFinite(Number(d.actualDemandMw)) ? radarWhole_(d.actualDemandMw) + " MW" : "");
+        add("FORECAST", Number.isFinite(Number(d.forecastDemandMw)) ? radarWhole_(d.forecastDemandMw) + " MW" : "");
+        add("DEVIATION", Number.isFinite(Number(d.demandDeviationPercent)) ? radarSigned_(d.demandDeviationPercent, 1) + "%" : "");
+        add("HOURLY RAMP", Number.isFinite(Number(d.hourlyRampPercent)) ? radarSigned_(d.hourlyRampPercent, 1) + "%" : "");
+        add("GRID HEALTH", Number.isFinite(Number(d.gridHealth)) ? radarWhole_(d.gridHealth) + "%" : "");
+      } else if (contact.sourceId === "TEMP") {
+        add("LOCATION", d.location);
+        add("TEMPERATURE", Number.isFinite(Number(d.currentTemperatureF)) ? radarFixed_(d.currentTemperatureF, 1) + " F" : "");
+        add("USUAL", Number.isFinite(Number(d.baselineTemperatureF)) ? radarFixed_(d.baselineTemperatureF, 1) + " F" : "");
+        add("DEVIATION", Number.isFinite(Number(d.deviationF)) ? radarSigned_(d.deviationF, 1) + " F" : "");
+        add("READING", d.reportingDate ? d.reportingDate + " " + String(d.reportingHour).padStart(2, "0") + ":00" + (d.reportingClock ? " (" + d.reportingClock + ")" : "") : "");
+      }
+
+      /* Monitoring Grid feeds: display-safe rows written by the server. */
+      if (Array.isArray(d.rows)) {
+        d.rows.forEach(
+          function(r) {
+            if (Array.isArray(r) && r.length >= 2) {
+              add(String(r[0]).toUpperCase(), r[1]);
+            }
+          }
+        );
+      }
+
+      add(d.stayLit ? "SINCE" : "OCCURRED", radarLocalTime_(contact.sourceEventAt));
+      add("RECORDED", radarLocalTime_(contact.createdAt));
+      add("CONTACT ID", contact.id);
+
+      return rows;
+    }
+
+    function buildRadarDetailEntry_(contact) {
+      const entry =
+        document.createElement("div");
+
+      entry.className = "radar-detail-entry";
+
+      const head =
+        document.createElement("div");
+
+      head.className = "radar-detail-head";
+
+      const lamp =
+        document.createElement("span");
+
+      const color = safeRadarColor_(contact.sourceColor);
+
+      lamp.className = "source-lamp";
+      lamp.style.background = color;
+      lamp.style.borderColor = color;
+
+      const name =
+        document.createElement("span");
+
+      name.textContent = radarContactLabel_(contact);
+
+      const sev =
+        document.createElement("span");
+
+      sev.className = "radar-detail-sev";
+      sev.textContent = "SEV " + (Math.round(Number(contact.radarSeverity)) || 1);
+
+      head.appendChild(lamp);
+      head.appendChild(name);
+      head.appendChild(sev);
+      entry.appendChild(head);
+
+      radarDetailRows_(contact).forEach(
+        function(row) {
+          const line =
+            document.createElement("div");
+
+          line.className = "radar-detail-row";
+
+          const label =
+            document.createElement("span");
+
+          label.className = "radar-detail-label";
+          label.textContent = row[0];
+
+          const value =
+            document.createElement("span");
+
+          value.className = "radar-detail-value";
+          value.textContent = row[1];
+
+          line.appendChild(label);
+          line.appendChild(value);
+          entry.appendChild(line);
+        }
+      );
+
+      return entry;
+    }
+
+    function openRadarDetail_(members, event) {
+      const card = document.getElementById("radarDetail");
+      const title = document.getElementById("radarDetailTitle");
+      const list = document.getElementById("radarDetailList");
+      const signal = document.getElementById("radarDetailSignal");
+
+      if (!card || !list) {
+        return;
+      }
+
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+
+      hideRadarHover_();
+
+      list.innerHTML = "";
+
+      members.forEach(
+        function(member) {
+          list.appendChild(buildRadarDetailEntry_(member));
+        }
+      );
+
+      if (title) {
+        title.textContent =
+          members.length === 1
+            ? "=== CONTACT DETAIL ==="
+            : "=== STACK // " + members.length + " CONTACTS ===";
+      }
+
+      const archived =
+        typeof radarDetailArchiveMode_ === "function" &&
+        radarDetailArchiveMode_();
+
+      if (signal) {
+        signal.textContent = archived ? "ARCHIVE RECORD" : "SIGNAL ACTIVE";
+        signal.className = "radar-detail-signal" + (archived ? " archive" : "");
+      }
+
+      radarDetailIds_ =
+        members.map(function(m) { return m.id; });
+
+      card.style.display = "block";
+
+      /* Next to the click, kept inside the window. */
+      const width = 340;
+      const margin = 12;
+      const vw = window.innerWidth || 1024;
+      const vh = window.innerHeight || 768;
+      let left = (event && event.clientX ? event.clientX : vw / 2) + 16;
+      let top = (event && event.clientY ? event.clientY : vh / 3) - 20;
+
+      if (left + width + margin > vw) {
+        left = Math.max(margin, (event && event.clientX ? event.clientX : vw) - width - 16);
+      }
+
+      const height = card.offsetHeight || 300;
+
+      if (top + height + margin > vh) {
+        top = Math.max(margin, vh - height - margin);
+      }
+
+      card.style.left = left + "px";
+      card.style.top = Math.max(margin, top) + "px";
+    }
+
+    function closeRadarDetail_() {
+      const card = document.getElementById("radarDetail");
+
+      if (card) {
+        card.style.display = "none";
+      }
+
+      radarDetailIds_ = null;
+    }
+
+    /* The card keeps what it showed; it just says when every
+       contact in it has left the live display. */
+    function updateRadarDetailSignal_(contacts) {
+      const signal = document.getElementById("radarDetailSignal");
+
+      if (!radarDetailIds_ || !signal) {
+        return;
+      }
+
+      const live = {};
+
+      (contacts || []).forEach(
+        function(c) {
+          live[c.id] = true;
+        }
+      );
+
+      const active =
+        radarDetailIds_.some(function(id) { return live[id]; });
+
+      signal.textContent = active ? "SIGNAL ACTIVE" : "SIGNAL ENDED";
+      signal.className = "radar-detail-signal" + (active ? "" : " ended");
+    }
+
+    if (
+      radarInspectEnabled_() &&
+      typeof document.addEventListener === "function"
+    ) {
+      document.addEventListener(
+        "keydown",
+        function(event) {
+          if (event.key === "Escape") {
+            closeRadarDetail_();
+          }
+        }
+      );
+
+      document.addEventListener(
+        "click",
+        function(event) {
+          const card = document.getElementById("radarDetail");
+
+          if (card && card.style.display === "block" && !card.contains(event.target)) {
+            closeRadarDetail_();
+          }
+        }
+      );
+    }
+
+    window.handleRadarResponse =
+      function(data) {
+        radarErrorCount = 0;
+        radarRetryAt = 0;
+
+        const radarContacts =
+          document.getElementById(
+            "radarContacts"
+          );
+
+        const radarStatus =
+          document.getElementById(
+            "radarStatus"
+          );
+
+        const consoleContacts =
+          document.getElementById(
+            "consoleContacts"
+          );
+
+        const consoleThreat =
+          document.getElementById(
+            "consoleThreat"
+          );
+
+        const consoleLastScan =
+          document.getElementById(
+            "consoleLastScan"
+          );
+
+        if (
+          !radarContacts ||
+          !radarStatus
+        ) {
+          return;
+        }
+
+        if (
+          !data ||
+          !data.contacts
+        ) {
+          clearRadarContacts_();
+
+          radarStatus.textContent =
+            "RADAR OFFLINE";
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "SYSTEM ERROR";
+          }
+
+          return;
+        }
+
+        if (data.sources) {
+          renderSourceRegister_(
+            data.sources
+          );
+        }
+
+        radarLastLiveData_ = data;
+
+        applyRadarRing_(data.ring);
+
+        /* Standalone timeline showing history: keep the lights and
+           last scan current, leave the drawing to the timeline. */
+        if (
+          typeof radarLiveSuspended_ === "function" &&
+          radarLiveSuspended_()
+        ) {
+          if (consoleLastScan) {
+            consoleLastScan.textContent =
+              new Date().toLocaleTimeString();
+          }
+
+          const staleScript =
+            document.getElementById("radarJsonpScript");
+
+          if (staleScript) {
+            staleScript.remove();
+          }
+
+          return;
+        }
+
+        renderRadarContacts_(
+          radarContacts,
+          data
+        );
+
+        updateRadarDetailSignal_(
+          data.contacts
+        );
+
+        /* Every event counts, including each one inside a stack. */
+        const count =
+          data.contacts.length;
+
+        if (consoleContacts) {
+          consoleContacts.textContent =
+            String(count)
+              .padStart(2, "0");
+        }
+
+        if (count > 0) {
+          radarStatus.textContent =
+            "SCANNING // " +
+            count +
+            " CONTACT" +
+            (
+              count === 1
+                ? ""
+                : "S"
+            );
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "CONTACT DETECTED";
+          }
+
+          playRadarPing();
+        } else {
+          /* Real events only since 2026-11-06 (background blips off). */
+          radarStatus.textContent =
+            "SCANNING // NO CONTACTS";
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "MONITORING";
+          }
+        }
+
+        if (consoleLastScan) {
+          consoleLastScan.textContent =
+            new Date()
+              .toLocaleTimeString();
+        }
+
+        const oldScript =
+          document.getElementById(
+            "radarJsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+      };
+
+    function loadRadarData() {
+
+      // One request at a time. An answer can take longer than the
+      // 2.5 s poll; removing a request still on its way throws its
+      // answer away, so a slow server could leave the Radar at
+      // INITIALIZING forever (2026-11-06). Give up after 20 s.
+      if (
+        radarRequestStartedAt &&
+        RADAR_REQUEST_GIVE_UP_MS > Date.now() - radarRequestStartedAt
+      ) {
+        return;
+      }
+
+      radarRequestCounter++;
+
+      const oldScript =
+        document.getElementById(
+          "radarJsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script =
+        document.createElement("script");
+
+      script.id = "radarJsonpScript";
+
+      const startedAt = Date.now();
+      radarRequestStartedAt = startedAt;
+
+      const finished = function() {
+        if (radarRequestStartedAt === startedAt) {
+          radarRequestStartedAt = 0;
+        }
+      };
+
+      script.onload = finished;
+      script.onerror = function() {
+        finished();
+        radarErrorCount++;
+        radarRetryAt =
+          Date.now() +
+          Math.min(
+            RADAR_ERROR_BACKOFF_MAX_MS,
+            2500 * Math.pow(2, radarErrorCount - 1)
+          );
+      };
+
+      script.src =
+        API_URL +
+        "?radar=1" +
+        "&callback=handleRadarResponse" +
+        "&_request=" +
+        radarRequestCounter +
+        "&_ts=" +
+        Date.now();
+
+      document.body.appendChild(script);
+    }
+
+
+    // Both Radar pages start polling here. Quake blips last 4-12 s,
+    // so the visible rate stays 2.5 s; a hidden tab makes no requests
+    // and catches up the moment it is shown again.
+    function startRadarPolling_(intervalMs) {
+
+      loadRadarData();
+
+      setInterval(function() {
+        if (document.hidden) {
+          return;
+        }
+
+        if (radarRetryAt > Date.now()) {
+          return;
+        }
+
+        loadRadarData();
+      }, intervalMs);
+
+      document.addEventListener("visibilitychange", function() {
+        if (!document.hidden && Date.now() >= radarRetryAt) {
+          loadRadarData();
+        }
+      });
+    }
+
+
+
+    /* =======================================================
+       TIMELINE: HISTORICAL OVERVIEW AND PLAYBACK
+       (Radar uplift step 9; standalone Radar only)
+
+       No less-than character anywhere in this file: see the note at
+       the top of RadarCommonJs.html.
+
+       Modes:
+         LIVE      the normal live Radar
+         LOADING   fetching records
+         OVERVIEW  every event from the handle to the end of the
+                   window, all at once (steady blips)
+         PLAYBACK  the clock runs from the handle at the chosen
+                   speed; each blip appears at the time the Radar
+                   showed it and lasts its Duration on that clock
+                   (at least 0.4 s on screen)
+         PAUSED    playback stopped where it is
+         ENDED     a past day played to midnight
+
+       "LAST 24 HOURS" ends at NOW (playback reaching NOW returns to
+       live); a past day runs 00:00 to midnight, Chicago time.
+       Nothing here writes anything anywhere.
+       ======================================================= */
+
+    const RADAR_PLAYBACK_SPEEDS = [1, 10, 60, 360];
+    const RADAR_PLAYBACK_DEFAULT_SPEED = 60;
+    const RADAR_PLAYBACK_MIN_ON_SCREEN_MS = 400;
+    const RADAR_PLAYBACK_TICK_MS = 100;
+    const RADAR_PLAYBACK_REFRESH_MS = 60000;
+    const RADAR_TIMELINE_STEPS = 1000;
+    const RADAR_SEVERITY_DAY_COLORS = {
+      5: "#ff3030", 4: "#ff9900", 3: "#ffff00", 2: "#ffff00", 1: "#00ff00"
+    };
+
+    const radarTimeline_ = {
+      mode: "LIVE",
+      day: "last24",
+      events: [],
+      windowStart: 0,
+      windowEnd: 0,
+      recordsFrom: 0,
+      clockOffset: 0,
+      handle: 0,
+      clock: 0,
+      speed: RADAR_PLAYBACK_DEFAULT_SPEED,
+      stackRadius: 2.5,
+      loadedDay: "",
+      loadedAt: 0,
+      pending: null,
+      request: 0,
+      error: "",
+      drawnSignature: "",
+      lastTick: 0,
+      lastPing: 0,
+      daysSignature: ""
+    };
+
+    /* Hooks read by the shared Radar code. */
+    function radarLiveSuspended_() {
+      return radarTimeline_.mode !== "LIVE";
+    }
+
+    function radarDetailArchiveMode_() {
+      return radarTimeline_.mode !== "LIVE";
+    }
+
+    function radarTimelineNow_() {
+      return Date.now() + radarTimeline_.clockOffset;
+    }
+
+    /* The window shown on the slider. LAST 24 HOURS moves with NOW. */
+    function radarTimelineWindow_() {
+      const t = radarTimeline_;
+
+      if (t.day === "last24") {
+        const end = radarTimelineNow_();
+        return { start: end - 24 * 3600000, end: end };
+      }
+
+      return { start: t.windowStart, end: t.windowEnd };
+    }
+
+    /* Which events are on screen. Pure, so it can be tested. */
+    function radarTimelineVisible_(events, mode, handle, clock, speed, windowEnd) {
+      if (mode === "OVERVIEW") {
+        return events.filter(
+          function(e) {
+            return windowEnd > e.birthAt && e.birthAt + e.duration * 1000 > handle;
+          }
+        );
+      }
+
+      if (mode === "PLAYBACK" || mode === "PAUSED" || mode === "ENDED") {
+        /* Display only: a blip stays at least 0.4 s of real time. */
+        const minimum = RADAR_PLAYBACK_MIN_ON_SCREEN_MS * speed;
+
+        return events.filter(
+          function(e) {
+            return clock >= e.birthAt && e.birthAt + Math.max(e.duration * 1000, minimum) > clock;
+          }
+        );
+      }
+
+      return [];
+    }
+
+    /* ---------- time labels (visitor's local time) ---------- */
+
+    function radarTimelineStamp_(ms, withDate) {
+      const options = { hour: "2-digit", minute: "2-digit", timeZoneName: "short" };
+
+      if (withDate) {
+        options.year = "numeric";
+        options.month = "2-digit";
+        options.day = "2-digit";
+      }
+
+      return new Date(ms).toLocaleString([], options);
+    }
+
+    /* Large readout in the PLAYBACK panel: time, date line, note. */
+    function radarTimelineReadout_(label, ms, withSeconds, note) {
+      const labelOut = document.getElementById("radarRecordLabel");
+      const timeOut = document.getElementById("radarRecordTime");
+      const dateOut = document.getElementById("radarRecordDate");
+      const noteOut = document.getElementById("radarRecordNote");
+      const opts = withSeconds
+        ? { hour: "2-digit", minute: "2-digit", second: "2-digit" }
+        : { hour: "2-digit", minute: "2-digit" };
+
+      if (labelOut) labelOut.textContent = label;
+      if (timeOut) timeOut.textContent = ms ? new Date(ms).toLocaleTimeString([], opts) : "--:--:--";
+      if (dateOut) {
+        dateOut.textContent = ms
+          ? new Date(ms).toLocaleDateString([], { year: "numeric", month: "2-digit", day: "2-digit", timeZoneName: "short" })
+          : "";
+      }
+      if (noteOut) noteOut.textContent = note;
+    }
+
+    function radarTimelineClock_(ms) {
+      return new Date(ms).toLocaleString(
+        [],
+        { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", timeZoneName: "short" }
+      );
+    }
+
+    /* ---------- loading ---------- */
+
+    function radarTimelineLoad_(day, then) {
+      const t = radarTimeline_;
+      const id = ++t.request;
+
+      t.pending = { id: id, day: day, then: then };
+
+      const old = document.getElementById("radarHistoryScript");
+
+      if (old) {
+        old.remove();
+      }
+
+      const script = document.createElement("script");
+
+      script.id = "radarHistoryScript";
+      script.src =
+        API_URL +
+        "?radarhistory=1&day=" + encodeURIComponent(day) +
+        "&callback=handleRadarHistoryResponse" +
+        "&_request=" + id +
+        "&_ts=" + Date.now();
+
+      script.onerror = function() {
+        if (t.pending && t.pending.id === id) {
+          t.pending = null;
+          radarTimelineFailed_("RECORDS UNAVAILABLE");
+        }
+      };
+
+      document.body.appendChild(script);
+    }
+
+    window.handleRadarHistoryResponse = function(data) {
+      const t = radarTimeline_;
+      const p = t.pending;
+      const script = document.getElementById("radarHistoryScript");
+
+      if (script) {
+        script.remove();
+      }
+
+      if (!p || !data || data.day !== p.day) {
+        return;  /* superseded by a newer request */
+      }
+
+      t.pending = null;
+
+      if (data.days) {
+        radarTimelineDays_(data.days);
+      }
+
+      if (!data.ok) {
+        radarTimelineFailed_(data.error || "RECORDS UNAVAILABLE");
+        return;
+      }
+
+      t.error = "";
+      t.events = data.events || [];
+      t.windowStart = Number(data.windowStart);
+      t.windowEnd = Number(data.windowEnd);
+      t.recordsFrom = Number(data.recordsFrom) || t.windowStart;
+      t.clockOffset = Number(data.now) - Date.now();
+      t.stackRadius = Number.isFinite(Number(data.stackRadius)) ? Number(data.stackRadius) : 2.5;
+      t.loadedDay = data.day;
+      t.loadedAt = Date.now();
+
+      if (p.then) {
+        p.then();
+      }
+
+      radarTimelineRender_(true);
+    };
+
+    function radarTimelineFailed_(message) {
+      const t = radarTimeline_;
+
+      t.error = message;
+      t.events = [];
+      t.mode = "OVERVIEW";
+      radarTimelineRender_(true);
+    }
+
+    /* The day selector: LAST 24 HOURS, then past days with records,
+       each in the color of its worst event. */
+    function radarTimelineDays_(days) {
+      const t = radarTimeline_;
+      const select = document.getElementById("radarDaySelect");
+      const signature = JSON.stringify(days);
+
+      if (!select || signature === t.daysSignature) {
+        return;
+      }
+
+      t.daysSignature = signature;
+      select.innerHTML = "";
+
+      const first = document.createElement("option");
+
+      first.value = "last24";
+      first.textContent = "LAST 24 HOURS";
+      select.appendChild(first);
+
+      days.forEach(
+        function(d) {
+          const option = document.createElement("option");
+          const sev = Math.max(1, Math.min(5, Math.round(Number(d.peakSeverity)) || 1));
+
+          option.value = d.day;
+          option.textContent = d.day + " // " + d.events + (d.events === 1 ? " EVENT" : " EVENTS");
+          option.style.color = RADAR_SEVERITY_DAY_COLORS[sev];
+          select.appendChild(option);
+        }
+      );
+
+      select.value = t.day;
+    }
+
+    /* ---------- controls ---------- */
+
+    function radarTimelineEnterOverview_(handle) {
+      const t = radarTimeline_;
+
+      t.mode = "OVERVIEW";
+      t.handle = handle;
+      t.clock = handle;
+      clearRadarContacts_();
+      t.drawnSignature = "";
+      radarTimelineRender_(true);
+    }
+
+    function radarTimelineScrub_() {
+      const t = radarTimeline_;
+      const slider = document.getElementById("radarTimeline");
+
+      if (!slider) {
+        return;
+      }
+
+      const value = Number(slider.value);
+      const w = radarTimelineWindow_();
+      const at = w.start + (value / RADAR_TIMELINE_STEPS) * (w.end - w.start);
+
+      /* All the way right on LAST 24 HOURS is NOW: back to live. */
+      if (t.day === "last24" && value >= RADAR_TIMELINE_STEPS) {
+        radarReturnToLive_();
+        return;
+      }
+
+      if (t.mode === "LIVE" || t.mode === "LOADING") {
+        t.handle = at;
+
+        const fresh =
+          t.loadedDay === "last24" &&
+          RADAR_PLAYBACK_REFRESH_MS > Date.now() - t.loadedAt;
+
+        if (fresh) {
+          radarTimelineEnterOverview_(t.handle);
+        } else {
+          t.mode = "LOADING";
+          clearRadarContacts_();
+          radarTimelineRender_(true);
+          radarTimelineLoad_("last24", function() {
+            radarTimelineEnterOverview_(radarTimeline_.handle);
+          });
+        }
+
+        return;
+      }
+
+      t.handle = at;
+      t.clock = at;
+
+      if (t.mode === "ENDED") {
+        t.mode = "PAUSED";
+      }
+
+      radarTimelineRender_(true);
+    }
+
+    function radarTimelinePlay_() {
+      const t = radarTimeline_;
+
+      if (t.mode === "LIVE" || t.mode === "LOADING") {
+        return;  /* move the timeline back first */
+      }
+
+      if (t.mode === "PLAYBACK") {
+        t.mode = "PAUSED";
+      } else {
+        if (t.mode === "ENDED") {
+          t.clock = radarTimelineWindow_().start;
+        } else if (t.mode === "OVERVIEW") {
+          t.clock = t.handle;
+        }
+
+        t.mode = "PLAYBACK";
+        t.lastTick = Date.now();
+        clearRadarContacts_();
+        t.drawnSignature = "";
+      }
+
+      radarTimelineRender_(true);
+    }
+
+    function radarTimelineSpeed_(speed) {
+      if (RADAR_PLAYBACK_SPEEDS.indexOf(speed) === -1) {
+        return;
+      }
+
+      radarTimeline_.speed = speed;
+      radarTimelineRender_(true);
+    }
+
+    function radarTimelineDayChanged_() {
+      const t = radarTimeline_;
+      const select = document.getElementById("radarDaySelect");
+      const day = select ? select.value : "last24";
+
+      if (day === "last24") {
+        radarReturnToLive_();
+        return;
+      }
+
+      t.day = day;
+      t.mode = "LOADING";
+      t.events = [];
+      t.loadedDay = "";
+      clearRadarContacts_();
+      closeRadarDetail_();
+      radarTimelineRender_(true);
+
+      radarTimelineLoad_(day, function() {
+        radarTimelineEnterOverview_(radarTimeline_.windowStart);
+      });
+    }
+
+    function radarReturnToLive_() {
+      const t = radarTimeline_;
+      const select = document.getElementById("radarDaySelect");
+
+      t.mode = "LIVE";
+      t.day = "last24";
+      t.pending = null;
+      t.error = "";
+      t.drawnSignature = "";
+
+      if (select) {
+        select.value = "last24";
+      }
+
+      clearRadarContacts_();
+      closeRadarDetail_();
+      radarTimelineRender_(true);
+
+      if (radarLastLiveData_) {
+        handleRadarResponse(radarLastLiveData_);
+      }
+    }
+
+    /* ---------- the clock ---------- */
+
+    function radarTimelineAdvance_(realMs) {
+      const t = radarTimeline_;
+
+      if (t.mode !== "PLAYBACK") {
+        return;
+      }
+
+      t.clock += realMs * t.speed;
+
+      const end = radarTimelineWindow_().end;
+
+      if (t.clock >= end) {
+        if (t.day === "last24") {
+          radarReturnToLive_();  /* reached NOW */
+          return;
+        }
+
+        t.clock = end;
+        t.mode = "ENDED";
+      }
+
+      t.handle = t.clock;
+      radarTimelineRender_(false);
+    }
+
+    function radarTimelineTick_() {
+      const t = radarTimeline_;
+      const now = Date.now();
+      const real = t.lastTick ? now - t.lastTick : 0;
+
+      t.lastTick = now;
+
+      if (t.mode === "PLAYBACK") {
+        radarTimelineAdvance_(Math.min(real, 1000));
+      } else if (t.mode === "LIVE") {
+        radarTimelineRender_(false);  /* keeps the slider shading current */
+      }
+
+      /* LAST 24 HOURS keeps gaining events while you look back. */
+      if (
+        t.day === "last24" &&
+        t.mode !== "LIVE" &&
+        t.mode !== "LOADING" &&
+        !t.pending &&
+        now - t.loadedAt >= RADAR_PLAYBACK_REFRESH_MS
+      ) {
+        t.loadedAt = now;
+        radarTimelineLoad_("last24", null);
+      }
+    }
+
+    /* ---------- drawing ---------- */
+
+    function radarTimelineRender_(force) {
+      const t = radarTimeline_;
+      const w = radarTimelineWindow_();
+      const container = document.getElementById("radarContacts");
+      const slider = document.getElementById("radarTimeline");
+      const modeLabel = document.getElementById("radarModeLabel");
+      const play = document.getElementById("radarPlayButton");
+      const live = document.getElementById("radarLiveButton");
+      const shade = document.getElementById("radarTimelineShade");
+      const status = document.getElementById("radarStatus");
+      const contactsOut = document.getElementById("consoleContacts");
+      const threat = document.getElementById("consoleThreat");
+      const span = Math.max(1, w.end - w.start);
+      const pastDay = t.day !== "last24";
+
+      /* Slider (the time itself is in the readout and status line) */
+      if (slider) {
+        slider.value =
+          t.mode === "LIVE"
+            ? RADAR_TIMELINE_STEPS
+            : Math.max(0, Math.min(RADAR_TIMELINE_STEPS, Math.round(((t.handle - w.start) / span) * RADAR_TIMELINE_STEPS)));
+      }
+
+      /* Ends of the slider. */
+      const startLabel = document.getElementById("radarTimelineStart");
+      const endLabel = document.getElementById("radarTimelineEnd");
+
+      if (startLabel) {
+        startLabel.textContent = pastDay ? t.day + " 00:00" : "-24H";
+      }
+
+      if (endLabel) {
+        endLabel.textContent = pastDay ? "24:00" : "NOW";
+      }
+
+      /* No records before history began. */
+      if (shade) {
+        const from = t.day === "last24" ? (t.recordsFrom || w.start) : w.start;
+        const pct = Math.max(0, Math.min(100, ((from - w.start) / span) * 100));
+
+        shade.style.width = pct + "%";
+        shade.title = pct > 0 ? "NO RECORDS" : "";
+      }
+
+      const labels = {
+        LIVE: "LIVE",
+        LOADING: "RETRIEVING",
+        OVERVIEW: "OVERVIEW",
+        PLAYBACK: "PLAYBACK " + t.speed + "×",
+        PAUSED: "PAUSED",
+        ENDED: "END OF DAY"
+      };
+
+      if (modeLabel) {
+        modeLabel.textContent = labels[t.mode];
+        modeLabel.className = "timeline-mode mode-" + t.mode.toLowerCase();
+      }
+
+      if (play) {
+        play.textContent = t.mode === "PLAYBACK" ? "❚❚ PAUSE" : "▶ PLAY";
+        play.className = "timeline-button" + (t.mode === "LIVE" || t.mode === "LOADING" ? " disabled" : "");
+        play.title = t.mode === "LIVE" ? "MOVE THE TIMELINE BACK TO REVIEW" : "";
+      }
+
+      if (live) {
+        live.className = "timeline-button live" + (t.mode === "LIVE" ? " on-air" : "");
+        live.textContent = t.mode === "LIVE" ? "● LIVE" : "LIVE";
+        live.title = t.mode === "LIVE" ? "SHOWING THE LIVE FEED" : "RETURN TO THE LIVE FEED";
+      }
+
+      const speeds = document.getElementById("radarSpeedButtons");
+
+      if (speeds && speeds.children) {
+        Array.prototype.forEach.call(
+          speeds.children,
+          function(b) {
+            b.className = "timeline-speed" + (Number(b.getAttribute ? b.getAttribute("data-speed") : b.dataSpeed) === t.speed ? " active" : "");
+          }
+        );
+      }
+
+      if (t.mode === "LIVE") {
+        radarTimelineReadout_("REAL TIME", Date.now(), true, "LIVE FEED");
+
+        if (container) {
+          container.className = "";
+        }
+        return;  /* the live poll draws */
+      }
+
+      if (container) {
+        container.className = t.mode === "OVERVIEW" ? "radar-history-static" : "";
+      }
+
+      if (threat) {
+        threat.textContent = "HISTORICAL REVIEW";
+      }
+
+      if (t.mode === "LOADING") {
+        radarTimelineReadout_("RECORD TIME", 0, true, "RETRIEVING RECORDS...");
+
+        if (status) {
+          status.textContent = "RETRIEVING RECORDS...";
+        }
+        return;
+      }
+
+      const visible =
+        radarTimelineVisible_(t.events, t.mode, t.handle, t.clock, t.speed, w.end);
+
+      const signature =
+        t.mode + "|" + visible.map(function(e) { return e.id; }).join(",");
+
+      if (force || signature !== t.drawnSignature) {
+        const before = t.drawnSignature;
+
+        t.drawnSignature = signature;
+
+        if (container) {
+          renderRadarContacts_(container, { contacts: visible, stackRadius: t.stackRadius });
+        }
+
+        /* A ping when new contacts appear in playback (at most 2 a second). */
+        if (t.mode === "PLAYBACK" && visible.length && Date.now() - t.lastPing > 500) {
+          const had = before.split("|")[1] || "";
+          if (visible.some(function(e) { return had.indexOf(e.id) === -1; })) {
+            t.lastPing = Date.now();
+            playRadarPing();
+          }
+        }
+      }
+
+      const count = visible.length;
+
+      if (contactsOut) {
+        contactsOut.textContent = String(count).padStart(2, "0");
+      }
+
+      const n = count + " CONTACT" + (count === 1 ? "" : "S");
+      const endWord = pastDay ? "MIDNIGHT" : "NOW";
+
+      if (status) {
+
+        if (t.error) {
+          status.textContent = t.error;
+        } else if (t.mode === "OVERVIEW") {
+          status.textContent = "OVERVIEW // " + radarTimelineStamp_(t.handle, false) + " → " + endWord + " // " + n;
+        } else if (t.mode === "ENDED") {
+          status.textContent = "END OF DAY // " + t.day + " // " + n;
+        } else {
+          status.textContent = (t.mode === "PAUSED" ? "PAUSED // " : "PLAYBACK " + t.speed + "× // ") + radarTimelineStamp_(t.clock, false) + " // " + n;
+        }
+      }
+
+      if (t.error) {
+        radarTimelineReadout_("RECORD TIME", 0, true, t.error);
+      } else if (t.mode === "OVERVIEW") {
+        radarTimelineReadout_("REVIEWING FROM", t.handle, false, "→ " + endWord + " // " + n);
+      } else {
+        radarTimelineReadout_(t.mode === "ENDED" ? "END OF DAY" : "RECORD TIME", t.clock, true, n);
+      }
+    }
+
+    /* ---------- start ---------- */
+
+    (function initRadarTimeline_() {
+      const speeds = document.getElementById("radarSpeedButtons");
+
+      if (speeds) {
+        RADAR_PLAYBACK_SPEEDS.forEach(
+          function(s) {
+            const b = document.createElement("button");
+
+            b.type = "button";
+            b.textContent = s + "×";
+            if (b.setAttribute) {
+              b.setAttribute("data-speed", String(s));
+            } else {
+              b.dataSpeed = s;
+            }
+            b.className = "timeline-speed";
+            b.onclick = function() { radarTimelineSpeed_(s); };
+            speeds.appendChild(b);
+          }
+        );
+      }
+
+      radarTimelineRender_(true);
+
+      /* The day list arrives with the first records request. */
+      radarTimelineLoad_("last24", null);
+
+      setInterval(radarTimelineTick_, RADAR_PLAYBACK_TICK_MS);
+    })();
+
+
+    /* =======================================================
+       INITIALIZATION
+       ======================================================= */
+
+    startRadarPolling_(2500);
+  </script>
+
+</body>
+</html>

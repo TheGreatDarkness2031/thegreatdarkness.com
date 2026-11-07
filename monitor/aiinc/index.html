@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>The Great Darkness - AI INCIDENT Monitor</title>
+
+<style>
+/* Shared page for the Monitoring Grid feeds (MonitorFeeds.js).
+   Same look as the Seismic, Real Power Grid and Temperature pages. */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+body {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.monitor-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ---- Header ---- */
+.header {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.header-title {
+    color: #ff9900;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.4);
+}
+
+.header-subtitle {
+    margin-top: 8px;
+    color: #aaaaaa;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+/* ---- Status ---- */
+.status-panel {
+    border: 2px solid #ffffff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.status-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+}
+
+.status-value {
+    font-size: 54px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.status-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.status-nominal { color: #00ff00; }
+.status-watch { color: #ffff00; }
+.status-elevated { color: #ff9900; }
+.status-critical { color: #ff0000; }
+.status-degraded { color: #888888; }
+
+.status-details {
+    margin-top: 12px;
+    color: #cccccc;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+}
+
+.status-data {
+    margin-top: 10px;
+    color: #888888;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+/* ---- Message ---- */
+.message {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ffffff;
+    margin-bottom: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* ---- Panels ---- */
+.panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+}
+
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.item-grid.compact {
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.item-card {
+    border: 1px solid #ffffff;
+    padding: 12px 10px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.item-grid.compact .item-card {
+    padding: 8px 4px;
+}
+
+.item-title {
+    font-size: 13px;
+    letter-spacing: 1px;
+    overflow-wrap: anywhere;
+}
+
+.item-value {
+    margin: 8px 0 6px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.item-grid.compact .item-value {
+    margin: 4px 0 0;
+    font-size: 11px;
+}
+
+.item-detail {
+    color: #aaaaaa;
+    font-size: 11px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.empty-note {
+    text-align: center;
+    color: #888888;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 12px;
+}
+
+/* ---- History ---- */
+.range-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.range-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 8px 14px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.range-button:hover,
+.range-button.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.graph-wrapper {
+    position: relative;
+    border: 1px solid #ffffff;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 260px;
+}
+
+.graph-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    padding: 6px 8px;
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #cccccc;
+    font-size: 10px;
+    line-height: 1.5;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ---- Status change log ---- */
+.event-list {
+    border: 1px inset #ffffff;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.event-row {
+    padding: 10px;
+    border-bottom: 1px dashed #444444;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.event-row:last-child {
+    border-bottom: none;
+}
+
+.event-time {
+    color: #888888;
+}
+
+.event-detail {
+    color: #bbbbbb;
+}
+
+/* ---- Footer / close ---- */
+.footer {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    color: #aaaaaa;
+}
+
+.close-controls {
+    text-align: center;
+    margin-top: 18px;
+    padding-bottom: 10px;
+}
+
+.close-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 9px 24px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+@media (max-width: 800px) {
+    body { padding: 10px; }
+    .header-title { font-size: 21px; }
+    .status-value { font-size: 42px; }
+    .item-grid { grid-template-columns: repeat(2, 1fr); }
+    .item-grid.compact { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 450px) {
+    .item-grid { grid-template-columns: 1fr; }
+    .item-grid.compact { grid-template-columns: repeat(3, 1fr); }
+    .range-button { flex: 1 1 28%; }
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="monitor-container">
+
+    <div class="header">
+        <div id="pageTitle" class="header-title">MONITOR</div>
+        <div id="pageSubtitle" class="header-subtitle"></div>
+    </div>
+
+    <div class="status-panel">
+        <div id="statusLabel" class="status-label">--</div>
+        <div id="statusValue" class="status-value">--</div>
+        <div id="statusText" class="status-text status-degraded">STATUS: INITIALIZING</div>
+        <div id="statusDetails" class="status-details"></div>
+        <div id="statusData" class="status-data"></div>
+    </div>
+
+    <div id="message" class="message">MONITOR INITIALIZING...</div>
+
+    <div class="panel">
+        <div id="itemsTitle" class="section-title">ACTIVE CONDITIONS</div>
+        <div id="itemGrid" class="item-grid"></div>
+    </div>
+
+    <div class="panel">
+        <div class="section-title">HISTORY</div>
+
+        <div class="range-controls">
+            <button class="range-button active" data-range="24H" onclick="loadMonitor('24H')">24 HOURS</button>
+            <button class="range-button" data-range="7D" onclick="loadMonitor('7D')">7 DAYS</button>
+            <button class="range-button" data-range="30D" onclick="loadMonitor('30D')">30 DAYS</button>
+        </div>
+
+        <div class="graph-wrapper">
+            <div id="graphTitle" class="graph-title">--</div>
+            <canvas id="monitorGraph"></canvas>
+            <div id="graphTooltip" class="graph-tooltip"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <div class="section-title">STATUS CHANGE LOG</div>
+        <div id="eventList" class="event-list">LOADING...</div>
+    </div>
+
+    <div id="footer" class="footer"></div>
+
+    <div class="close-controls">
+        <button type="button" class="close-button" onclick="window.close(); return false;">CLOSE</button>
+    </div>
+
+</div>
+
+
+<script>
+
+var MONITOR_PREFIX = "aiinc";
+var MONITOR_PAGE = {"title":"AI INCIDENT MONITOR","subtitle":"THE GREAT DARKNESS // AI SERVICE OBSERVATION","statusLabel":"PROVIDERS OPERATING NORMALLY","metricLabel":"PROVIDERS OPERATING NORMALLY","itemsTitle":"PROVIDERS","footer":"PUBLIC PROVIDER STATUS PAGES","color":"#A3E635"};
+
+var currentRange = "24H";
+var latest = null;
+var graphPoints = [];
+
+var STATUS_COLORS = {
+    NOMINAL: "#00ff00",
+    WATCH: "#ffff00",
+    ELEVATED: "#ff9900",
+    CRITICAL: "#ff0000",
+    DEGRADED: "#888888",
+    STANDBY: "#888888"
+};
+
+function statusClass(status) {
+    var s = String(status || "").toLowerCase();
+    return ["nominal", "watch", "elevated", "critical"].indexOf(s) !== -1 ? "status-" + s : "status-degraded";
+}
+
+function setText(id, text) {
+    document.getElementById(id).textContent = text;
+}
+
+function showMessage(text) {
+    setText("message", text);
+}
+
+/* ---------- loading ---------- */
+
+function loadMonitor(range) {
+
+    currentRange = range || currentRange;
+
+    Array.prototype.forEach.call(document.querySelectorAll(".range-button"), function(b) {
+        b.className = "range-button" + (b.getAttribute("data-range") === currentRange ? " active" : "");
+    });
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+            if (!result || !result.success) {
+                showMessage("MONITOR UNAVAILABLE.");
+                return;
+            }
+            latest = result;
+            render(result);
+        })
+        .withFailureHandler(function(error) {
+            showMessage("MONITOR ERROR: " + String(error && error.message ? error.message : error).toUpperCase());
+        })
+        .getTgdMonitorPage(MONITOR_PREFIX, currentRange);
+}
+
+/* ---------- drawing ---------- */
+
+function render(data) {
+
+    var present = data.presentStatus;
+
+    setText("statusValue", String(data.value));
+    document.getElementById("statusValue").className = "status-value " + statusClass(present);
+
+    var statusText = document.getElementById("statusText");
+    statusText.textContent = "STATUS: " + present + (data.degraded && present === "DEGRADED" ? " // LAST GOOD: " + data.status : "");
+    statusText.className = "status-text " + statusClass(present);
+
+    var details = document.getElementById("statusDetails");
+    details.innerHTML = "";
+    (data.details || []).forEach(function(line) {
+        var div = document.createElement("div");
+        div.textContent = line;
+        details.appendChild(div);
+    });
+
+    setText(
+        "statusData",
+        "LAST CHECK: " + (data.lastCheck || "--") +
+        " // LAST GOOD DATA: " + (data.lastGood || "--") +
+        (data.sourceAt ? " // SOURCE TIME: " + data.sourceAt : "")
+    );
+
+    if (data.degraded) {
+        showMessage(
+            (data.degradedReason || "SOURCE PROBLEM") +
+            (data.lastProblem ? " // " + data.lastProblem : "") +
+            " // SHOWING LAST GOOD READING"
+        );
+    } else {
+        showMessage(data.summary || "MONITOR ONLINE.");
+    }
+
+    renderItems(data);
+    renderLog(data.history ? data.history.changes : []);
+    drawGraph(data.history ? data.history.points : []);
+}
+
+function renderItems(data) {
+
+    var grid = document.getElementById("itemGrid");
+    var items = data.items || [];
+
+    grid.innerHTML = "";
+    grid.className = "item-grid" + (items.length > 24 && items.every(function(i) { return !i.lines || !i.lines.length; }) ? " compact" : "");
+
+    if (!items.length) {
+        var empty = document.createElement("div");
+        empty.className = "empty-note";
+        empty.style.gridColumn = "1 / -1";
+        empty.textContent = "NO ACTIVE CONDITIONS";
+        grid.appendChild(empty);
+        return;
+    }
+
+    items.forEach(function(item) {
+        var card = document.createElement("div");
+        card.className = "item-card";
+
+        var title = document.createElement("div");
+        title.className = "item-title";
+        title.textContent = item.title || "";
+        card.appendChild(title);
+
+        if (item.value) {
+            var value = document.createElement("div");
+            value.className = "item-value " + (item.status ? statusClass(item.status) : "");
+            value.textContent = item.value;
+            if (/^#[0-9a-fA-F]{6}$/.test(item.color || "")) value.style.color = item.color;
+            card.appendChild(value);
+        } else if (item.status) {
+            var tag = document.createElement("div");
+            tag.className = "item-value " + statusClass(item.status);
+            tag.textContent = item.status;
+            card.appendChild(tag);
+        }
+
+        (item.lines || []).forEach(function(line) {
+            if (!line) return;
+            var d = document.createElement("div");
+            d.className = "item-detail";
+            d.textContent = line;
+            card.appendChild(d);
+        });
+
+        grid.appendChild(card);
+    });
+
+    if (data.itemsCut) {
+        var more = document.createElement("div");
+        more.className = "empty-note";
+        more.style.gridColumn = "1 / -1";
+        more.textContent = "LIST SHORTENED";
+        grid.appendChild(more);
+    }
+}
+
+function renderLog(changes) {
+
+    var list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    if (!changes || !changes.length) {
+        var none = document.createElement("div");
+        none.className = "event-row";
+        none.textContent = "NO STATUS CHANGES IN THE KEPT HISTORY.";
+        list.appendChild(none);
+        return;
+    }
+
+    changes.forEach(function(c) {
+        var row = document.createElement("div");
+        row.className = "event-row";
+
+        var time = document.createElement("div");
+        time.className = "event-time";
+        time.textContent = c.time;
+
+        var status = document.createElement("div");
+        var shown = c.dataStatus === "DEGRADED" ? "DEGRADED" : c.status;
+        status.className = statusClass(shown);
+        status.textContent = "STATUS: " + shown;
+
+        var detail = document.createElement("div");
+        detail.className = "event-detail";
+        detail.textContent = c.summary;
+
+        row.appendChild(time);
+        row.appendChild(status);
+        row.appendChild(detail);
+        list.appendChild(row);
+    });
+}
+
+function drawGraph(points) {
+
+    var canvas = document.getElementById("monitorGraph");
+    var width = Math.max(300, canvas.parentElement.clientWidth - 24);
+    var height = 260;
+    var ratio = window.devicePixelRatio || 1;
+
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.height = height + "px";
+
+    var g = canvas.getContext("2d");
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    g.clearRect(0, 0, width, height);
+    g.font = "10px Courier New";
+
+    graphPoints = [];
+
+    var good = points.filter(function(p) { return p.v !== null && p.d !== "DEGRADED"; });
+
+    if (!good.length) {
+        g.fillStyle = "#888888";
+        g.textAlign = "center";
+        g.fillText("NO READINGS IN THIS RANGE YET", width / 2, height / 2);
+        return;
+    }
+
+    var left = 46, right = width - 12, top = 12, bottom = height - 28;
+    var t0 = Date.now() - latest.range * 3600000;
+    var t1 = Date.now();
+    var maxV = Math.max(MONITOR_PAGE.metricMax || 0, Math.max.apply(null, good.map(function(p) { return p.v; })) * 1.15, 1);
+    var minV = 0;
+
+    var x = function(t) { return left + (t - t0) / (t1 - t0) * (right - left); };
+    var y = function(v) { return bottom - (v - minV) / (maxV - minV) * (bottom - top); };
+
+    /* grid */
+    g.strokeStyle = "#333333";
+    g.fillStyle = "#888888";
+    g.lineWidth = 1;
+    g.textAlign = "right";
+    for (var i = 0; i <= 4; i++) {
+        var v = minV + (maxV - minV) * i / 4;
+        var gy = y(v);
+        g.beginPath(); g.moveTo(left, gy); g.lineTo(right, gy); g.stroke();
+        g.fillText(maxV < 10 ? v.toFixed(1) : String(Math.round(v)), left - 6, gy + 3);
+    }
+
+    g.textAlign = "center";
+    for (var j = 0; j <= 4; j++) {
+        var t = t0 + (t1 - t0) * j / 4;
+        var d = new Date(t);
+        var label = latest.range <= 24
+            ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0")
+            : String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0");
+        g.fillText(label, x(t), height - 10);
+    }
+
+    /* line (breaks over missing data) */
+    g.strokeStyle = "#ffffff";
+    g.lineWidth = 1.5;
+    g.beginPath();
+    var drawing = false;
+    var lastT = null;
+    var gapMs = Math.max(3, latest.range / 8) * 3600000;
+
+    points.forEach(function(p) {
+        if (p.v === null || p.d === "DEGRADED") {
+            drawing = false;
+            return;
+        }
+        var px = x(p.t), py = y(p.v);
+        if (!drawing || (lastT !== null && p.t - lastT > gapMs)) {
+            g.moveTo(px, py);
+        } else {
+            g.lineTo(px, py);
+        }
+        drawing = true;
+        lastT = p.t;
+    });
+    g.stroke();
+
+    /* points in status colors */
+    good.forEach(function(p) {
+        var px = x(p.t), py = y(p.v);
+        g.fillStyle = STATUS_COLORS[p.s] || "#ffffff";
+        g.beginPath();
+        g.arc(px, py, good.length > 200 ? 1.6 : 2.6, 0, Math.PI * 2);
+        g.fill();
+        graphPoints.push({ x: px, y: py, p: p });
+    });
+}
+
+/* ---------- tooltip ---------- */
+
+document.getElementById("monitorGraph").addEventListener("mousemove", function(event) {
+
+    var tip = document.getElementById("graphTooltip");
+    var rect = this.getBoundingClientRect();
+    var mx = event.clientX - rect.left;
+    var best = null;
+
+    graphPoints.forEach(function(gp) {
+        var d = Math.abs(gp.x - mx);
+        if (!best || d < best.d) best = { d: d, gp: gp };
+    });
+
+    if (!best || best.d > 12) {
+        tip.style.display = "none";
+        return;
+    }
+
+    var p = best.gp.p;
+    var t = new Date(p.t);
+    tip.textContent =
+        t.toLocaleString([], { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) +
+        " // " + p.v + " // " + p.s;
+    tip.style.display = "block";
+    tip.style.left = Math.min(best.gp.x + 18, rect.width - 200) + "px";
+    tip.style.top = (best.gp.y + 30) + "px";
+});
+
+document.getElementById("monitorGraph").addEventListener("mouseleave", function() {
+    document.getElementById("graphTooltip").style.display = "none";
+});
+
+/* ---------- start ---------- */
+
+setText("pageTitle", MONITOR_PAGE.title);
+
+/* Title in the monitor's Source Register color (Config column J). */
+(function() {
+    var color = String(MONITOR_PAGE.color || "");
+    var el = document.getElementById("pageTitle");
+    if (el && /^#[0-9a-f]{6}$/i.test(color)) {
+        var n = parseInt(color.slice(1), 16);
+        el.style.color = color;
+        el.style.textShadow = "0 0 8px rgba(" + (n >> 16 & 255) + ", " + (n >> 8 & 255) + ", " + (n & 255) + ", 0.4)";
+    }
+})();
+setText("pageSubtitle", MONITOR_PAGE.subtitle);
+setText("statusLabel", MONITOR_PAGE.statusLabel);
+setText("itemsTitle", MONITOR_PAGE.itemsTitle);
+setText("graphTitle", MONITOR_PAGE.metricLabel);
+setText("footer", MONITOR_PAGE.footer);
+document.title = MONITOR_PAGE.title;
+
+window.addEventListener("resize", function() {
+    if (latest && latest.history) drawGraph(latest.history.points);
+});
+
+loadMonitor("24H");
+setInterval(function() { loadMonitor(currentRange); }, 300000);
+
+</script>
+
+</body>
+</html>

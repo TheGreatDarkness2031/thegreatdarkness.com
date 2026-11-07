@@ -1,0 +1,2303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+
+  <base target="_top">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>OER // Watch Log Archive</title>
+
+  <style>
+
+    :root {
+      --black: #000000;
+      --panel: #101010;
+      --gray: #808080;
+      --light-gray: #c0c0c0;
+      --white: #ffffff;
+      --muted: #888888;
+      --dark-line: #333333;
+      --green: #00ff00;
+      --yellow: #ffff00;
+      --orange: #ff9900;
+      --red: #ff0000;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--black);
+      color: var(--white);
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    body {
+      padding: 16px 8px;
+    }
+
+    .console-window {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 3px;
+      background: var(--light-gray);
+      border-top: 3px solid #ffffff;
+      border-left: 3px solid #ffffff;
+      border-right: 3px solid #404040;
+      border-bottom: 3px solid #404040;
+    }
+
+    .title-bar {
+      min-height: 25px;
+      padding: 5px 7px;
+      background: #000080;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .title-bar-right {
+      float: right;
+      color: #d0d0d0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+      font-weight: normal;
+    }
+
+    .window-body {
+      padding: 8px;
+    }
+
+    .console-heading {
+      margin-bottom: 8px;
+      color: #111111;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1.55;
+    }
+
+    .console-heading-muted {
+      color: #444444;
+      font-weight: normal;
+    }
+
+    .bevel-outset {
+      background: var(--light-gray);
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+    }
+
+    .bevel-inset {
+      background: var(--black);
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    .controls-panel {
+      margin-bottom: 8px;
+      padding: 7px;
+    }
+
+    .controls-title {
+      margin-bottom: 7px;
+      color: #111111;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .view-controls,
+    .filter-controls,
+    .pagination-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .view-controls {
+      margin-bottom: 8px;
+    }
+
+    button,
+    select,
+    input {
+      border-radius: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+    }
+
+    button {
+      min-height: 24px;
+      padding: 3px 8px;
+      background: var(--light-gray);
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      color: #000000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active,
+    button.active {
+      padding: 4px 7px 2px 9px;
+      background: #a0a0a0;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    button:disabled,
+    select:disabled,
+    input:disabled {
+      color: #777777;
+      cursor: default;
+    }
+
+    select,
+    input {
+      height: 24px;
+      padding: 2px 4px;
+      background: #ffffff;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      color: #000000;
+    }
+
+    #searchInput {
+      width: min(225px, 100%);
+    }
+
+    .control-label {
+      margin-right: 2px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .filter-panel {
+      margin: 8px 0 0;
+      padding: 7px;
+      border-top: 1px solid #808080;
+      border-bottom: 1px solid #808080;
+    }
+
+    .filter-heading {
+      margin-bottom: 7px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .pagination-panel {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #808080;
+    }
+
+    .pagination-heading {
+      margin-bottom: 7px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .pagination-controls {
+      justify-content: center;
+    }
+
+    .pagination-button {
+      min-width: 78px;
+      min-height: 22px;
+      padding: 2px 6px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+    }
+
+    .page-indicator {
+      min-width: 132px;
+      padding: 4px 7px;
+      background: #ffffff;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      color: #111111;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .status-strip {
+      min-height: 24px;
+      margin-bottom: 8px;
+      padding: 5px 7px;
+      background: #000000;
+      color: var(--green);
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .status-strip.warning {
+      color: var(--yellow);
+    }
+
+    .status-strip.error {
+      color: #ff7777;
+    }
+
+    .archive-note {
+      display: none;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      background: #080808;
+      border: 1px dashed #555555;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .archive-note.open {
+      display: block;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(245px, 3fr);
+      gap: 9px;
+    }
+
+    .panel-title {
+      padding: 4px 6px;
+      background: #000080;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .stream-panel,
+    .details-panel {
+      min-width: 0;
+    }
+
+    .watch-log-stream {
+      min-height: 530px;
+      max-height: 680px;
+      overflow-y: auto;
+      background: #000000;
+    }
+
+    .watch-log-row {
+      padding: 8px;
+      border-bottom: 1px dotted #555555;
+      background: #000000;
+    }
+
+    .watch-log-row:hover {
+      background: #0c0c0c;
+    }
+
+    .watch-log-topline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+    }
+
+    .watch-log-time {
+      color: #888888;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .watch-log-role,
+    .watch-log-name {
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+      white-space: nowrap;
+    }
+
+    .watch-log-name {
+      color: #d0d0d0;
+    }
+
+    .watch-log-type,
+    .watch-log-system {
+      color: #cccccc;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      min-width: 78px;
+      padding: 2px 4px;
+      border: 1px solid currentColor;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 9px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .severity-nominal {
+      color: #cccccc;
+    }
+
+    .severity-watch {
+      color: var(--yellow);
+    }
+
+    .severity-elevated {
+      color: var(--orange);
+    }
+
+    .severity-critical {
+      color: var(--red);
+    }
+
+    .watch-log-summary {
+      color: #eeeeee;
+      font-size: 11px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .watch-log-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      color: #777777;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .details-button {
+      min-width: 74px;
+      min-height: 20px;
+      padding: 2px 5px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+    }
+
+    .watch-log-details {
+      display: none;
+      margin-top: 8px;
+      padding: 7px;
+      background: #080808;
+      border: 1px inset #666666;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .watch-log-details.open {
+      display: block;
+    }
+
+    .detail-label {
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .empty-message {
+      padding: 28px 14px;
+      color: #888888;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .selected-details-body {
+      min-height: 530px;
+      padding: 8px;
+      background: #000000;
+    }
+
+    .selected-summary {
+      margin-bottom: 9px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #555555;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .selected-name {
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .selected-status {
+      margin-top: 4px;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.45;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .selected-none {
+      padding: 14px 4px;
+      color: #777777;
+      font-size: 10px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 9px;
+      padding: 4px 2px 1px;
+      color: #777777;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 780px) {
+
+      body {
+        padding: 7px 0;
+      }
+
+      .console-window {
+        width: 100%;
+      }
+
+      .title-bar-right {
+        display: none;
+      }
+
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+
+      #searchInput {
+        width: 100%;
+      }
+
+      .watch-log-stream {
+        min-height: 400px;
+        max-height: 580px;
+      }
+
+      .selected-details-body {
+        min-height: 0;
+      }
+
+      .pagination-button {
+        min-width: 68px;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <main class="console-window">
+
+    <header class="title-bar">
+      === OER WATCH LOG ARCHIVE CONSOLE ===
+
+      <span class="title-bar-right">
+        NODE: GDK-001
+      </span>
+    </header>
+
+    <section class="window-body">
+
+      <div class="console-heading">
+        OPERATIONAL EVENT REGISTER // WATCH-FLOOR RECORD ARCHIVE<br>
+
+        <span class="console-heading-muted">
+          WATCH LOG ARCHIVE SOURCE // INDEXED ANNUAL RETRIEVAL //
+          READ ONLY
+        </span>
+      </div>
+
+      <section class="controls-panel bevel-outset">
+
+        <div class="controls-title">
+          WATCH LOG DISPLAY CONTROLS
+        </div>
+
+        <div class="view-controls">
+
+          <span class="control-label">
+            YEAR:
+          </span>
+
+          <select
+            id="yearSelect"
+            aria-label="Watch Log archive year"
+          >
+            <option value="">
+              LOADING
+            </option>
+          </select>
+
+          <button
+            id="refreshButton"
+            type="button"
+          >
+            REFRESH ARCHIVE
+          </button>
+
+          <button
+            id="clearButton"
+            type="button"
+          >
+            CLEAR FILTERS
+          </button>
+
+        </div>
+
+        <div class="filter-panel">
+
+          <div class="filter-heading">
+            === WATCH LOG FILTER SELECTION ===
+          </div>
+
+          <div class="filter-controls">
+
+            <span class="control-label">
+              DATE:
+            </span>
+
+            <select
+              id="dateSelect"
+              aria-label="Watch Log date"
+            >
+              <option value="">
+                ALL DATES
+              </option>
+            </select>
+
+            <span class="control-label">
+              ROLE:
+            </span>
+
+            <select
+              id="roleSelect"
+              aria-label="Responsible role"
+            >
+              <option value="">
+                ALL ROLES
+              </option>
+            </select>
+
+            <span class="control-label">
+              TYPE:
+            </span>
+
+            <select
+              id="typeSelect"
+              aria-label="Watch Log entry type"
+            >
+              <option value="">
+                ALL TYPES
+              </option>
+            </select>
+
+            <span class="control-label">
+              SORT:
+            </span>
+
+            <select
+              id="sortSelect"
+              aria-label="Watch Log sort order"
+            >
+              <option value="DEFAULT">
+                DEFAULT ORDER
+              </option>
+
+              <option value="NAME_ASC">
+                NAME A-Z
+              </option>
+
+              <option value="NAME_DESC">
+                NAME Z-A
+              </option>
+            </select>
+
+            <span class="control-label">
+              SEARCH:
+            </span>
+
+            <input
+              id="searchInput"
+              type="search"
+              maxlength="160"
+              autocomplete="off"
+              placeholder="NAME, LOG, SYSTEM..."
+            >
+
+            <button
+              id="searchButton"
+              type="button"
+            >
+              APPLY FILTER
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="pagination-panel">
+
+          <div class="pagination-heading">
+            === ARCHIVE PAGE NAVIGATION ===
+          </div>
+
+          <div class="pagination-controls">
+
+            <button
+              id="startPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              [ &lt;&lt; START ]
+            </button>
+
+            <button
+              id="backPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              [ &lt; BACK ]
+            </button>
+
+            <div
+              id="pageIndicator"
+              class="page-indicator"
+            >
+              PAGE -- OF --
+            </div>
+
+            <button
+              id="nextPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              [ NEXT &gt; ]
+            </button>
+
+            <button
+              id="endPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              [ END &gt;&gt; ]
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+      <div
+        id="statusStrip"
+        class="status-strip bevel-inset"
+      >
+        ARCHIVE: INITIALIZING...
+      </div>
+
+      <div
+        id="archiveNote"
+        class="archive-note"
+      ></div>
+
+      <section class="content-layout">
+
+        <section class="stream-panel bevel-inset">
+
+          <div class="panel-title">
+            === WATCH LOG RECORD STREAM ===
+          </div>
+
+          <div
+            id="recordList"
+            class="watch-log-stream"
+          >
+            <div class="empty-message">
+              RETRIEVING WATCH LOG RECORDS...
+            </div>
+          </div>
+
+        </section>
+
+        <aside class="details-panel bevel-inset">
+
+          <div class="panel-title">
+            === SELECTED WATCH LOG RECORD ===
+          </div>
+
+          <div
+            id="selectedDetailsBody"
+            class="selected-details-body"
+          >
+            <div class="selected-none">
+              SELECT A RECORD WITH [ DETAILS ].
+            </div>
+          </div>
+
+        </aside>
+
+      </section>
+
+      <footer class="footer">
+        OER WATCH LOG ARCHIVE CONSOLE //
+        INDEX-FIRST ANNUAL RETRIEVAL //
+        PAGED RECORD ACCESS
+      </footer>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    var watchLogState = {
+
+      year:
+        "",
+
+      date:
+        "",
+
+      role:
+        "",
+
+      entryType:
+        "",
+
+      sort:
+        "DEFAULT",
+
+      search:
+        "",
+
+      page:
+        1,
+
+      pageSize:
+        50,
+
+      totalPages:
+        1,
+
+      loading:
+        false,
+
+      selectedRecordId:
+        "",
+
+      openDetails:
+        null,
+
+      openDetailsButton:
+        null
+
+    };
+
+    var watchLogData =
+      null;
+
+    var watchLogElements = {
+
+      yearSelect:
+        document.getElementById(
+          "yearSelect"
+        ),
+
+      dateSelect:
+        document.getElementById(
+          "dateSelect"
+        ),
+
+      roleSelect:
+        document.getElementById(
+          "roleSelect"
+        ),
+
+      typeSelect:
+        document.getElementById(
+          "typeSelect"
+        ),
+
+      sortSelect:
+        document.getElementById(
+          "sortSelect"
+        ),
+
+      searchInput:
+        document.getElementById(
+          "searchInput"
+        ),
+
+      searchButton:
+        document.getElementById(
+          "searchButton"
+        ),
+
+      clearButton:
+        document.getElementById(
+          "clearButton"
+        ),
+
+      refreshButton:
+        document.getElementById(
+          "refreshButton"
+        ),
+
+      statusStrip:
+        document.getElementById(
+          "statusStrip"
+        ),
+
+      archiveNote:
+        document.getElementById(
+          "archiveNote"
+        ),
+
+      recordList:
+        document.getElementById(
+          "recordList"
+        ),
+
+      startPageButton:
+        document.getElementById(
+          "startPageButton"
+        ),
+
+      backPageButton:
+        document.getElementById(
+          "backPageButton"
+        ),
+
+      nextPageButton:
+        document.getElementById(
+          "nextPageButton"
+        ),
+
+      endPageButton:
+        document.getElementById(
+          "endPageButton"
+        ),
+
+      pageIndicator:
+        document.getElementById(
+          "pageIndicator"
+        ),
+
+      selectedDetailsBody:
+        document.getElementById(
+          "selectedDetailsBody"
+        )
+    };
+
+
+    function initializeWatchLogView() {
+
+      bindWatchLogControls_();
+
+      loadWatchLogPage_();
+    }
+
+
+    function bindWatchLogControls_() {
+
+      watchLogElements.yearSelect.addEventListener(
+        "change",
+        function() {
+
+          watchLogState.year =
+            watchLogElements.yearSelect.value;
+
+          resetWatchLogQueryState_();
+
+          loadWatchLogPage_();
+        }
+      );
+
+      watchLogElements.sortSelect.addEventListener(
+        "change",
+        function() {
+
+          watchLogState.sort =
+            watchLogElements.sortSelect.value;
+
+          watchLogState.page =
+            1;
+
+          clearSelectedWatchLogRecord_();
+
+          loadWatchLogPage_();
+        }
+      );
+
+      watchLogElements.searchButton.addEventListener(
+        "click",
+        function() {
+
+          applyWatchLogFilters_();
+        }
+      );
+
+      watchLogElements.clearButton.addEventListener(
+        "click",
+        function() {
+
+          watchLogState.date = "";
+          watchLogState.role = "";
+          watchLogState.entryType = "";
+          watchLogState.sort = "DEFAULT";
+          watchLogState.search = "";
+          watchLogState.page = 1;
+
+          watchLogElements.dateSelect.value = "";
+          watchLogElements.roleSelect.value = "";
+          watchLogElements.typeSelect.value = "";
+          watchLogElements.sortSelect.value = "DEFAULT";
+          watchLogElements.searchInput.value = "";
+
+          clearSelectedWatchLogRecord_();
+
+          loadWatchLogPage_();
+        }
+      );
+
+      watchLogElements.refreshButton.addEventListener(
+        "click",
+        function() {
+
+          watchLogState.page = 1;
+
+          clearSelectedWatchLogRecord_();
+
+          loadWatchLogPage_();
+        }
+      );
+
+      watchLogElements.startPageButton.addEventListener(
+        "click",
+        function() {
+
+          goToWatchLogPage_(1);
+        }
+      );
+
+      watchLogElements.backPageButton.addEventListener(
+        "click",
+        function() {
+
+          goToWatchLogPage_(
+            watchLogState.page - 1
+          );
+        }
+      );
+
+      watchLogElements.nextPageButton.addEventListener(
+        "click",
+        function() {
+
+          goToWatchLogPage_(
+            watchLogState.page + 1
+          );
+        }
+      );
+
+      watchLogElements.endPageButton.addEventListener(
+        "click",
+        function() {
+
+          goToWatchLogPage_(
+            watchLogState.totalPages
+          );
+        }
+      );
+
+      watchLogElements.searchInput.addEventListener(
+        "keydown",
+        function(event) {
+
+          if (event.key === "Enter") {
+
+            event.preventDefault();
+
+            applyWatchLogFilters_();
+          }
+        }
+      );
+    }
+
+
+    function goToWatchLogPage_(
+      targetPage
+    ) {
+
+      if (watchLogState.loading) {
+        return;
+      }
+
+      var page =
+        Number(targetPage);
+
+      if (
+        !Number.isFinite(page) ||
+        page < 1 ||
+        page > watchLogState.totalPages ||
+        page === watchLogState.page
+      ) {
+        return;
+      }
+
+      watchLogState.page =
+        Math.floor(page);
+
+      clearSelectedWatchLogRecord_();
+
+      loadWatchLogPage_();
+    }
+
+
+    function resetWatchLogQueryState_() {
+
+      watchLogState.date = "";
+      watchLogState.role = "";
+      watchLogState.entryType = "";
+      watchLogState.search = "";
+      watchLogState.page = 1;
+
+      watchLogElements.searchInput.value =
+        "";
+
+      clearSelectedWatchLogRecord_();
+    }
+
+
+    function applyWatchLogFilters_() {
+
+      watchLogState.date =
+        watchLogElements.dateSelect.value;
+
+      watchLogState.role =
+        watchLogElements.roleSelect.value;
+
+      watchLogState.entryType =
+        watchLogElements.typeSelect.value;
+
+      watchLogState.sort =
+        watchLogElements.sortSelect.value;
+
+      watchLogState.search =
+        watchLogElements.searchInput.value
+          .trim();
+
+      watchLogState.page = 1;
+
+      clearSelectedWatchLogRecord_();
+
+      loadWatchLogPage_();
+    }
+
+
+    function loadWatchLogPage_() {
+
+      if (watchLogState.loading) {
+        return;
+      }
+
+      setWatchLogLoading_(true);
+
+      google.script.run
+        .withSuccessHandler(
+          function(data) {
+
+            renderWatchLogData_(data);
+          }
+        )
+        .withFailureHandler(
+          function(error) {
+
+            renderWatchLogError_(error);
+          }
+        )
+        .getWatchLogPage({
+
+          year:
+            watchLogState.year,
+
+          date:
+            watchLogState.date,
+
+          role:
+            watchLogState.role,
+
+          entryType:
+            watchLogState.entryType,
+
+          sort:
+            watchLogState.sort,
+
+          search:
+            watchLogState.search,
+
+          page:
+            watchLogState.page,
+
+          pageSize:
+            watchLogState.pageSize
+
+        });
+    }
+
+
+    function renderWatchLogData_(
+      data
+    ) {
+
+      if (
+        !data ||
+        !data.success
+      ) {
+
+        renderWatchLogError_(
+          data &&
+          data.message
+            ? data.message
+            : "INVALID WATCH LOG RESPONSE."
+        );
+
+        return;
+      }
+
+      watchLogData =
+        data;
+
+      watchLogState.year =
+        data.selectedYear || "";
+
+      watchLogState.sort =
+        data.sort ||
+        watchLogState.sort;
+
+      watchLogState.page =
+        Math.max(
+          1,
+          Number(data.page || 1)
+        );
+
+      watchLogState.pageSize =
+        Math.max(
+          1,
+          Number(
+            data.pageSize ||
+            watchLogState.pageSize
+          )
+        );
+
+      watchLogState.totalPages =
+        Math.max(
+          1,
+          Number(data.totalPages || 1)
+        );
+
+      updateWatchLogYearOptions_(
+        data.years || []
+      );
+
+      updateWatchLogFilterOptions_(
+        data.filters || {}
+      );
+
+      watchLogElements.sortSelect.value =
+        watchLogState.sort;
+
+      renderWatchLogStatus_(data);
+
+      renderWatchLogArchiveNote_(
+        data.message || ""
+      );
+
+      renderWatchLogRecords_(
+        data.records || []
+      );
+
+      updateWatchLogPaginationControls_(
+        data
+      );
+
+      setWatchLogLoading_(false);
+    }
+
+
+    function updateWatchLogYearOptions_(
+      years
+    ) {
+
+      watchLogElements.yearSelect.innerHTML =
+        "";
+
+      if (!years.length) {
+
+        var unavailable =
+          document.createElement(
+            "option"
+          );
+
+        unavailable.value =
+          "";
+
+        unavailable.textContent =
+          "ARCHIVE UNAVAILABLE";
+
+        watchLogElements.yearSelect.appendChild(
+          unavailable
+        );
+
+        return;
+      }
+
+      years.forEach(
+        function(yearEntry) {
+
+          var option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            String(yearEntry.year);
+
+          option.textContent =
+            String(yearEntry.year) +
+            " // " +
+            (
+              yearEntry.archiveStatus ||
+              "UNKNOWN"
+            );
+
+          watchLogElements.yearSelect.appendChild(
+            option
+          );
+        }
+      );
+
+      watchLogElements.yearSelect.value =
+        watchLogState.year;
+    }
+
+
+    function updateWatchLogFilterOptions_(
+      filters
+    ) {
+
+      filters =
+        filters || {};
+
+      populateWatchLogSelect_(
+        watchLogElements.dateSelect,
+        filters.dates || [],
+        "ALL DATES",
+        watchLogState.date,
+        function(value) {
+          return formatWatchLogDate_(value);
+        }
+      );
+
+      populateWatchLogSelect_(
+        watchLogElements.roleSelect,
+        filters.roles || [],
+        "ALL ROLES",
+        watchLogState.role,
+        function(value) {
+          return value;
+        }
+      );
+
+      populateWatchLogSelect_(
+        watchLogElements.typeSelect,
+        filters.entryTypes || [],
+        "ALL TYPES",
+        watchLogState.entryType,
+        function(value) {
+          return value;
+        }
+      );
+    }
+
+
+    function populateWatchLogSelect_(
+      select,
+      values,
+      defaultLabel,
+      selectedValue,
+      labelFunction
+    ) {
+
+      select.innerHTML =
+        "";
+
+      var defaultOption =
+        document.createElement(
+          "option"
+        );
+
+      defaultOption.value =
+        "";
+
+      defaultOption.textContent =
+        defaultLabel;
+
+      select.appendChild(
+        defaultOption
+      );
+
+      values.forEach(
+        function(value) {
+
+          var option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            value;
+
+          option.textContent =
+            labelFunction(value);
+
+          select.appendChild(
+            option
+          );
+        }
+      );
+
+      if (
+        values.indexOf(
+          selectedValue
+        ) !== -1
+      ) {
+
+        select.value =
+          selectedValue;
+
+      } else {
+
+        select.value =
+          "";
+
+        if (select === watchLogElements.dateSelect) {
+          watchLogState.date = "";
+        }
+
+        if (select === watchLogElements.roleSelect) {
+          watchLogState.role = "";
+        }
+
+        if (select === watchLogElements.typeSelect) {
+          watchLogState.entryType = "";
+        }
+      }
+    }
+
+
+    function renderWatchLogStatus_(
+      data
+    ) {
+
+      var info =
+        data.selectedYearInfo || {};
+
+      var archiveStatus =
+        String(
+          info.archiveStatus ||
+          "UNKNOWN"
+        )
+          .toUpperCase();
+
+      watchLogElements.statusStrip.className =
+        archiveStatus === "PARTIAL"
+          ? "status-strip bevel-inset warning"
+          : "status-strip bevel-inset";
+
+      watchLogElements.statusStrip.textContent =
+        "ARCHIVE: ONLINE" +
+        "  |  YEAR: " +
+        (
+          data.selectedYear ||
+          "--"
+        ) +
+        "  |  VIEW: " +
+        getWatchLogViewLabel_() +
+        "  |  SORT: " +
+        getWatchLogSortLabel_() +
+        "  |  MATCHING: " +
+        (
+          Number(data.totalMatching) || 0
+        ) +
+        "  |  PAGE: " +
+        watchLogState.page +
+        " OF " +
+        watchLogState.totalPages +
+        "  |  STATUS: " +
+        archiveStatus;
+    }
+
+
+    function getWatchLogViewLabel_() {
+
+      if (watchLogState.date) {
+        return "DATE RECORDS";
+      }
+
+      if (
+        watchLogState.search ||
+        watchLogState.role ||
+        watchLogState.entryType
+      ) {
+        return "FILTERED";
+      }
+
+      if (watchLogState.page > 1) {
+        return "PAGED ARCHIVE";
+      }
+
+      return "LATEST";
+    }
+
+
+    function getWatchLogSortLabel_() {
+
+      if (watchLogState.sort === "NAME_ASC") {
+        return "NAME A-Z";
+      }
+
+      if (watchLogState.sort === "NAME_DESC") {
+        return "NAME Z-A";
+      }
+
+      return "DEFAULT";
+    }
+
+
+    function renderWatchLogArchiveNote_(
+      message
+    ) {
+
+      message =
+        String(message || "")
+          .trim();
+
+      if (!message) {
+
+        watchLogElements.archiveNote.className =
+          "archive-note";
+
+        watchLogElements.archiveNote.textContent =
+          "";
+
+        return;
+      }
+
+      watchLogElements.archiveNote.className =
+        "archive-note open";
+
+      watchLogElements.archiveNote.textContent =
+        message;
+    }
+
+
+    function renderWatchLogRecords_(
+      records
+    ) {
+
+      watchLogElements.recordList.innerHTML =
+        "";
+
+      if (
+        !records ||
+        records.length === 0
+      ) {
+
+        var empty =
+          document.createElement(
+            "div"
+          );
+
+        empty.className =
+          "empty-message";
+
+        empty.textContent =
+          watchLogData &&
+          watchLogData.message
+            ? watchLogData.message
+            : "NO WATCH LOG RECORDS MATCH THE CURRENT FILTERS.";
+
+        watchLogElements.recordList.appendChild(
+          empty
+        );
+
+        return;
+      }
+
+      records.forEach(
+        function(record) {
+
+          watchLogElements.recordList.appendChild(
+            buildWatchLogRecordRow_(
+              record
+            )
+          );
+        }
+      );
+    }
+
+
+    function buildWatchLogRecordRow_(
+      record
+    ) {
+
+      var row =
+        document.createElement(
+          "article"
+        );
+
+      row.className =
+        "watch-log-row";
+
+      var topline =
+        document.createElement(
+          "div"
+        );
+
+      topline.className =
+        "watch-log-topline";
+
+      appendWatchLogToplineItem_(
+        topline,
+        "watch-log-time",
+        record.timestampLocal ||
+        "--"
+      );
+
+      appendWatchLogToplineItem_(
+        topline,
+        "watch-log-role",
+        record.responsibleRole ||
+        "--"
+      );
+
+      appendWatchLogToplineItem_(
+        topline,
+        "watch-log-name",
+        record.name ||
+        "--"
+      );
+
+      appendWatchLogToplineItem_(
+        topline,
+        "watch-log-type",
+        record.entryType ||
+        "--"
+      );
+
+      appendWatchLogToplineItem_(
+        topline,
+        "watch-log-system",
+        record.systemArea ||
+        "--"
+      );
+
+      var badge =
+        document.createElement(
+          "span"
+        );
+
+      badge.className =
+        "severity-badge " +
+        getWatchLogSeverityClass_(
+          record
+        );
+
+      badge.textContent =
+        getWatchLogSeverityText_(
+          record
+        );
+
+      topline.appendChild(
+        badge
+      );
+
+      var summary =
+        document.createElement(
+          "div"
+        );
+
+      summary.className =
+        "watch-log-summary";
+
+      summary.textContent =
+        record.logEntry ||
+        "NO LOG ENTRY AVAILABLE.";
+
+      var footer =
+        document.createElement(
+          "div"
+        );
+
+      footer.className =
+        "watch-log-footer";
+
+      var recordId =
+        document.createElement(
+          "span"
+        );
+
+      recordId.textContent =
+        "RECORD: " +
+        (
+          record.recordId ||
+          "--"
+        );
+
+      var detailsButton =
+        document.createElement(
+          "button"
+        );
+
+      detailsButton.className =
+        "details-button";
+
+      detailsButton.type =
+        "button";
+
+      detailsButton.textContent =
+        "[ DETAILS ]";
+
+      var details =
+        document.createElement(
+          "div"
+        );
+
+      details.className =
+        "watch-log-details";
+
+      details.innerHTML =
+        buildWatchLogDetailsHtml_(
+          record
+        );
+
+      detailsButton.addEventListener(
+        "click",
+        function() {
+
+          var alreadyOpen =
+            details.classList.contains(
+              "open"
+            );
+
+          closeOpenWatchLogDetails_();
+
+          selectWatchLogRecord_(
+            record
+          );
+
+          if (!alreadyOpen) {
+
+            details.classList.add(
+              "open"
+            );
+
+            detailsButton.textContent =
+              "[ HIDE DETAILS ]";
+
+            watchLogState.openDetails =
+              details;
+
+            watchLogState.openDetailsButton =
+              detailsButton;
+          }
+        }
+      );
+
+      footer.appendChild(
+        recordId
+      );
+
+      footer.appendChild(
+        detailsButton
+      );
+
+      row.appendChild(
+        topline
+      );
+
+      row.appendChild(
+        summary
+      );
+
+      row.appendChild(
+        footer
+      );
+
+      row.appendChild(
+        details
+      );
+
+      return row;
+    }
+
+
+    function appendWatchLogToplineItem_(
+      container,
+      className,
+      text
+    ) {
+
+      var item =
+        document.createElement(
+          "span"
+        );
+
+      item.className =
+        className;
+
+      item.textContent =
+        text;
+
+      container.appendChild(
+        item
+      );
+    }
+
+
+    function closeOpenWatchLogDetails_() {
+
+      if (watchLogState.openDetails) {
+
+        watchLogState.openDetails.classList.remove(
+          "open"
+        );
+      }
+
+      if (watchLogState.openDetailsButton) {
+
+        watchLogState.openDetailsButton.textContent =
+          "[ DETAILS ]";
+      }
+
+      watchLogState.openDetails =
+        null;
+
+      watchLogState.openDetailsButton =
+        null;
+    }
+
+
+    function selectWatchLogRecord_(
+      record
+    ) {
+
+      watchLogState.selectedRecordId =
+        record.recordId ||
+        "";
+
+      renderSelectedWatchLogRecord_(
+        record
+      );
+    }
+
+
+    function clearSelectedWatchLogRecord_() {
+
+      closeOpenWatchLogDetails_();
+
+      watchLogState.selectedRecordId =
+        "";
+
+      watchLogElements.selectedDetailsBody.innerHTML =
+        '<div class="selected-none">' +
+        'SELECT A RECORD WITH [ DETAILS ].' +
+        '</div>';
+    }
+
+
+    function renderSelectedWatchLogRecord_(
+      record
+    ) {
+
+      watchLogElements.selectedDetailsBody.innerHTML =
+        "";
+
+      var summary =
+        document.createElement(
+          "div"
+        );
+
+      summary.className =
+        "selected-summary";
+
+      var name =
+        document.createElement(
+          "div"
+        );
+
+      name.className =
+        "selected-name";
+
+      name.textContent =
+        record.name ||
+        "NAME UNSPECIFIED";
+
+      var metadata =
+        document.createElement(
+          "div"
+        );
+
+      metadata.className =
+        "selected-status";
+
+      metadata.textContent =
+        "RECORD: " +
+        (
+          record.recordId ||
+          "--"
+        ) +
+        "\nTIME: " +
+        (
+          record.timestampLocal ||
+          "--"
+        ) +
+        "\nROLE: " +
+        (
+          record.responsibleRole ||
+          "--"
+        ) +
+        "\nTYPE: " +
+        (
+          record.entryType ||
+          "--"
+        ) +
+        "\nSYSTEM: " +
+        (
+          record.systemArea ||
+          "--"
+        ) +
+        "\nSTATUS: " +
+        getWatchLogSeverityText_(
+          record
+        );
+
+      summary.appendChild(
+        name
+      );
+
+      summary.appendChild(
+        metadata
+      );
+
+      var reference =
+        document.createElement(
+          "div"
+        );
+
+      reference.className =
+        "selected-status";
+
+      reference.textContent =
+        "REFERENCE: " +
+        (
+          record.relatedReference ||
+          "--"
+        ) +
+        "\n\nSELECTED RECORD DETAIL IS OPEN IN THE LEFT STREAM.";
+
+      watchLogElements.selectedDetailsBody.appendChild(
+        summary
+      );
+
+      watchLogElements.selectedDetailsBody.appendChild(
+        reference
+      );
+    }
+
+
+    function getWatchLogSeverityClass_(
+      record
+    ) {
+
+      var combined =
+        (
+          String(
+            record.condition || ""
+          ) +
+          " " +
+          String(
+            record.priority || ""
+          )
+        )
+          .toUpperCase();
+
+      if (
+        combined.indexOf("CRITICAL") !== -1 ||
+        combined.indexOf("EMERGENCY") !== -1
+      ) {
+        return "severity-critical";
+      }
+
+      if (
+        combined.indexOf("ELEVATED") !== -1 ||
+        combined.indexOf("HIGH") !== -1
+      ) {
+        return "severity-elevated";
+      }
+
+      if (
+        combined.indexOf("WATCH") !== -1
+      ) {
+        return "severity-watch";
+      }
+
+      return "severity-nominal";
+    }
+
+
+    function getWatchLogSeverityText_(
+      record
+    ) {
+
+      var condition =
+        String(
+          record.condition ||
+          ""
+        )
+          .trim()
+          .toUpperCase();
+
+      var priority =
+        String(
+          record.priority ||
+          ""
+        )
+          .trim()
+          .toUpperCase();
+
+      if (
+        condition &&
+        priority
+      ) {
+        return (
+          condition +
+          " / " +
+          priority
+        );
+      }
+
+      return (
+        condition ||
+        priority ||
+        "NORMAL"
+      );
+    }
+
+
+    function buildWatchLogDetailsHtml_(
+      record
+    ) {
+
+      return [
+
+        '<span class="detail-label">RECORD ID:</span> ' +
+        escapeWatchLogHtml_(
+          record.recordId || "--"
+        ),
+
+        '<span class="detail-label">TIMESTAMP LOCAL:</span> ' +
+        escapeWatchLogHtml_(
+          record.timestampLocal || "--"
+        ),
+
+        '<span class="detail-label">NAME:</span> ' +
+        escapeWatchLogHtml_(
+          record.name || "--"
+        ),
+
+        '<span class="detail-label">RESPONSIBLE ROLE:</span> ' +
+        escapeWatchLogHtml_(
+          record.responsibleRole || "--"
+        ),
+
+        '<span class="detail-label">ENTRY TYPE:</span> ' +
+        escapeWatchLogHtml_(
+          record.entryType || "--"
+        ),
+
+        '<span class="detail-label">CONDITION:</span> ' +
+        escapeWatchLogHtml_(
+          record.condition || "--"
+        ),
+
+        '<span class="detail-label">PRIORITY:</span> ' +
+        escapeWatchLogHtml_(
+          record.priority || "--"
+        ),
+
+        '<span class="detail-label">SYSTEM AREA:</span> ' +
+        escapeWatchLogHtml_(
+          record.systemArea || "--"
+        ),
+
+        '<span class="detail-label">RELATED REFERENCE:</span> ' +
+        escapeWatchLogHtml_(
+          record.relatedReference || "--"
+        ),
+
+        '<span class="detail-label">FULL LOG ENTRY:</span><br>' +
+        escapeWatchLogHtml_(
+          record.logEntry || "--"
+        ),
+
+        '<span class="detail-label">FOLLOW-UP / DISPOSITION:</span><br>' +
+        escapeWatchLogHtml_(
+          record.followUpOrDisposition || "--"
+        )
+
+      ].join("<br><br>");
+    }
+
+
+    function updateWatchLogPaginationControls_(
+      data
+    ) {
+
+      var currentPage =
+        watchLogState.page;
+
+      var totalPages =
+        watchLogState.totalPages;
+
+      var hasPrevious =
+        typeof data.hasPrevious === "boolean"
+          ? data.hasPrevious
+          : currentPage > 1;
+
+      var hasNext =
+        typeof data.hasNext === "boolean"
+          ? data.hasNext
+          : currentPage < totalPages;
+
+      watchLogElements.pageIndicator.textContent =
+        "PAGE " +
+        currentPage +
+        " OF " +
+        totalPages;
+
+      watchLogElements.startPageButton.disabled =
+        !hasPrevious;
+
+      watchLogElements.backPageButton.disabled =
+        !hasPrevious;
+
+      watchLogElements.nextPageButton.disabled =
+        !hasNext;
+
+      watchLogElements.endPageButton.disabled =
+        !hasNext;
+    }
+
+
+    function setWatchLogLoading_(
+      loading
+    ) {
+
+      watchLogState.loading =
+        loading;
+
+      watchLogElements.yearSelect.disabled =
+        loading;
+
+      watchLogElements.dateSelect.disabled =
+        loading;
+
+      watchLogElements.roleSelect.disabled =
+        loading;
+
+      watchLogElements.typeSelect.disabled =
+        loading;
+
+      watchLogElements.sortSelect.disabled =
+        loading;
+
+      watchLogElements.searchInput.disabled =
+        loading;
+
+      watchLogElements.searchButton.disabled =
+        loading;
+
+      watchLogElements.clearButton.disabled =
+        loading;
+
+      watchLogElements.refreshButton.disabled =
+        loading;
+
+      watchLogElements.startPageButton.disabled =
+        loading;
+
+      watchLogElements.backPageButton.disabled =
+        loading;
+
+      watchLogElements.nextPageButton.disabled =
+        loading;
+
+      watchLogElements.endPageButton.disabled =
+        loading;
+
+      if (loading) {
+
+        watchLogElements.statusStrip.className =
+          "status-strip bevel-inset";
+
+        watchLogElements.statusStrip.textContent =
+          "ARCHIVE: RETRIEVING WATCH LOG RECORDS...";
+
+        watchLogElements.recordList.innerHTML =
+          '<div class="empty-message">' +
+          'RETRIEVING WATCH LOG RECORDS...' +
+          '</div>';
+
+        watchLogElements.pageIndicator.textContent =
+          "PAGE -- OF --";
+      }
+    }
+
+
+    function renderWatchLogError_(
+      error
+    ) {
+
+      var message =
+        error &&
+        error.message
+          ? error.message
+          : String(
+              error ||
+              "WATCH LOG ARCHIVE UNAVAILABLE."
+            );
+
+      watchLogElements.statusStrip.className =
+        "status-strip bevel-inset error";
+
+      watchLogElements.statusStrip.textContent =
+        "ARCHIVE ERROR: " +
+        message;
+
+      watchLogElements.archiveNote.className =
+        "archive-note open";
+
+      watchLogElements.archiveNote.textContent =
+        message;
+
+      watchLogElements.recordList.innerHTML =
+        '<div class="empty-message">' +
+        'WATCH LOG ARCHIVE UNAVAILABLE.' +
+        '</div>';
+
+      watchLogElements.pageIndicator.textContent =
+        "PAGE -- OF --";
+
+      clearSelectedWatchLogRecord_();
+
+      setWatchLogLoading_(false);
+    }
+
+
+    function formatWatchLogDate_(
+      dateKey
+    ) {
+
+      var parts =
+        String(dateKey || "")
+          .split("-");
+
+      if (parts.length !== 3) {
+        return String(dateKey || "");
+      }
+
+      return (
+        parts[1] +
+        "/" +
+        parts[2] +
+        "/" +
+        parts[0].slice(-2)
+      );
+    }
+
+
+    function escapeWatchLogHtml_(
+      value
+    ) {
+
+      return String(
+        value === null ||
+        typeof value === "undefined"
+          ? ""
+          : value
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+
+    initializeWatchLogView();
+
+  </script>
+
+</body>
+</html>

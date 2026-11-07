@@ -1,0 +1,89 @@
+
+    <!DOCTYPE html>
+    <html>
+      <head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1.0"
+        >
+        <title>The Great Darkness - Share</title>
+        <style>
+          body {
+            background: #000;
+            color: #fff;
+            font-family: "Courier New", Courier, monospace;
+            text-align: center;
+            padding: 60px 20px;
+          }
+          h1 {
+            font-family: Impact, "Arial Black", sans-serif;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 40px;
+          }
+          .share-box {
+            background: #222;
+            border: 3px outset #aaa;
+            box-shadow: 4px 4px 0 #555;
+            color: #fff;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.2rem;
+            font-weight: bold;
+            padding: 15px 35px;
+          }
+          .share-box:active {
+            border-style: inset;
+            box-shadow: 1px 1px 0 #555;
+          }
+          .message {
+            color: #888;
+            font-size: .9rem;
+            margin-top: 30px;
+          }
+        </style>
+      </head>
+      <body>
+        <h1>THE GREAT DARKNESS</h1>
+        <h1>01 JULY 2031</h1>
+
+        <button
+          class="share-box"
+          onclick="shareSite()"
+        >
+          SHARE THE GREAT DARKNESS
+        </button>
+
+        <div class="message">
+          SPREAD THE WARNING
+        </div>
+
+        <script>
+          function shareSite() {
+            const shareUrl =
+              "https://sites.google.com/view/the-great-darkness";
+
+            if (navigator.share) {
+              navigator.share({
+                title: "The Great Darkness",
+                text: "THE GREAT DARKNESS — 01 JULY 2031",
+                url: shareUrl
+              }).catch(function() {});
+              return;
+            }
+
+            navigator.clipboard
+              .writeText(shareUrl)
+              .then(function() {
+                alert("THE GREAT DARKNESS LINK COPIED.");
+              })
+              .catch(function() {
+                prompt("COPY THIS LINK:", shareUrl);
+              });
+          }
+        </script>
+      </body>
+    </html>
+  

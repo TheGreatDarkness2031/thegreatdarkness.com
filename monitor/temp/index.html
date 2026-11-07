@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>The Great Darkness - Temperature Deviation Monitor</title>
+
+<style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+body {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.temp-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header,
+.status-panel,
+.city-panel,
+.history-panel {
+    border: 2px solid #ffffff;
+    margin-bottom: 18px;
+    padding: 18px;
+}
+
+.header,
+.status-panel {
+    text-align: center;
+}
+
+.header-title {
+    color: #FF35B8;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow:
+        0 0 8px
+        rgba(255, 53, 184, 0.4);
+}
+
+.header-subtitle {
+    margin-top: 8px;
+    color: #aaaaaa;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+.deviation-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+}
+
+.deviation-value {
+    margin: 8px 0;
+    font-size: 54px;
+    font-weight: bold;
+}
+
+.temp-status {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.reporting-locations {
+    margin-top: 12px;
+    font-size: 12px;
+    letter-spacing: 2px;
+}
+
+.status-nominal {
+    color: #00ff00;
+}
+
+.status-watch {
+    color: #ffff00;
+}
+
+.status-elevated {
+    color: #ff9900;
+}
+
+.status-critical {
+    color: #ff0000;
+}
+
+.status-cold {
+    color: #00ccff;
+}
+
+.freshness-current {
+    color: #00ff00;
+}
+
+.freshness-lag-one {
+    color: #ffff00;
+}
+
+.freshness-lag-two {
+    color: #ff9900;
+}
+
+.freshness-stale {
+    color: #ff0000;
+}
+
+.freshness-unavailable {
+    color: #888888;
+}
+
+.message {
+    margin-bottom: 18px;
+    padding: 15px;
+    border: 1px solid #ffffff;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+.section-title {
+    margin-bottom: 18px;
+    font-size: 17px;
+    letter-spacing: 3px;
+    text-align: center;
+}
+
+.city-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.city-card {
+    min-height: 220px;
+    padding: 12px 10px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+.city-name {
+    min-height: 32px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.city-current {
+    margin: 10px 0 4px;
+    font-size: 22px;
+    font-weight: bold;
+}
+
+.city-average {
+    color: #aaaaaa;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+.city-deviation {
+    margin-top: 8px;
+    font-size: 17px;
+    font-weight: bold;
+}
+
+.city-bar {
+    position: relative;
+    width: 100%;
+    height: 14px;
+    margin-top: 10px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.city-bar-center {
+    position: absolute;
+    z-index: 3;
+    top: 0;
+    left: 50%;
+    width: 1px;
+    height: 100%;
+    background: #ffffff;
+}
+
+.city-bar-positive {
+    position: absolute;
+    top: 2px;
+    left: 50%;
+    width: 0;
+    height: 8px;
+    background: #ff9900;
+}
+
+.city-bar-negative {
+    position: absolute;
+    top: 2px;
+    right: 50%;
+    width: 0;
+    height: 8px;
+    background: #00ccff;
+}
+
+.city-freshness {
+    min-height: 16px;
+    margin-top: 11px;
+    padding-top: 8px;
+    border-top: 1px dotted #555555;
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    line-height: 1.45;
+}
+
+.city-freshness-time {
+    min-height: 15px;
+    margin-top: 4px;
+    color: #aaaaaa;
+    font-size: 9px;
+    letter-spacing: 0.5px;
+    line-height: 1.45;
+}
+
+.range-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.range-button,
+.close-button {
+    padding: 8px 14px;
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.range-button:hover,
+.close-button:hover,
+.range-button.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.graph-wrapper {
+    padding: 12px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+.graph-title {
+    margin-bottom: 8px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 260px;
+}
+
+.city-history-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 14px;
+}
+
+.city-history {
+    padding: 10px;
+    border: 1px solid #ffffff;
+    box-sizing: border-box;
+}
+
+.city-history-title {
+    margin-bottom: 6px;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.city-history canvas {
+    height: 180px;
+}
+
+.footer {
+    margin-top: 15px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.close-controls {
+    margin-top: 18px;
+    padding-bottom: 10px;
+    text-align: center;
+}
+
+.close-button {
+    padding: 9px 24px;
+    letter-spacing: 2px;
+}
+
+@media (max-width: 800px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .header-title {
+        font-size: 21px;
+    }
+
+    .deviation-value {
+        font-size: 42px;
+    }
+
+    .city-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .city-history-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+@media (max-width: 450px) {
+
+    .city-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .range-button {
+        flex: 1 1 40%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="temp-container">
+
+    <div class="header">
+
+        <div class="header-title">
+            TEMPERATURE DEVIATION MONITOR
+        </div>
+
+        <div class="header-subtitle">
+            THE GREAT DARKNESS // ENVIRONMENTAL TREND SYSTEM
+        </div>
+
+    </div>
+
+
+    <div class="status-panel">
+
+        <div class="deviation-label">
+            ROLLED-UP TEMPERATURE DEVIATION
+        </div>
+
+        <div
+            id="networkDeviation"
+            class="deviation-value"
+        >
+            --°F
+        </div>
+
+        <div
+            id="tempStatus"
+            class="temp-status status-nominal"
+        >
+            DEVIATION STATUS: INITIALIZING
+        </div>
+
+        <div
+            id="reportingLocations"
+            class="reporting-locations"
+        >
+            REPORTING LOCATIONS: --
+        </div>
+
+    </div>
+
+
+    <div
+        id="message"
+        class="message"
+    >
+        TEMPERATURE MONITOR INITIALIZING...
+    </div>
+
+
+    <div class="city-panel">
+
+        <div class="section-title">
+            MONITORED LOCATIONS
+        </div>
+
+        <div
+            id="cityGrid"
+            class="city-grid"
+        ></div>
+
+    </div>
+
+
+    <div class="history-panel">
+
+        <div class="section-title">
+            TEMPERATURE DEVIATION HISTORY
+        </div>
+
+        <div class="range-controls">
+
+            <button
+                class="range-button active"
+                data-range="HOUR"
+                onclick="loadHistory('HOUR', this)"
+            >
+                HOUR
+            </button>
+
+            <button
+                class="range-button"
+                data-range="WEEK"
+                onclick="loadHistory('WEEK', this)"
+            >
+                WEEK
+            </button>
+
+            <button
+                class="range-button"
+                data-range="MONTH"
+                onclick="loadHistory('MONTH', this)"
+            >
+                MONTH
+            </button>
+
+            <button
+                class="range-button"
+                data-range="YEAR"
+                onclick="loadHistory('YEAR', this)"
+            >
+                YEAR
+            </button>
+
+            <button
+                class="range-button"
+                data-range="ANNUAL"
+                onclick="loadHistory('ANNUAL', this)"
+            >
+                ANNUAL
+            </button>
+
+        </div>
+
+        <div class="graph-wrapper">
+
+            <div class="graph-title">
+                NETWORK TEMPERATURE DEVIATION
+            </div>
+
+            <canvas id="overallGraph"></canvas>
+
+        </div>
+
+        <div
+            id="cityHistoryGrid"
+            class="city-history-grid"
+        ></div>
+
+    </div>
+
+
+    <div class="footer">
+        TEMPERATURE DEVIATION MONITOR // FIXED UTC-5 REPORTING
+    </div>
+
+
+    <div class="close-controls">
+
+        <button
+            type="button"
+            class="close-button"
+            onclick="closeTempView(); return false;"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+var currentRange =
+    "HOUR";
+
+var latestHistory =
+    null;
+
+var latestSummary =
+    null;
+
+
+/* ============================================================
+   LIVE TEMPERATURE STATUS
+   ============================================================ */
+
+function loadTempStatus() {
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                showMessage(
+                    "TEMPERATURE STATUS UNAVAILABLE."
+                );
+
+                return;
+            }
+
+            latestSummary =
+                result;
+
+            updateTempStatus(
+                result
+            );
+
+        })
+        .withFailureHandler(function(error) {
+
+            showMessage(
+                "TEMPERATURE ERROR: " +
+                getErrorMessage(error)
+            );
+
+        })
+        .getTempViewSummary();
+}
+
+
+function updateTempStatus(result) {
+
+    var deviation =
+        Number(
+            result.networkDeviation || 0
+        );
+
+    var status =
+        String(
+            result.status || "NOMINAL"
+        )
+            .trim()
+            .toUpperCase();
+
+    var deviationElement =
+        document.getElementById(
+            "networkDeviation"
+        );
+
+    var statusElement =
+        document.getElementById(
+            "tempStatus"
+        );
+
+    var locationsElement =
+        document.getElementById(
+            "reportingLocations"
+        );
+
+    deviationElement.textContent =
+        formatDeviation(
+            deviation
+        );
+
+    deviationElement.className =
+        "deviation-value " +
+        getDeviationColorClass(
+            deviation,
+            status
+        );
+
+    statusElement.textContent =
+        "DEVIATION STATUS: " +
+        status;
+
+    statusElement.className =
+        "temp-status " +
+        getStatusClass(
+            status,
+            deviation
+        );
+
+    locationsElement.textContent =
+        "REPORTING LOCATIONS: " +
+        Number(
+            result.reportingLocations || 0
+        );
+
+    buildCityCards(
+        result.locations || []
+    );
+
+    showMessage(
+        "DISPLAY SUMMARY: " +
+        formatReportingDateTime(
+            result.reportingTime
+        ) +
+        " // REPORTING CLOCK: UTC-5"
+    );
+}
+
+
+/* ============================================================
+   CITY STATUS CARDS
+   ============================================================ */
+
+function buildCityCards(locations) {
+
+    var grid =
+        document.getElementById(
+            "cityGrid"
+        );
+
+    if (!grid) {
+        return;
+    }
+
+    grid.innerHTML =
+        "";
+
+    if (
+        !Array.isArray(locations) ||
+        locations.length === 0
+    ) {
+
+        grid.innerHTML =
+            "<div class=\"city-card\">" +
+            "NO LOCATION DATA" +
+            "</div>";
+
+        return;
+    }
+
+    locations.forEach(
+        function(location) {
+
+            var card =
+                document.createElement(
+                    "div"
+                );
+
+            card.className =
+                "city-card";
+
+            var hasData =
+                !!location.hasData;
+
+            var deviation =
+                hasData
+                    ? Number(
+                        location.deviation
+                    )
+                    : null;
+
+            var magnitude =
+                hasData &&
+                Number.isFinite(deviation)
+                    ? Math.min(
+                        100,
+                        Math.abs(deviation) *
+                        10
+                    )
+                    : 0;
+
+            var directionClass =
+                hasData
+                    ? getDeviationColorClass(
+                        deviation,
+                        location.status
+                    )
+                    : "freshness-unavailable";
+
+            var positiveWidth =
+                hasData &&
+                deviation > 0
+                    ? magnitude / 2
+                    : 0;
+
+            var negativeWidth =
+                hasData &&
+                deviation < 0
+                    ? magnitude / 2
+                    : 0;
+
+            var freshness =
+                String(
+                    location.dataFreshness ||
+                    "NO_REPORT_AVAILABLE"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            var freshnessLabel =
+                String(
+                    location.dataFreshnessLabel ||
+                    "NO REPORT AVAILABLE"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            var freshnessClass =
+                getFreshnessClass_(
+                    freshness
+                );
+
+            var reportTimeLabel;
+
+            if (
+                !location.lastSuccessfulReportAt
+            ) {
+
+                reportTimeLabel =
+                    "EXPECTED: " +
+                    formatReportingDateTime(
+                        location.expectedCompletedReportAt
+                    );
+
+            } else if (
+                location.isRetainedLastKnownData
+            ) {
+
+                reportTimeLabel =
+                    "LAST VALID: " +
+                    formatReportingDateTime(
+                        location.lastSuccessfulReportAt
+                    );
+
+            } else {
+
+                reportTimeLabel =
+                    "LAST COMPLETED: " +
+                    formatReportingDateTime(
+                        location.lastSuccessfulReportAt
+                    );
+            }
+
+            var valueMarkup;
+
+            if (hasData) {
+
+                valueMarkup =
+
+                    "<div class=\"city-current\">" +
+                    formatTemperature(
+                        location.current
+                    ) +
+                    "</div>" +
+
+                    "<div class=\"city-average\">" +
+                    "AVG: " +
+                    formatTemperature(
+                        location.average
+                    ) +
+                    "</div>" +
+
+                    "<div class=\"city-deviation " +
+                    directionClass +
+                    "\">" +
+                    formatDeviation(
+                        deviation
+                    ) +
+                    "</div>" +
+
+                    "<div class=\"city-bar\">" +
+
+                        "<div class=\"city-bar-negative\" " +
+                            "style=\"width:" +
+                            negativeWidth +
+                            "%;background:" +
+                            (
+                                deviation < 0
+                                    ? getGraphLineColor_(
+                                        deviation
+                                    )
+                                    : "#00ccff"
+                            ) +
+                            ";\"></div>" +
+
+                        "<div class=\"city-bar-positive\" " +
+                            "style=\"width:" +
+                            positiveWidth +
+                            "%;background:" +
+                            (
+                                deviation > 0
+                                    ? getGraphLineColor_(
+                                        deviation
+                                    )
+                                    : "#ff9900"
+                            ) +
+                            ";\"></div>" +
+
+                        "<div class=\"city-bar-center\"></div>" +
+
+                    "</div>";
+
+            } else {
+
+                valueMarkup =
+
+                    "<div class=\"city-current freshness-unavailable\">" +
+                    "--°F" +
+                    "</div>" +
+
+                    "<div class=\"city-average\">" +
+                    "AVG: --°F" +
+                    "</div>" +
+
+                    "<div class=\"city-deviation freshness-unavailable\">" +
+                    "NO VALID REPORT" +
+                    "</div>" +
+
+                    "<div class=\"city-bar\">" +
+                        "<div class=\"city-bar-center\"></div>" +
+                    "</div>";
+            }
+
+            card.innerHTML =
+
+                "<div class=\"city-name\">" +
+                escapeHtml(
+                    location.location
+                ) +
+                "</div>" +
+
+                valueMarkup +
+
+                "<div class=\"city-freshness " +
+                freshnessClass +
+                "\">" +
+                escapeHtml(
+                    freshnessLabel
+                ) +
+                "</div>" +
+
+                "<div class=\"city-freshness-time\">" +
+                escapeHtml(
+                    reportTimeLabel
+                ) +
+                "</div>";
+
+            grid.appendChild(card);
+        }
+    );
+}
+
+
+function getFreshnessClass_(
+    freshness
+) {
+
+    switch (freshness) {
+
+        case "CURRENT":
+            return "freshness-current";
+
+        case "LAG_1_HOUR":
+            return "freshness-lag-one";
+
+        case "LAG_2_HOURS":
+            return "freshness-lag-two";
+
+        case "STALE_3_PLUS_HOURS":
+            return "freshness-stale";
+
+        default:
+            return "freshness-unavailable";
+    }
+}
+
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+
+function loadHistory(
+    range,
+    button
+) {
+
+    currentRange =
+        range;
+
+    document.querySelectorAll(
+        ".range-button"
+    )
+        .forEach(
+            function(item) {
+
+                item.classList.remove(
+                    "active"
+                );
+            }
+        );
+
+    if (button) {
+        button.classList.add(
+            "active"
+        );
+    }
+
+    showMessage(
+        "LOADING " +
+        range +
+        " TEMPERATURE HISTORY..."
+    );
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                showMessage(
+                    "TEMPERATURE HISTORY UNAVAILABLE."
+                );
+
+                return;
+            }
+
+            latestHistory =
+                result;
+
+            drawAllGraphs(
+                result
+            );
+
+            showMessage(
+                "HISTORY LOADED // " +
+                result.count +
+                " DATA POINT" +
+                (
+                    result.count === 1
+                        ? ""
+                        : "S"
+                ) +
+                " // RESOLUTION: " +
+                String(
+                    result.resolution
+                ).toUpperCase()
+            );
+
+        })
+        .withFailureHandler(function(error) {
+
+            showMessage(
+                "TEMPERATURE HISTORY ERROR: " +
+                getErrorMessage(error)
+            );
+
+        })
+        .getTempHistHistory(range);
+}
+
+
+/* ============================================================
+   HISTORY GRAPH BUILD
+   ============================================================ */
+
+function drawAllGraphs(result) {
+
+    var data =
+        result &&
+        Array.isArray(result.data)
+            ? result.data
+            : [];
+
+    drawDeviationGraph(
+        document.getElementById(
+            "overallGraph"
+        ),
+        data,
+        ""
+    );
+
+    buildCityHistoryGraphs(
+        data
+    );
+}
+
+
+function buildCityHistoryGraphs(data) {
+
+    var container =
+        document.getElementById(
+            "cityHistoryGrid"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML =
+        "";
+
+    var locations = {};
+
+    data.forEach(
+        function(point) {
+
+            if (
+                !point ||
+                !point.locations
+            ) {
+                return;
+            }
+
+            Object.keys(
+                point.locations
+            )
+                .forEach(
+                    function(location) {
+                        locations[location] =
+                            true;
+                    }
+                );
+        }
+    );
+
+    Object.keys(locations)
+        .sort()
+        .forEach(
+            function(location) {
+
+                var wrapper =
+                    document.createElement(
+                        "div"
+                    );
+
+                wrapper.className =
+                    "city-history";
+
+                var title =
+                    document.createElement(
+                        "div"
+                    );
+
+                title.className =
+                    "city-history-title";
+
+                title.textContent =
+                    location;
+
+                var canvas =
+                    document.createElement(
+                        "canvas"
+                    );
+
+                wrapper.appendChild(title);
+                wrapper.appendChild(canvas);
+
+                container.appendChild(wrapper);
+
+                drawDeviationGraph(
+                    canvas,
+                    data,
+                    location
+                );
+            }
+        );
+}
+
+
+/* ============================================================
+   ZERO-CENTERED GRAPH ENGINE
+   ============================================================ */
+
+function drawDeviationGraph(
+    canvas,
+    data,
+    locationName
+) {
+
+    if (!canvas) {
+        return;
+    }
+
+    var parent =
+        canvas.parentElement;
+
+    var width =
+        Math.max(
+            300,
+            Math.floor(
+                (
+                    parent
+                        ? parent.clientWidth
+                        : canvas.clientWidth
+                ) || 300
+            )
+        );
+
+    var height =
+        locationName
+            ? 180
+            : 260;
+
+    var ratio =
+        window.devicePixelRatio || 1;
+
+    canvas.style.width =
+        "100%";
+
+    canvas.style.height =
+        height + "px";
+
+    canvas.width =
+        Math.round(
+            width * ratio
+        );
+
+    canvas.height =
+        Math.round(
+            height * ratio
+        );
+
+    var ctx =
+        canvas.getContext("2d");
+
+    if (!ctx) {
+        return;
+    }
+
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    );
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+    var values =
+        extractGraphValues(
+            data,
+            locationName
+        );
+
+    if (values.length === 0) {
+
+        drawNoData(
+            ctx,
+            width,
+            height
+        );
+
+        return;
+    }
+
+    var scale =
+        getDeviationGraphScale_(
+            values
+        );
+
+    drawDeviationGrid(
+        ctx,
+        width,
+        height
+    );
+
+    drawDeviationLabels(
+        ctx,
+        width,
+        height,
+        scale
+    );
+
+    if (values.length === 1) {
+
+        drawDeviationPoint(
+            ctx,
+            width,
+            height,
+            values[0].value,
+            scale
+        );
+
+        drawGraphTimeLabels(
+            ctx,
+            values,
+            width,
+            height
+        );
+
+        return;
+    }
+
+    var left = 48;
+    var right = 12;
+    var top = 12;
+    var bottom = 28;
+
+    var graphWidth =
+        width - left - right;
+
+    var graphHeight =
+        height - top - bottom;
+
+    for (
+        var i = 1;
+        i < values.length;
+        i++
+    ) {
+
+        var previous =
+            values[i - 1];
+
+        var current =
+            values[i];
+
+        var previousX =
+            left +
+            (
+                (i - 1) /
+                (values.length - 1)
+            ) *
+            graphWidth;
+
+        var currentX =
+            left +
+            (
+                i /
+                (values.length - 1)
+            ) *
+            graphWidth;
+
+        var previousY =
+            deviationToY_(
+                previous.value,
+                top,
+                graphHeight,
+                scale
+            );
+
+        var currentY =
+            deviationToY_(
+                current.value,
+                top,
+                graphHeight,
+                scale
+            );
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            previousX,
+            previousY
+        );
+
+        ctx.lineTo(
+            currentX,
+            currentY
+        );
+
+        ctx.strokeStyle =
+            getGraphLineColor_(
+                (
+                    previous.value +
+                    current.value
+                ) / 2
+            );
+
+        ctx.lineWidth = 2;
+        ctx.lineJoin = "round";
+        ctx.lineCap = "round";
+        ctx.stroke();
+    }
+
+    values.forEach(
+        function(point, index) {
+
+            var x =
+                left +
+                (
+                    index /
+                    Math.max(
+                        1,
+                        values.length - 1
+                    )
+                ) *
+                graphWidth;
+
+            var y =
+                deviationToY_(
+                    point.value,
+                    top,
+                    graphHeight,
+                    scale
+                );
+
+            ctx.fillStyle =
+                getGraphLineColor_(
+                    point.value
+                );
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                2.5,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+        }
+    );
+
+    drawGraphTimeLabels(
+        ctx,
+        values,
+        width,
+        height
+    );
+}
+
+
+function extractGraphValues(
+    data,
+    locationName
+) {
+
+    var values = [];
+
+    if (!Array.isArray(data)) {
+        return values;
+    }
+
+    data.forEach(
+        function(point) {
+
+            var value;
+
+            if (!locationName) {
+
+                value =
+                    Number(
+                        point.deviation
+                    );
+
+            } else if (
+                point.locations &&
+                point.locations[
+                    locationName
+                ]
+            ) {
+
+                value =
+                    Number(
+                        point.locations[
+                            locationName
+                        ].deviation
+                    );
+            }
+
+            if (!Number.isFinite(value)) {
+                return;
+            }
+
+            values.push({
+
+                value:
+                    value,
+
+                timestamp:
+                    point.timestamp || "",
+
+                label:
+                    point.label || ""
+
+            });
+        }
+    );
+
+    return values;
+}
+
+
+function getDeviationGraphScale_(
+    values
+) {
+
+    var maxMagnitude = 2;
+
+    values.forEach(
+        function(point) {
+
+            maxMagnitude =
+                Math.max(
+                    maxMagnitude,
+                    Math.abs(
+                        Number(
+                            point.value
+                        ) || 0
+                    )
+                );
+        }
+    );
+
+    return Math.ceil(
+        maxMagnitude + 1
+    );
+}
+
+
+function drawDeviationGrid(
+    ctx,
+    width,
+    height
+) {
+
+    var left = 48;
+    var right = 12;
+    var top = 12;
+    var bottom = 28;
+
+    var graphWidth =
+        width - left - right;
+
+    var graphHeight =
+        height - top - bottom;
+
+    ctx.lineWidth = 1;
+
+    for (
+        var i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        var y =
+            top +
+            (
+                i / 4
+            ) *
+            graphHeight;
+
+        ctx.strokeStyle =
+            i === 2
+                ? "#ffffff"
+                : "#444444";
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            left,
+            y
+        );
+
+        ctx.lineTo(
+            left + graphWidth,
+            y
+        );
+
+        ctx.stroke();
+    }
+
+    ctx.strokeStyle =
+        "#ffffff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(left, top);
+
+    ctx.lineTo(
+        left,
+        top + graphHeight
+    );
+
+    ctx.lineTo(
+        left + graphWidth,
+        top + graphHeight
+    );
+
+    ctx.stroke();
+}
+
+
+function drawDeviationLabels(
+    ctx,
+    width,
+    height,
+    scale
+) {
+
+    var top = 12;
+    var graphHeight =
+        height - 12 - 28;
+
+    ctx.font =
+        "10px Courier New";
+
+    ctx.textAlign =
+        "left";
+
+    for (
+        var i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        var value =
+            scale -
+            (
+                i *
+                (scale / 2)
+            );
+
+        var y =
+            top +
+            (
+                i / 4
+            ) *
+            graphHeight +
+            3;
+
+        ctx.fillStyle =
+            value > 0
+                ? "#ff9900"
+                : (
+                    value < 0
+                        ? "#00ccff"
+                        : "#ffffff"
+                );
+
+        ctx.fillText(
+            formatDeviation(value),
+            5,
+            y
+        );
+    }
+}
+
+
+function deviationToY_(
+    value,
+    top,
+    graphHeight,
+    scale
+) {
+
+    var clamped =
+        Math.max(
+            -scale,
+            Math.min(
+                scale,
+                Number(value) || 0
+            )
+        );
+
+    return (
+        top +
+        (
+            (
+                scale - clamped
+            ) /
+            (
+                scale * 2
+            )
+        ) *
+        graphHeight
+    );
+}
+
+
+function drawDeviationPoint(
+    ctx,
+    width,
+    height,
+    value,
+    scale
+) {
+
+    var left = 48;
+    var right = 12;
+    var top = 12;
+    var bottom = 28;
+
+    var graphWidth =
+        width - left - right;
+
+    var graphHeight =
+        height - top - bottom;
+
+    var x =
+        left +
+        graphWidth / 2;
+
+    var y =
+        deviationToY_(
+            value,
+            top,
+            graphHeight,
+            scale
+        );
+
+    ctx.fillStyle =
+        getGraphLineColor_(
+            value
+        );
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        4,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.font =
+        "10px Courier New";
+
+    ctx.fillText(
+        formatDeviation(value),
+        x,
+        Math.max(
+            12,
+            y - 10
+        )
+    );
+}
+
+
+function drawGraphTimeLabels(
+    ctx,
+    data,
+    width,
+    height
+) {
+
+    if (
+        !data ||
+        data.length === 0
+    ) {
+        return;
+    }
+
+    var left = 48;
+    var right = 12;
+
+    var graphWidth =
+        width - left - right;
+
+    var indexes = [
+        0,
+        Math.floor(
+            (data.length - 1) / 2
+        ),
+        data.length - 1
+    ];
+
+    var used = {};
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "9px Courier New";
+
+    indexes.forEach(
+        function(index) {
+
+            if (used[index]) {
+                return;
+            }
+
+            used[index] = true;
+
+            var point =
+                data[index];
+
+            if (!point) {
+                return;
+            }
+
+            var x =
+                left +
+                (
+                    index /
+                    Math.max(
+                        1,
+                        data.length - 1
+                    )
+                ) *
+                graphWidth;
+
+            if (index === 0) {
+
+                ctx.textAlign =
+                    "left";
+
+            } else if (
+                index === data.length - 1
+            ) {
+
+                ctx.textAlign =
+                    "right";
+
+            } else {
+
+                ctx.textAlign =
+                    "center";
+            }
+
+            ctx.fillText(
+                point.label || "",
+                x,
+                height - 8
+            );
+        }
+    );
+}
+
+
+/* ============================================================
+   DISPLAY HELPERS
+   ============================================================ */
+
+function getGraphLineColor_(
+    deviation
+) {
+
+    var value =
+        Number(deviation) || 0;
+
+    if (value >= 7) {
+        return "#ff0000";
+    }
+
+    if (value >= 4) {
+        return "#ff9900";
+    }
+
+    if (value >= 2) {
+        return "#ffff00";
+    }
+
+    if (value <= -7) {
+        return "#0088ff";
+    }
+
+    if (value <= -4) {
+        return "#00ccff";
+    }
+
+    if (value <= -2) {
+        return "#66ffff";
+    }
+
+    return "#00ff00";
+}
+
+
+function getDeviationColorClass(
+    deviation,
+    status
+) {
+
+    var value =
+        Number(deviation) || 0;
+
+    if (value <= -2) {
+        return "status-cold";
+    }
+
+    if (status === "CRITICAL") {
+        return "status-critical";
+    }
+
+    if (status === "ELEVATED") {
+        return "status-elevated";
+    }
+
+    if (status === "WATCH") {
+        return "status-watch";
+    }
+
+    return "status-nominal";
+}
+
+
+function getStatusClass(
+    status,
+    deviation
+) {
+
+    if (
+        Number(deviation) < -2
+    ) {
+        return "status-cold";
+    }
+
+    if (status === "CRITICAL") {
+        return "status-critical";
+    }
+
+    if (status === "ELEVATED") {
+        return "status-elevated";
+    }
+
+    if (status === "WATCH") {
+        return "status-watch";
+    }
+
+    return "status-nominal";
+}
+
+
+function formatTemperature(value) {
+
+    if (
+        value === null ||
+        typeof value === "undefined" ||
+        value === ""
+    ) {
+        return "--°F";
+    }
+
+    var number =
+        Number(value);
+
+    return Number.isFinite(number)
+        ? number.toFixed(1) + "°F"
+        : "--°F";
+}
+
+
+function formatDeviation(value) {
+
+    if (
+        value === null ||
+        typeof value === "undefined" ||
+        value === ""
+    ) {
+        return "--°F";
+    }
+
+    var number =
+        Number(value);
+
+    if (!Number.isFinite(number)) {
+        return "--°F";
+    }
+
+    return (
+        (
+            number > 0
+                ? "+"
+                : ""
+        ) +
+        number.toFixed(1) +
+        "°F"
+    );
+}
+
+
+/* ============================================================
+   FIXED UTC-5 REPORTING DISPLAY
+//
+// Temp.gs returns reporting timestamps as pseudo-UTC Date
+// objects. Their UTC components represent the fixed UTC-5
+// reporting clock.
+// ============================================================ */
+
+function formatReportingDateTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    var date =
+        new Date(value);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    function format(number) {
+        return String(number)
+            .padStart(2, "0");
+    }
+
+    return (
+
+        format(
+            date.getUTCMonth() + 1
+        ) +
+
+        "/" +
+
+        format(
+            date.getUTCDate()
+        ) +
+
+        "/" +
+
+        date.getUTCFullYear() +
+
+        " " +
+
+        format(
+            date.getUTCHours()
+        ) +
+
+        ":" +
+
+        format(
+            date.getUTCMinutes()
+        )
+    );
+}
+
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function getErrorMessage(error) {
+
+    if (
+        error &&
+        error.message
+    ) {
+        return error.message;
+    }
+
+    return String(
+        error || "UNKNOWN ERROR"
+    );
+}
+
+
+function drawNoData(
+    ctx,
+    width,
+    height
+) {
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "12px Courier New";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.fillText(
+        "NO HISTORY DATA",
+        width / 2,
+        height / 2
+    );
+}
+
+
+function showMessage(message) {
+
+    var element =
+        document.getElementById(
+            "message"
+        );
+
+    if (element) {
+        element.textContent =
+            message;
+    }
+}
+
+
+function closeTempView() {
+    window.close();
+}
+
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (latestHistory) {
+            drawAllGraphs(
+                latestHistory
+            );
+        }
+    }
+);
+
+
+function initializeTempView() {
+
+    loadTempStatus();
+
+    loadHistory(
+        "HOUR",
+        document.querySelector(
+            '.range-button[data-range="HOUR"]'
+        )
+    );
+}
+
+
+setInterval(
+    function() {
+        loadTempStatus();
+    },
+    60000
+);
+
+
+initializeTempView();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>The Great Darkness - Seismic Activity Monitor</title>
+
+<style>
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+body {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.quake-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.header {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.header-title {
+    color: #00C853;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow:
+        0 0 8px
+        rgba(0, 200, 83, 0.4);
+}
+
+.header-subtitle {
+    margin-top: 8px;
+    color: #aaaaaa;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+
+/* ============================================================
+   STATUS
+   ============================================================ */
+
+.status-panel {
+    border: 2px solid #ffffff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.status-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+}
+
+.status-value {
+    font-size: 54px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.status-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.status-nominal {
+    color: #00ff00;
+}
+
+.status-watch {
+    color: #ffff00;
+}
+
+.status-elevated {
+    color: #ff9900;
+}
+
+.status-critical {
+    color: #ff0000;
+}
+
+.status-details {
+    margin-top: 12px;
+    color: #cccccc;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+}
+
+
+/* ============================================================
+   MESSAGE
+   ============================================================ */
+
+.message {
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ffffff;
+    margin-bottom: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+
+/* ============================================================
+   SECTORS
+   ============================================================ */
+
+.proximity-panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+}
+
+.proximity-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.proximity-card {
+    border: 1px solid #ffffff;
+    padding: 12px 10px;
+    text-align: center;
+    min-height: 125px;
+    box-sizing: border-box;
+}
+
+.proximity-city {
+    min-height: 32px;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+
+.proximity-value {
+    margin: 10px 0 6px;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.proximity-detail {
+    color: #aaaaaa;
+    font-size: 11px;
+    line-height: 1.6;
+}
+
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+
+.history-panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.range-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.range-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 8px 14px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.range-button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+.range-button.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.graph-wrapper {
+    position: relative;
+    border: 1px solid #ffffff;
+    padding: 12px;
+    box-sizing: border-box;
+    overflow-x: auto;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 280px;
+}
+
+#quakeGraph {
+    touch-action: manipulation;
+}
+
+.quake-graph-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    width: min(250px, calc(100% - 20px));
+    padding: 7px 8px;
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #cccccc;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    line-height: 1.55;
+    pointer-events: none;
+    text-align: left;
+    box-shadow: 2px 2px 0 #222222;
+}
+
+.quake-tooltip-magnitude {
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.quake-tooltip-status {
+    font-weight: bold;
+}
+
+.quake-tooltip-location {
+    margin-top: 3px;
+    color: #ffffff;
+    overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   EVENT LOG
+   ============================================================ */
+
+.event-panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.event-list {
+    border: 1px inset #ffffff;
+    max-height: 540px;
+    overflow-y: auto;
+    background: #000000;
+}
+
+.event-row {
+    padding: 10px;
+    border-bottom: 1px dashed #444444;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.event-row:last-child {
+    border-bottom: none;
+}
+
+.event-time {
+    color: #888888;
+}
+
+.event-place {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.event-detail {
+    color: #bbbbbb;
+}
+
+.event-reporting {
+    color: #777777;
+    font-size: 10px;
+    letter-spacing: 1px;
+}
+
+
+/* ============================================================
+   FOOTER / CLOSE
+   ============================================================ */
+
+.footer {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 15px;
+}
+
+.close-controls {
+    text-align: center;
+    margin-top: 18px;
+    padding-bottom: 10px;
+}
+
+.close-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 9px 24px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 800px) {
+
+    body {
+        padding: 10px;
+    }
+
+    .header-title {
+        font-size: 21px;
+    }
+
+    .status-value {
+        font-size: 42px;
+    }
+
+    .proximity-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+}
+
+@media (max-width: 450px) {
+
+    .proximity-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .range-button {
+        flex: 1 1 40%;
+    }
+
+}
+
+</style>
+
+</head>
+
+
+<body>
+
+<div class="quake-container">
+
+    <div class="header">
+
+        <div class="header-title">
+            SEISMIC ACTIVITY MONITOR
+        </div>
+
+        <div class="header-subtitle">
+            THE GREAT DARKNESS // U.S. SEISMIC SECTOR OBSERVATION
+        </div>
+
+    </div>
+
+
+    <div class="status-panel">
+
+        <div class="status-label">
+            U.S. SEISMIC STATUS
+        </div>
+
+        <div
+            id="statusValue"
+            class="status-value"
+        >
+            M--
+        </div>
+
+        <div
+            id="statusText"
+            class="status-text status-nominal"
+        >
+            STATUS: INITIALIZING
+        </div>
+
+        <div
+            id="statusDetails"
+            class="status-details"
+        >
+            EVENTS / LAST 24 HOURS: --
+        </div>
+
+    </div>
+
+
+    <div
+        id="message"
+        class="message"
+    >
+        SEISMIC MONITOR INITIALIZING...
+    </div>
+
+
+    <div class="proximity-panel">
+
+        <div class="section-title">
+            SEISMIC SECTORS
+        </div>
+
+        <div
+            id="proximityGrid"
+            class="proximity-grid"
+        ></div>
+
+    </div>
+
+
+    <div class="history-panel">
+
+        <div class="section-title">
+            EARTHQUAKE MAGNITUDE HISTORY
+        </div>
+
+        <div class="range-controls">
+
+            <button
+                class="range-button active"
+                data-range="24H"
+                onclick="loadQuakeHistory('24H', this)"
+            >
+                24 HOURS
+            </button>
+
+            <button
+                class="range-button"
+                data-range="7D"
+                onclick="loadQuakeHistory('7D', this)"
+            >
+                7 DAYS
+            </button>
+
+            <button
+                class="range-button"
+                data-range="30D"
+                onclick="loadQuakeHistory('30D', this)"
+            >
+                30 DAYS
+            </button>
+
+            <button
+                class="range-button"
+                data-range="1Y"
+                onclick="loadQuakeHistory('1Y', this)"
+            >
+                1 YEAR
+            </button>
+
+            <button
+                class="range-button"
+                data-range="FULL"
+                onclick="loadQuakeHistory('FULL', this)"
+            >
+                FULL LIST
+            </button>
+
+        </div>
+
+        <div class="graph-wrapper">
+
+            <div class="graph-title">
+                U.S. EARTHQUAKE MAGNITUDE
+            </div>
+
+            <canvas id="quakeGraph"></canvas>
+
+            <div
+                id="quakeGraphTooltip"
+                class="quake-graph-tooltip"
+            ></div>
+
+        </div>
+
+    </div>
+
+
+    <div class="event-panel">
+
+        <div class="section-title">
+            SEISMIC EVENT LOG
+        </div>
+
+        <div
+            id="eventList"
+            class="event-list"
+        >
+            LOADING EVENT LOG...
+        </div>
+
+    </div>
+
+
+    <div class="footer">
+        USGS EVENT DATA // FIXED UTC-5 REPORTING
+    </div>
+
+
+    <div class="close-controls">
+
+        <button
+            type="button"
+            class="close-button"
+            onclick="closeQuakeView(); return false;"
+        >
+            CLOSE
+        </button>
+
+    </div>
+
+</div>
+
+
+<script>
+
+var currentRange =
+    "24H";
+
+var latestHistory =
+    null;
+
+var latestStatus =
+    null;
+
+var quakeGraphPoints =
+    [];
+
+var quakeGraphTouchStart =
+    null;
+
+
+/* ============================================================
+   LOAD LIVE STATUS
+   ============================================================ */
+
+function loadQuakeStatus() {
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                showMessage(
+                    "SEISMIC STATUS UNAVAILABLE."
+                );
+
+                return;
+            }
+
+            latestStatus =
+                result;
+
+            updateQuakeStatus(
+                result
+            );
+
+        })
+        .withFailureHandler(function(error) {
+
+            showMessage(
+                "SEISMIC STATUS ERROR: " +
+                getErrorMessage(error)
+            );
+
+        })
+        .getQuakeStatus();
+
+}
+
+
+/* ============================================================
+   UPDATE STATUS
+   ============================================================ */
+
+function updateQuakeStatus(result) {
+
+    var status =
+        String(
+            result.status || "NOMINAL"
+        )
+            .trim()
+            .toUpperCase();
+
+    var highestMagnitude =
+        Number(
+            result.highestMagnitude
+        );
+
+    var statusValue =
+        document.getElementById(
+            "statusValue"
+        );
+
+    var statusText =
+        document.getElementById(
+            "statusText"
+        );
+
+    var statusDetails =
+        document.getElementById(
+            "statusDetails"
+        );
+
+    statusValue.textContent =
+        isFinite(highestMagnitude)
+            ? "M" +
+              highestMagnitude.toFixed(1)
+            : "M--";
+
+    statusValue.className =
+        "status-value " +
+        getStatusClass(status);
+
+    statusText.textContent =
+        "STATUS: " +
+        status;
+
+    statusText.className =
+        "status-text " +
+        getStatusClass(status);
+
+    var details =
+        "EVENTS / LAST " +
+        Number(
+            result.windowHours || 24
+        ) +
+        " HOURS: " +
+        Number(
+            result.eventCount || 0
+        );
+
+    if (result.mostRecent) {
+
+        details +=
+            "\nMOST RECENT: M" +
+            Number(
+                result.mostRecent.magnitude || 0
+            ).toFixed(1) +
+            " // " +
+            String(
+                result.mostRecent.place ||
+                "UNKNOWN LOCATION"
+            ) +
+
+            "\nSECTOR: " +
+            String(
+                result.mostRecent.sector ||
+                "--"
+            ) +
+            " // " +
+            String(
+                result.mostRecent.sectorName ||
+                "UNKNOWN"
+            );
+    }
+
+    statusDetails.textContent =
+        details;
+
+    showMessage(
+        "SEISMIC STATUS UPDATED // " +
+        formatFixedUtc5DateTime(
+            result.timestamp
+        )
+    );
+}
+
+
+/* ============================================================
+   LOAD HISTORY
+   ============================================================ */
+
+function loadQuakeHistory(
+    range,
+    button
+) {
+
+    currentRange =
+        range;
+
+    var buttons =
+        document.querySelectorAll(
+            ".range-button"
+        );
+
+    buttons.forEach(
+        function(item) {
+
+            item.classList.remove(
+                "active"
+            );
+
+        }
+    );
+
+    if (button) {
+
+        button.classList.add(
+            "active"
+        );
+    }
+
+    showMessage(
+        "LOADING " +
+        range +
+        " SEISMIC HISTORY..."
+    );
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+
+            if (
+                !result ||
+                !result.success
+            ) {
+
+                showMessage(
+                    "SEISMIC HISTORY UNAVAILABLE."
+                );
+
+                return;
+            }
+
+            latestHistory =
+                result;
+
+            drawQuakeGraph(
+                result.data || []
+            );
+
+            renderQuakeEvents(
+                result.data || []
+            );
+
+            buildSeismicSectorCards(
+                result.data || []
+            );
+
+            showMessage(
+                "HISTORY LOADED // " +
+                result.count +
+                " EVENT" +
+                (
+                    result.count === 1
+                        ? ""
+                        : "S"
+                ) +
+                " // RANGE: " +
+                range
+            );
+
+        })
+        .withFailureHandler(function(error) {
+
+            showMessage(
+                "SEISMIC HISTORY ERROR: " +
+                getErrorMessage(error)
+            );
+
+        })
+        .getQuakeHistory(range);
+}
+
+
+/* ============================================================
+   SEISMIC SECTOR CARDS
+   ============================================================ */
+
+function buildSeismicSectorCards(events) {
+
+    var container =
+        document.getElementById(
+            "proximityGrid"
+        );
+
+    if (!container) {
+        return;
+    }
+
+    container.innerHTML =
+        "";
+
+    var sectorDefinitions = {
+
+        1: "NORTHEAST",
+        2: "MID-ATLANTIC",
+        3: "SOUTHEAST",
+        4: "GULF / TEXAS",
+        5: "SOUTHWEST",
+        6: "CALIFORNIA",
+        7: "PACIFIC NORTHWEST",
+        8: "MIDWEST / GREAT LAKES"
+
+    };
+
+    var sectorMap = {};
+
+    for (
+        var sector = 1;
+        sector <= 8;
+        sector++
+    ) {
+
+        sectorMap[sector] = {
+
+            sector:
+                sector,
+
+            name:
+                sectorDefinitions[sector],
+
+            count:
+                0,
+
+            highestMagnitude:
+                null,
+
+            highestStatus:
+                "NOMINAL",
+
+            newestEvent:
+                null
+
+        };
+    }
+
+    events.forEach(
+        function(event) {
+
+            var sector =
+                Number(
+                    event.sector
+                );
+
+            if (
+                !sectorMap[sector]
+            ) {
+                return;
+            }
+
+            var sectorData =
+                sectorMap[sector];
+
+            sectorData.count++;
+
+            var magnitude =
+                Number(
+                    event.magnitude
+                );
+
+            if (
+                isFinite(magnitude) &&
+                (
+                    sectorData.highestMagnitude === null ||
+                    magnitude >
+                    sectorData.highestMagnitude
+                )
+            ) {
+
+                sectorData.highestMagnitude =
+                    magnitude;
+            }
+
+            if (
+                getStatusRank(
+                    event.status
+                ) >
+                getStatusRank(
+                    sectorData.highestStatus
+                )
+            ) {
+
+                sectorData.highestStatus =
+                    event.status;
+            }
+
+            if (
+                !sectorData.newestEvent ||
+                new Date(
+                    event.timestamp
+                ).getTime() >
+                new Date(
+                    sectorData.newestEvent.timestamp
+                ).getTime()
+            ) {
+
+                sectorData.newestEvent =
+                    event;
+            }
+        }
+    );
+
+    for (
+        var sector = 1;
+        sector <= 8;
+        sector++
+    ) {
+
+        var sectorData =
+            sectorMap[sector];
+
+        var card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "proximity-card";
+
+        var magnitudeText =
+            sectorData.highestMagnitude === null
+                ? "--"
+                : "M" +
+                  sectorData.highestMagnitude.toFixed(1);
+
+        var latestText =
+            sectorData.newestEvent
+                ? formatFixedUtc5DateTime(
+                    sectorData.newestEvent.timestamp
+                  )
+                : "NO EVENTS";
+
+        card.innerHTML =
+            "<div class=\"proximity-city\">" +
+            "SECTOR " +
+            sectorData.sector +
+            "<br>" +
+            escapeHtml(
+                sectorData.name
+            ) +
+            "</div>" +
+
+            "<div class=\"proximity-value " +
+            getStatusClass(
+                sectorData.highestStatus
+            ) +
+            "\">" +
+            magnitudeText +
+            "</div>" +
+
+            "<div class=\"proximity-detail\">" +
+            "STATUS: " +
+            escapeHtml(
+                sectorData.highestStatus
+            ) +
+            "<br>" +
+            "EVENTS: " +
+            sectorData.count +
+            "<br>" +
+            "LATEST: " +
+            escapeHtml(
+                latestText
+            ) +
+            "</div>";
+
+        container.appendChild(card);
+    }
+}
+
+
+/* ============================================================
+   EVENT LOG
+   ============================================================ */
+
+function renderQuakeEvents(events) {
+
+    var eventList =
+        document.getElementById(
+            "eventList"
+        );
+
+    if (!eventList) {
+        return;
+    }
+
+    eventList.innerHTML =
+        "";
+
+    if (
+        !Array.isArray(events) ||
+        events.length === 0
+    ) {
+
+        eventList.textContent =
+            "NO SEISMIC EVENTS IN THIS RANGE.";
+
+        return;
+    }
+
+    var newestFirst =
+        events.slice()
+            .reverse();
+
+    newestFirst.forEach(
+        function(event) {
+
+            var row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "event-row";
+
+            var status =
+                String(
+                    event.status || "NOMINAL"
+                )
+                    .trim()
+                    .toUpperCase();
+
+            row.innerHTML =
+                "<div class=\"event-time\">" +
+                escapeHtml(
+                    formatFixedUtc5DateTime(
+                        event.timestamp
+                    )
+                ) +
+                "</div>" +
+
+                "<div class=\"event-place " +
+                getStatusClass(status) +
+                "\">" +
+                "M" +
+                Number(
+                    event.magnitude || 0
+                ).toFixed(1) +
+                " // " +
+                escapeHtml(
+                    event.place ||
+                    "UNKNOWN LOCATION"
+                ) +
+                "</div>" +
+
+                "<div class=\"event-detail\">" +
+                "STATUS: " +
+                escapeHtml(status) +
+                " // DEPTH: " +
+                Math.round(
+                    Number(
+                        event.depthKm || 0
+                    )
+                ) +
+                " KM" +
+                " // SIG: " +
+                Number(
+                    event.significance || 0
+                ) +
+                "</div>" +
+
+                "<div class=\"event-detail\">" +
+                "SECTOR: " +
+                escapeHtml(
+                    String(
+                        event.sector || "--"
+                    )
+                ) +
+                " // " +
+                escapeHtml(
+                    event.sectorName ||
+                    "UNKNOWN"
+                ) +
+                "</div>" +
+
+                "<div class=\"event-reporting\">" +
+                "USGS ID: " +
+                escapeHtml(
+                    event.eventId || ""
+                ) +
+                " // RADAR: " +
+                escapeHtml(
+                    event.radarReported || "NO"
+                ) +
+                " // GUESTBOOK: " +
+                escapeHtml(
+                    event.guestbookReported || "NO"
+                ) +
+                "</div>";
+
+            eventList.appendChild(row);
+        }
+    );
+}
+
+
+/* ============================================================
+   MAGNITUDE GRAPH
+   ============================================================ */
+
+function drawQuakeGraph(events) {
+
+    var canvas =
+        document.getElementById(
+            "quakeGraph"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    quakeGraphPoints =
+        [];
+
+    hideQuakeGraphTooltip_();
+
+    var parent =
+        canvas.parentElement;
+
+    var width =
+        parent
+            ? parent.clientWidth
+            : canvas.clientWidth;
+
+    width =
+        Math.max(
+            300,
+            Math.floor(
+                width || 300
+            )
+        );
+
+    var height =
+        280;
+
+    var ratio =
+        window.devicePixelRatio || 1;
+
+    canvas.style.width =
+        "100%";
+
+    canvas.style.height =
+        height + "px";
+
+    canvas.width =
+        Math.round(
+            width * ratio
+        );
+
+    canvas.height =
+        Math.round(
+            height * ratio
+        );
+
+    var ctx =
+        canvas.getContext(
+            "2d"
+        );
+
+    if (!ctx) {
+        return;
+    }
+
+    ctx.setTransform(
+        ratio,
+        0,
+        0,
+        ratio,
+        0,
+        0
+    );
+
+    ctx.clearRect(
+        0,
+        0,
+        width,
+        height
+    );
+
+    if (
+        !Array.isArray(events) ||
+        events.length === 0
+    ) {
+
+        drawNoData(
+            ctx,
+            width,
+            height
+        );
+
+        return;
+    }
+
+    var left =
+        42;
+
+    var right =
+        12;
+
+    var top =
+        12;
+
+    var bottom =
+        28;
+
+    var graphWidth =
+        width -
+        left -
+        right;
+
+    var graphHeight =
+        height -
+        top -
+        bottom;
+
+    var maximumMagnitude =
+        1;
+
+    events.forEach(
+        function(event) {
+
+            maximumMagnitude =
+                Math.max(
+                    maximumMagnitude,
+                    Number(
+                        event.magnitude || 0
+                    )
+                );
+        }
+    );
+
+    maximumMagnitude =
+        Math.max(
+            3,
+            Math.ceil(
+                maximumMagnitude
+            )
+        );
+
+    drawMagnitudeGrid(
+        ctx,
+        width,
+        height,
+        maximumMagnitude
+    );
+
+    events.forEach(
+        function(event, index) {
+
+            var magnitude =
+                Number(
+                    event.magnitude || 0
+                );
+
+            var x;
+
+            if (events.length === 1) {
+
+                x =
+                    left +
+                    graphWidth / 2;
+
+            } else {
+
+                x =
+                    left +
+                    (
+                        index /
+                        (
+                            events.length - 1
+                        )
+                    ) *
+                    graphWidth;
+            }
+
+            var y =
+                top +
+                graphHeight -
+                (
+                    magnitude /
+                    maximumMagnitude
+                ) *
+                graphHeight;
+
+            var baselineY =
+                top +
+                graphHeight;
+
+            ctx.strokeStyle =
+                getStatusColor(
+                    event.status
+                );
+
+            ctx.lineWidth =
+                2;
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                baselineY
+            );
+
+            ctx.lineTo(
+                x,
+                y
+            );
+
+            ctx.stroke();
+
+            ctx.fillStyle =
+                getStatusColor(
+                    event.status
+                );
+
+            ctx.beginPath();
+
+            ctx.arc(
+                x,
+                y,
+                events.length === 1
+                    ? 5
+                    : 4,
+                0,
+                Math.PI * 2
+            );
+
+            ctx.fill();
+
+            quakeGraphPoints.push({
+
+                x:
+                    x,
+
+                y:
+                    y,
+
+                radius:
+                    events.length === 1
+                        ? 8
+                        : 7,
+
+                event:
+                    event
+
+            });
+        }
+    );
+
+    if (events.length === 1) {
+
+        ctx.fillStyle =
+            "#ffffff";
+
+        ctx.font =
+            "10px Courier New";
+
+        ctx.textAlign =
+            "center";
+
+        ctx.fillText(
+            "M" +
+            Number(
+                events[0].magnitude || 0
+            ).toFixed(1),
+            quakeGraphPoints[0].x,
+            Math.max(
+                12,
+                quakeGraphPoints[0].y - 10
+            )
+        );
+    }
+
+    drawQuakeTimeLabels(
+        ctx,
+        events,
+        width,
+        height
+    );
+}
+
+
+/* ============================================================
+   GRAPH POINT INTERACTION / TOOLTIP
+   ============================================================ */
+
+function findQuakeGraphPoint_(
+    canvasX,
+    canvasY
+) {
+
+    var closest =
+        null;
+
+    var closestDistance =
+        Infinity;
+
+    quakeGraphPoints.forEach(
+        function(point) {
+
+            var xDifference =
+                canvasX -
+                point.x;
+
+            var yDifference =
+                canvasY -
+                point.y;
+
+            var distance =
+                Math.sqrt(
+                    xDifference *
+                    xDifference +
+                    yDifference *
+                    yDifference
+                );
+
+            if (
+                distance <=
+                point.radius + 5 &&
+                distance <
+                closestDistance
+            ) {
+
+                closest =
+                    point;
+
+                closestDistance =
+                    distance;
+            }
+        }
+    );
+
+    return closest;
+}
+
+
+function getQuakeGraphCanvasCoordinates_(
+    canvas,
+    clientX,
+    clientY
+) {
+
+    var rect =
+        canvas.getBoundingClientRect();
+
+    return {
+
+        x:
+            clientX -
+            rect.left,
+
+        y:
+            clientY -
+            rect.top
+
+    };
+}
+
+
+function showQuakeGraphTooltip_(
+    point,
+    clientX,
+    clientY
+) {
+
+    var canvas =
+        document.getElementById(
+            "quakeGraph"
+        );
+
+    var tooltip =
+        document.getElementById(
+            "quakeGraphTooltip"
+        );
+
+    if (
+        !canvas ||
+        !tooltip ||
+        !point ||
+        !point.event
+    ) {
+        return;
+    }
+
+    var wrapper =
+        canvas.parentElement;
+
+    if (!wrapper) {
+        return;
+    }
+
+    var event =
+        point.event;
+
+    var status =
+        String(
+            event.status || "NOMINAL"
+        )
+            .trim()
+            .toUpperCase();
+
+    var severityColor =
+        getStatusColor(status);
+
+    tooltip.style.borderColor =
+        severityColor;
+
+    tooltip.innerHTML =
+
+        "<div class=\"quake-tooltip-magnitude\" " +
+        "style=\"color:" +
+        severityColor +
+        ";\">" +
+        "M" +
+        Number(
+            event.magnitude || 0
+        ).toFixed(1) +
+        "</div>" +
+
+        "<div>" +
+        escapeHtml(
+            formatFixedUtc5DateTime(
+                event.timestamp
+            )
+        ) +
+        " UTC-5" +
+        "</div>" +
+
+        "<div class=\"quake-tooltip-status\" " +
+        "style=\"color:" +
+        severityColor +
+        ";\">" +
+        "STATUS: " +
+        escapeHtml(status) +
+        "</div>" +
+
+        "<div>" +
+        "SECTOR: " +
+        escapeHtml(
+            String(
+                event.sector || "--"
+            )
+        ) +
+        " // " +
+        escapeHtml(
+            event.sectorName ||
+            "UNKNOWN"
+        ) +
+        "</div>" +
+
+        "<div class=\"quake-tooltip-location\">" +
+        "REPORTED LOCATION: " +
+        escapeHtml(
+            event.place ||
+            "UNKNOWN LOCATION"
+        ) +
+        "</div>";
+
+    var wrapperRect =
+        wrapper.getBoundingClientRect();
+
+    var relativeX =
+        clientX -
+        wrapperRect.left;
+
+    var relativeY =
+        clientY -
+        wrapperRect.top;
+
+    tooltip.style.display =
+        "block";
+
+    var maximumLeft =
+        Math.max(
+            8,
+            wrapper.clientWidth -
+            tooltip.offsetWidth -
+            8
+        );
+
+    var maximumTop =
+        Math.max(
+            8,
+            wrapper.clientHeight -
+            tooltip.offsetHeight -
+            8
+        );
+
+    tooltip.style.left =
+        Math.max(
+            8,
+            Math.min(
+                maximumLeft,
+                relativeX + 12
+            )
+        ) +
+        "px";
+
+    tooltip.style.top =
+        Math.max(
+            8,
+            Math.min(
+                maximumTop,
+                relativeY + 12
+            )
+        ) +
+        "px";
+}
+
+
+function hideQuakeGraphTooltip_() {
+
+    var tooltip =
+        document.getElementById(
+            "quakeGraphTooltip"
+        );
+
+    if (tooltip) {
+        tooltip.style.display =
+            "none";
+    }
+}
+
+
+function initializeQuakeGraphInteraction_() {
+
+    var canvas =
+        document.getElementById(
+            "quakeGraph"
+        );
+
+    if (!canvas) {
+        return;
+    }
+
+    canvas.addEventListener(
+        "mousemove",
+        function(event) {
+
+            var coordinates =
+                getQuakeGraphCanvasCoordinates_(
+                    canvas,
+                    event.clientX,
+                    event.clientY
+                );
+
+            var point =
+                findQuakeGraphPoint_(
+                    coordinates.x,
+                    coordinates.y
+                );
+
+            canvas.style.cursor =
+                point
+                    ? "pointer"
+                    : "default";
+
+            if (point) {
+
+                showQuakeGraphTooltip_(
+                    point,
+                    event.clientX,
+                    event.clientY
+                );
+
+            } else {
+
+                hideQuakeGraphTooltip_();
+            }
+        }
+    );
+
+    canvas.addEventListener(
+        "mouseleave",
+        function() {
+
+            canvas.style.cursor =
+                "default";
+
+            hideQuakeGraphTooltip_();
+        }
+    );
+
+    canvas.addEventListener(
+        "touchstart",
+        function(event) {
+
+            if (
+                !event.touches ||
+                event.touches.length === 0
+            ) {
+                return;
+            }
+
+            quakeGraphTouchStart =
+                {
+
+                    x:
+                        event.touches[0].clientX,
+
+                    y:
+                        event.touches[0].clientY
+
+                };
+        },
+        {
+            passive: true
+        }
+    );
+
+    canvas.addEventListener(
+        "touchend",
+        function(event) {
+
+            if (!quakeGraphTouchStart) {
+                hideQuakeGraphTooltip_();
+                return;
+            }
+
+            var touch =
+                event.changedTouches &&
+                event.changedTouches.length > 0
+                    ? event.changedTouches[0]
+                    : null;
+
+            if (!touch) {
+                hideQuakeGraphTooltip_();
+                return;
+            }
+
+            var movement =
+                Math.sqrt(
+                    Math.pow(
+                        touch.clientX -
+                        quakeGraphTouchStart.x,
+                        2
+                    ) +
+                    Math.pow(
+                        touch.clientY -
+                        quakeGraphTouchStart.y,
+                        2
+                    )
+                );
+
+            quakeGraphTouchStart =
+                null;
+
+            if (movement > 18) {
+                return;
+            }
+
+            var coordinates =
+                getQuakeGraphCanvasCoordinates_(
+                    canvas,
+                    touch.clientX,
+                    touch.clientY
+                );
+
+            var point =
+                findQuakeGraphPoint_(
+                    coordinates.x,
+                    coordinates.y
+                );
+
+            if (point) {
+
+                event.preventDefault();
+
+                showQuakeGraphTooltip_(
+                    point,
+                    touch.clientX,
+                    touch.clientY
+                );
+
+            } else {
+
+                hideQuakeGraphTooltip_();
+            }
+        },
+        {
+            passive: false
+        }
+    );
+}
+
+
+/* ============================================================
+   MAGNITUDE GRID
+   ============================================================ */
+
+function drawMagnitudeGrid(
+    ctx,
+    width,
+    height,
+    maximumMagnitude
+) {
+
+    var left =
+        42;
+
+    var right =
+        12;
+
+    var top =
+        12;
+
+    var bottom =
+        28;
+
+    var graphWidth =
+        width -
+        left -
+        right;
+
+    var graphHeight =
+        height -
+        top -
+        bottom;
+
+    ctx.font =
+        "10px Courier New";
+
+    ctx.textAlign =
+        "left";
+
+    for (
+        var i = 0;
+        i <= 4;
+        i++
+    ) {
+
+        var magnitude =
+            maximumMagnitude -
+            (
+                i *
+                maximumMagnitude /
+                4
+            );
+
+        var y =
+            top +
+            (
+                i / 4
+            ) *
+            graphHeight;
+
+        ctx.strokeStyle =
+            i === 4
+                ? "#ffffff"
+                : "#444444";
+
+        ctx.lineWidth =
+            1;
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            left,
+            y
+        );
+
+        ctx.lineTo(
+            left + graphWidth,
+            y
+        );
+
+        ctx.stroke();
+
+        ctx.fillStyle =
+            i === 4
+                ? "#ffffff"
+                : "#aaaaaa";
+
+        ctx.fillText(
+            "M" +
+            magnitude.toFixed(1),
+            4,
+            y + 3
+        );
+    }
+
+    ctx.strokeStyle =
+        "#ffffff";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        left,
+        top
+    );
+
+    ctx.lineTo(
+        left,
+        top + graphHeight
+    );
+
+    ctx.lineTo(
+        left + graphWidth,
+        top + graphHeight
+    );
+
+    ctx.stroke();
+}
+
+
+/* ============================================================
+   GRAPH TIME LABELS
+   ============================================================ */
+
+function drawQuakeTimeLabels(
+    ctx,
+    events,
+    width,
+    height
+) {
+
+    if (
+        !events ||
+        events.length === 0
+    ) {
+        return;
+    }
+
+    var left =
+        42;
+
+    var right =
+        12;
+
+    var graphWidth =
+        width -
+        left -
+        right;
+
+    var indexes = [
+        0,
+        Math.floor(
+            (
+                events.length - 1
+            ) / 2
+        ),
+        events.length - 1
+    ];
+
+    var used = {};
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "9px Courier New";
+
+    indexes.forEach(
+        function(index) {
+
+            if (used[index]) {
+                return;
+            }
+
+            used[index] =
+                true;
+
+            var event =
+                events[index];
+
+            if (!event) {
+                return;
+            }
+
+            var x;
+
+            if (events.length === 1) {
+
+                x =
+                    left +
+                    graphWidth / 2;
+
+            } else {
+
+                x =
+                    left +
+                    (
+                        index /
+                        (
+                            events.length - 1
+                        )
+                    ) *
+                    graphWidth;
+            }
+
+            if (index === 0) {
+
+                ctx.textAlign =
+                    "left";
+
+            } else if (
+                index ===
+                events.length - 1
+            ) {
+
+                ctx.textAlign =
+                    "right";
+
+            } else {
+
+                ctx.textAlign =
+                    "center";
+            }
+
+            ctx.fillText(
+                formatQuakeGraphDate(
+                    event.timestamp
+                ),
+                x,
+                height - 8
+            );
+        }
+    );
+}
+
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+
+function getStatusRank(status) {
+
+    switch (
+        String(status || "")
+            .trim()
+            .toUpperCase()
+    ) {
+
+        case "CRITICAL":
+            return 3;
+
+        case "ELEVATED":
+            return 2;
+
+        case "WATCH":
+            return 1;
+
+        default:
+            return 0;
+    }
+}
+
+
+function getStatusClass(status) {
+
+    switch (
+        String(status || "")
+            .trim()
+            .toUpperCase()
+    ) {
+
+        case "CRITICAL":
+            return "status-critical";
+
+        case "ELEVATED":
+            return "status-elevated";
+
+        case "WATCH":
+            return "status-watch";
+
+        default:
+            return "status-nominal";
+    }
+}
+
+
+function getStatusColor(status) {
+
+    switch (
+        String(status || "")
+            .trim()
+            .toUpperCase()
+    ) {
+
+        case "CRITICAL":
+            return "#ff0000";
+
+        case "ELEVATED":
+            return "#ff9900";
+
+        case "WATCH":
+            return "#ffff00";
+
+        default:
+            return "#00ff00";
+    }
+}
+
+
+function formatFixedUtc5DateTime(value) {
+
+    if (!value) {
+        return "--";
+    }
+
+    var date =
+        new Date(value);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return String(value);
+    }
+
+    var shifted =
+        new Date(
+            date.getTime() -
+            5 *
+            60 *
+            60 *
+            1000
+        );
+
+    function format(number) {
+
+        return String(number)
+            .padStart(
+                2,
+                "0"
+            );
+    }
+
+    return (
+
+        format(
+            shifted.getUTCMonth() + 1
+        ) +
+
+        "/" +
+
+        format(
+            shifted.getUTCDate()
+        ) +
+
+        "/" +
+
+        shifted.getUTCFullYear() +
+
+        " " +
+
+        format(
+            shifted.getUTCHours()
+        ) +
+
+        ":" +
+
+        format(
+            shifted.getUTCMinutes()
+        )
+
+    );
+}
+
+
+function formatQuakeGraphDate(value) {
+
+    if (!value) {
+        return "";
+    }
+
+    var date =
+        new Date(value);
+
+    if (
+        isNaN(
+            date.getTime()
+        )
+    ) {
+        return "";
+    }
+
+    var shifted =
+        new Date(
+            date.getTime() -
+            5 *
+            60 *
+            60 *
+            1000
+        );
+
+    if (
+        currentRange === "24H"
+    ) {
+
+        return String(
+            shifted.getUTCHours()
+        )
+            .padStart(
+                2,
+                "0"
+            ) +
+            ":00";
+    }
+
+    if (
+        currentRange === "7D" ||
+        currentRange === "30D" ||
+        currentRange === "1Y"
+    ) {
+
+        return (
+            shifted.getUTCMonth() + 1
+        ) +
+        "/" +
+        shifted.getUTCDate();
+    }
+
+    return String(
+        shifted.getUTCFullYear()
+    );
+}
+
+
+function escapeHtml(value) {
+
+    return String(value || "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
+
+
+function getErrorMessage(error) {
+
+    if (
+        error &&
+        error.message
+    ) {
+        return error.message;
+    }
+
+    return String(
+        error || "UNKNOWN ERROR"
+    );
+}
+
+
+function drawNoData(
+    ctx,
+    width,
+    height
+) {
+
+    ctx.fillStyle =
+        "#ffffff";
+
+    ctx.font =
+        "12px Courier New";
+
+    ctx.textAlign =
+        "center";
+
+    ctx.fillText(
+        "NO SEISMIC HISTORY DATA",
+        width / 2,
+        height / 2
+    );
+}
+
+
+function showMessage(message) {
+
+    var element =
+        document.getElementById(
+            "message"
+        );
+
+    if (element) {
+        element.textContent =
+            message;
+    }
+}
+
+
+function closeQuakeView() {
+
+    window.close();
+}
+
+
+/* ============================================================
+   RESIZE
+   ============================================================ */
+
+window.addEventListener(
+    "resize",
+    function() {
+
+        if (latestHistory) {
+
+            drawQuakeGraph(
+                latestHistory.data || []
+            );
+
+        }
+
+    }
+);
+
+
+/* ============================================================
+   INITIALIZE
+   ============================================================ */
+
+function initializeQuakeView() {
+
+    initializeQuakeGraphInteraction_();
+
+    loadQuakeStatus();
+
+    loadQuakeHistory(
+        "24H",
+        document.querySelector(
+            '.range-button[data-range="24H"]'
+        )
+    );
+}
+
+
+setInterval(
+    function() {
+
+        loadQuakeStatus();
+
+        loadQuakeHistory(
+            currentRange,
+            document.querySelector(
+                '.range-button.active'
+            )
+        );
+
+    },
+    300000
+);
+
+
+initializeQuakeView();
+
+</script>
+
+</body>
+</html>

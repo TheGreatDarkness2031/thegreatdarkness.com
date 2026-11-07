@@ -1,0 +1,2409 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<title>OER // Event Reporting Console</title>
+
+  <base target="_top">
+
+  <style>
+
+    :root {
+      --black: #000000;
+      --panel: #101010;
+      --gray: #808080;
+      --light-gray: #c0c0c0;
+      --white: #ffffff;
+      --muted: #888888;
+      --dark-line: #333333;
+      --green: #00ff00;
+      --yellow: #ffff00;
+      --orange: #ff9900;
+      --red: #ff0000;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+      background: var(--black);
+      color: var(--white);
+      font-family: "Courier New", Courier, monospace;
+    }
+
+    body {
+      padding: 16px 8px;
+    }
+
+    .console-window {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 3px;
+      background: var(--light-gray);
+      border-top: 3px solid #ffffff;
+      border-left: 3px solid #ffffff;
+      border-right: 3px solid #404040;
+      border-bottom: 3px solid #404040;
+    }
+
+    .title-bar {
+      min-height: 25px;
+      padding: 5px 7px;
+      background: #000080;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 13px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .title-bar-right {
+      float: right;
+      color: #d0d0d0;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+      font-weight: normal;
+    }
+
+    .window-body {
+      padding: 8px;
+    }
+
+    .console-heading {
+      margin-bottom: 8px;
+      color: #111111;
+      font-size: 11px;
+      font-weight: bold;
+      line-height: 1.55;
+    }
+
+    .console-heading-muted {
+      color: #444444;
+      font-weight: normal;
+    }
+
+    .bevel-outset {
+      background: var(--light-gray);
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+    }
+
+    .bevel-inset {
+      background: var(--black);
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    .controls-panel {
+      margin-bottom: 8px;
+      padding: 7px;
+    }
+
+    .controls-title {
+      margin-bottom: 7px;
+      color: #111111;
+      font-size: 11px;
+      font-weight: bold;
+    }
+
+    .view-controls,
+    .status-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    button,
+    select {
+      border-radius: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+    }
+
+    button {
+      min-height: 24px;
+      padding: 3px 8px;
+      background: var(--light-gray);
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+      color: #000000;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:active,
+    button.active {
+      padding: 4px 7px 2px 9px;
+      background: #a0a0a0;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    button:disabled {
+      color: #777777;
+      cursor: default;
+    }
+
+    select {
+      height: 24px;
+      padding: 2px 4px;
+      background: #ffffff;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+      color: #000000;
+    }
+
+    .control-label {
+      margin-right: 2px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .source-selection-panel {
+      margin: 8px 0;
+      padding: 7px;
+      border-top: 1px solid #808080;
+      border-bottom: 1px solid #808080;
+    }
+
+    .source-heading,
+    .severity-heading,
+    .status-heading {
+      margin-bottom: 7px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+    }
+
+    .source-checkboxes {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 5px 12px;
+      margin-bottom: 8px;
+    }
+
+    .source-toggle {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      min-width: 0;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      line-height: 1.35;
+      user-select: none;
+    }
+
+    .source-toggle input {
+      width: 13px;
+      height: 13px;
+      margin: 0;
+      accent-color: #000080;
+      cursor: pointer;
+    }
+
+    .source-toggle-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .source-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .source-empty {
+      grid-column: 1 / -1;
+      color: #555555;
+      font-size: 10px;
+      line-height: 1.5;
+    }
+
+    .status-controls {
+      padding-top: 8px;
+      border-top: 1px solid #808080;
+    }
+
+    .severity-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px 10px;
+      padding-top: 8px;
+      border-top: 1px solid #808080;
+    }
+
+    .severity-heading {
+      width: 100%;
+      margin-bottom: -1px;
+    }
+
+    .severity-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: #111111;
+      font-size: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .severity-toggle input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .toggle-track {
+      position: relative;
+      display: inline-block;
+      width: 32px;
+      height: 16px;
+      background: #555555;
+      border-top: 2px solid #404040;
+      border-left: 2px solid #404040;
+      border-right: 2px solid #ffffff;
+      border-bottom: 2px solid #ffffff;
+    }
+
+    .toggle-knob {
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 12px;
+      height: 10px;
+      background: #c0c0c0;
+      border-top: 1px solid #ffffff;
+      border-left: 1px solid #ffffff;
+      border-right: 1px solid #404040;
+      border-bottom: 1px solid #404040;
+    }
+
+    .severity-toggle input:checked + .toggle-track {
+      background: #006000;
+    }
+
+    .severity-toggle input:checked + .toggle-track .toggle-knob {
+      left: 15px;
+      background: #00cc00;
+    }
+
+    .status-strip {
+      min-height: 24px;
+      margin-bottom: 8px;
+      padding: 5px 7px;
+      background: #000000;
+      color: #00ff00;
+      font-size: 11px;
+      line-height: 1.5;
+    }
+
+    .status-strip.error {
+      color: #ff7777;
+    }
+
+    .content-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 7fr) minmax(245px, 3fr);
+      gap: 9px;
+    }
+
+    .panel-title {
+      padding: 4px 6px;
+      background: #000080;
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+
+    .stream-panel,
+    .conditions-panel {
+      min-width: 0;
+    }
+
+    .event-stream {
+      min-height: 530px;
+      max-height: 680px;
+      overflow-y: auto;
+      background: #000000;
+    }
+
+    .event-row {
+      padding: 8px;
+      border-bottom: 1px dotted #555555;
+      background: #000000;
+    }
+
+    .event-row:hover {
+      background: #0c0c0c;
+    }
+
+    .event-topline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 5px;
+    }
+
+    .event-time {
+      color: #888888;
+      font-size: 10px;
+      white-space: nowrap;
+    }
+
+    .severity-badge {
+      display: inline-block;
+      min-width: 78px;
+      padding: 2px 4px;
+      border: 1px solid currentColor;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .severity-nominal {
+      color: var(--green);
+    }
+
+    .severity-watch {
+      color: var(--yellow);
+    }
+
+    .severity-elevated {
+      color: var(--orange);
+    }
+
+    .severity-critical {
+      color: var(--red);
+    }
+
+    .event-source {
+      display: inline-block;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+    }
+
+    .event-source.linked {
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .event-source.linked:hover,
+    .event-source.linked:focus {
+      filter: brightness(1.45);
+      outline: none;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    .event-summary {
+      color: #eeeeee;
+      font-size: 11px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .event-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-top: 6px;
+      color: #777777;
+      font-size: 10px;
+      line-height: 1.4;
+    }
+
+    .details-button {
+      min-width: 74px;
+      min-height: 20px;
+      padding: 2px 5px;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 10px;
+    }
+
+    .event-details {
+      display: none;
+      margin-top: 8px;
+      padding: 7px;
+      background: #080808;
+      border: 1px inset #666666;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .event-details.open {
+      display: block;
+    }
+
+    .empty-message {
+      padding: 28px 14px;
+      color: #888888;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .conditions-body {
+      min-height: 530px;
+      padding: 8px;
+      background: #000000;
+    }
+
+    .condition-counts {
+      margin-bottom: 9px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #555555;
+      color: #cccccc;
+      font-size: 11px;
+      line-height: 1.8;
+    }
+
+    .condition-count-critical {
+      color: var(--red);
+    }
+
+    .condition-count-elevated {
+      color: var(--orange);
+    }
+
+    .condition-count-watch {
+      color: var(--yellow);
+    }
+
+    .condition-item {
+      display: block;
+      margin-bottom: 8px;
+      padding: 7px;
+      border: 1px solid #444444;
+      background: #080808;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .condition-item.linked {
+      cursor: pointer;
+    }
+
+    .condition-item.linked:hover,
+    .condition-item.linked:focus {
+      border-color: #aaaaaa;
+      filter: brightness(1.25);
+      outline: none;
+    }
+
+    .condition-source {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 10px;
+      font-weight: bold;
+      letter-spacing: 0.3px;
+    }
+
+    .condition-status {
+      margin-top: 4px;
+      color: #cccccc;
+      font-size: 10px;
+      line-height: 1.45;
+    }
+
+    .condition-none {
+      padding: 14px 4px;
+      color: #777777;
+      font-size: 10px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 9px;
+      padding: 4px 2px 1px;
+      color: #777777;
+      font-size: 10px;
+      text-align: center;
+    }
+
+    @media (max-width: 780px) {
+
+      body {
+        padding: 7px 0;
+      }
+
+      .console-window {
+        width: 100%;
+      }
+
+      .title-bar-right {
+        display: none;
+      }
+
+      .source-checkboxes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .content-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .conditions-body {
+        min-height: 0;
+      }
+
+      .event-stream {
+        min-height: 400px;
+      }
+    }
+
+    @media (max-width: 440px) {
+
+      .source-checkboxes {
+        grid-template-columns: 1fr;
+      }
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <main class="console-window">
+
+    <header class="title-bar">
+      === OER EVENT REPORTING CONSOLE ===
+
+      <span class="title-bar-right">
+        NODE: GDK-001
+      </span>
+    </header>
+
+    <section class="window-body">
+
+      <div class="console-heading">
+        OPERATIONAL EVENT REGISTER // LIVE DATA REPORTING<br>
+
+        <span class="console-heading-muted">
+          REPORTING_EVENTS SOURCE // AUTOMATED MONITOR ACTIVITY
+        </span>
+      </div>
+
+      <section class="controls-panel bevel-outset">
+
+        <div class="controls-title">
+          EVENT DISPLAY CONTROLS
+        </div>
+
+        <div class="view-controls">
+
+          <button
+            id="currentViewButton"
+            type="button"
+            class="active"
+          >
+            CURRENT EVENTS
+          </button>
+
+          <button
+            id="allViewButton"
+            type="button"
+          >
+            VIEW ALL EVENTS
+          </button>
+
+          <span class="control-label">
+            ARCHIVE:
+          </span>
+
+          <select
+            id="archiveSelect"
+            aria-label="Archive bucket"
+          >
+            <option value="">
+              SELECT
+            </option>
+          </select>
+
+          <button
+            id="archiveViewButton"
+            type="button"
+          >
+            VIEW ARCHIVE
+          </button>
+
+          <button
+            id="refreshButton"
+            type="button"
+          >
+            REFRESH FEED
+          </button>
+
+        </div>
+
+        <div class="source-selection-panel">
+
+          <div class="source-heading">
+            === EVENT SOURCE SELECTION ===
+          </div>
+
+          <div
+            id="sourceCheckboxes"
+            class="source-checkboxes"
+          >
+            <div class="source-empty">
+              LOADING ACTIVE CONFIG SOURCES...
+            </div>
+          </div>
+
+          <div class="source-actions">
+
+            <button
+              id="applySourceFilterButton"
+              type="button"
+            >
+              APPLY FILTER
+            </button>
+
+            <button
+              id="clearSourceFilterButton"
+              type="button"
+            >
+              CLEAR
+            </button>
+
+          </div>
+
+        </div>
+
+        <div class="status-controls">
+
+          <div class="status-heading">
+            EVENT STATUS FILTER
+          </div>
+
+          <button
+            type="button"
+            class="status-filter-button active"
+            data-filter="ALL"
+          >
+            ALL EVENTS
+          </button>
+
+          <button
+            type="button"
+            class="status-filter-button"
+            data-filter="ACTIVE"
+          >
+            ACTIVE
+          </button>
+
+          <button
+            type="button"
+            class="status-filter-button"
+            data-filter="WATCH"
+          >
+            WATCH
+          </button>
+
+          <button
+            type="button"
+            class="status-filter-button"
+            data-filter="ELEVATED"
+          >
+            ELEVATED
+          </button>
+
+          <button
+            type="button"
+            class="status-filter-button"
+            data-filter="CRITICAL"
+          >
+            CRITICAL
+          </button>
+
+        </div>
+
+        <div class="severity-controls">
+
+          <div class="severity-heading">
+            DISPLAY SEVERITY LEVELS
+          </div>
+
+          <button
+            id="allOnButton"
+            type="button"
+          >
+            ALL ON
+          </button>
+
+          <label class="severity-toggle">
+            <input
+              type="checkbox"
+              value="1"
+              checked
+            >
+
+            <span class="toggle-track">
+              <span class="toggle-knob"></span>
+            </span>
+
+            LEVEL 1
+          </label>
+
+          <label class="severity-toggle">
+            <input
+              type="checkbox"
+              value="2"
+              checked
+            >
+
+            <span class="toggle-track">
+              <span class="toggle-knob"></span>
+            </span>
+
+            LEVEL 2
+          </label>
+
+          <label class="severity-toggle">
+            <input
+              type="checkbox"
+              value="3"
+              checked
+            >
+
+            <span class="toggle-track">
+              <span class="toggle-knob"></span>
+            </span>
+
+            LEVEL 3
+          </label>
+
+          <label class="severity-toggle">
+            <input
+              type="checkbox"
+              value="4"
+              checked
+            >
+
+            <span class="toggle-track">
+              <span class="toggle-knob"></span>
+            </span>
+
+            LEVEL 4
+          </label>
+
+          <label class="severity-toggle">
+            <input
+              type="checkbox"
+              value="5"
+              checked
+            >
+
+            <span class="toggle-track">
+              <span class="toggle-knob"></span>
+            </span>
+
+            LEVEL 5
+          </label>
+
+        </div>
+
+      </section>
+
+      <div
+        id="statusStrip"
+        class="status-strip bevel-inset"
+      >
+        FEED: INITIALIZING...
+      </div>
+
+      <section class="content-layout">
+
+        <section class="stream-panel bevel-inset">
+
+          <div class="panel-title">
+            === LIVE EVENT STREAM ===
+          </div>
+
+          <div
+            id="eventStream"
+            class="event-stream"
+          >
+            <div class="empty-message">
+              RETRIEVING REPORTING EVENTS...
+            </div>
+          </div>
+
+        </section>
+
+        <aside class="conditions-panel bevel-inset">
+
+          <div class="panel-title">
+            === ACTIVE CONDITIONS ===
+          </div>
+
+          <div
+            id="conditionsBody"
+            class="conditions-body"
+          >
+            <div class="condition-none">
+              ANALYZING CURRENT CONDITIONS...
+            </div>
+          </div>
+
+        </aside>
+
+      </section>
+
+      <footer class="footer">
+        OER EVENT REPORTING CONSOLE //
+        CONFIG-DRIVEN ACTIVE SOURCE FILTERING //
+        NEWEST RECORDS DISPLAYED FIRST
+      </footer>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    var eventFeedState = {
+
+      view:
+        "current",
+
+      archive:
+        0,
+
+      filter:
+        "ALL",
+
+      limit:
+        25,
+
+      sourceAll:
+        true,
+
+      sourceKeys:
+        []
+
+    };
+
+    var eventFeedData =
+      null;
+
+    var eventFeedElements = {
+
+      currentViewButton:
+        document.getElementById(
+          "currentViewButton"
+        ),
+
+      allViewButton:
+        document.getElementById(
+          "allViewButton"
+        ),
+
+      archiveSelect:
+        document.getElementById(
+          "archiveSelect"
+        ),
+
+      archiveViewButton:
+        document.getElementById(
+          "archiveViewButton"
+        ),
+
+      refreshButton:
+        document.getElementById(
+          "refreshButton"
+        ),
+
+      sourceCheckboxes:
+        document.getElementById(
+          "sourceCheckboxes"
+        ),
+
+      applySourceFilterButton:
+        document.getElementById(
+          "applySourceFilterButton"
+        ),
+
+      clearSourceFilterButton:
+        document.getElementById(
+          "clearSourceFilterButton"
+        ),
+
+      statusFilterButtons:
+        document.querySelectorAll(
+          ".status-filter-button"
+        ),
+
+      allOnButton:
+        document.getElementById(
+          "allOnButton"
+        ),
+
+      severityInputs:
+        document.querySelectorAll(
+          ".severity-toggle input"
+        ),
+
+      statusStrip:
+        document.getElementById(
+          "statusStrip"
+        ),
+
+      eventStream:
+        document.getElementById(
+          "eventStream"
+        ),
+
+      conditionsBody:
+        document.getElementById(
+          "conditionsBody"
+        )
+    };
+
+
+    function initializeEventFeedView() {
+
+      bindEventFeedControls_();
+
+      loadEventFeedData_();
+
+      setInterval(
+        function() {
+
+          if (
+            eventFeedState.view ===
+            "current"
+          ) {
+            loadEventFeedData_();
+          }
+
+        },
+        30000
+      );
+    }
+
+
+    function bindEventFeedControls_() {
+
+      eventFeedElements.currentViewButton.addEventListener(
+        "click",
+        function() {
+
+          eventFeedState.view =
+            "current";
+
+          eventFeedState.archive = 0;
+
+          loadEventFeedData_();
+        }
+      );
+
+      eventFeedElements.allViewButton.addEventListener(
+        "click",
+        function() {
+
+          eventFeedState.view =
+            "all";
+
+          eventFeedState.archive = 0;
+
+          loadEventFeedData_();
+        }
+      );
+
+      eventFeedElements.archiveViewButton.addEventListener(
+        "click",
+        function() {
+
+          var archive =
+            Number(
+              eventFeedElements.archiveSelect.value
+            );
+
+          if (
+            !Number.isFinite(archive) ||
+            archive < 1
+          ) {
+            return;
+          }
+
+          eventFeedState.view =
+            "archive";
+
+          eventFeedState.archive =
+            Math.floor(archive);
+
+          loadEventFeedData_();
+        }
+      );
+
+      eventFeedElements.refreshButton.addEventListener(
+        "click",
+        function() {
+          loadEventFeedData_();
+        }
+      );
+
+      eventFeedElements.applySourceFilterButton.addEventListener(
+        "click",
+        function() {
+          loadEventFeedData_();
+        }
+      );
+
+      eventFeedElements.clearSourceFilterButton.addEventListener(
+        "click",
+        function() {
+
+          eventFeedState.sourceAll =
+            true;
+
+          eventFeedState.sourceKeys =
+            [];
+
+          renderEventFeedSourcePanel_(
+            eventFeedData &&
+            eventFeedData.sources
+              ? eventFeedData.sources
+              : []
+          );
+
+          loadEventFeedData_();
+        }
+      );
+
+      Array.prototype.forEach.call(
+        eventFeedElements.statusFilterButtons,
+        function(button) {
+
+          button.addEventListener(
+            "click",
+            function() {
+
+              eventFeedState.filter =
+                String(
+                  button.dataset.filter ||
+                  "ALL"
+                )
+                  .trim()
+                  .toUpperCase();
+
+              updateEventFeedStatusButtons_();
+
+              loadEventFeedData_();
+            }
+          );
+        }
+      );
+
+      eventFeedElements.allOnButton.addEventListener(
+        "click",
+        function() {
+
+          Array.prototype.forEach.call(
+            eventFeedElements.severityInputs,
+            function(input) {
+              input.checked = true;
+            }
+          );
+
+          loadEventFeedData_();
+        }
+      );
+
+      Array.prototype.forEach.call(
+        eventFeedElements.severityInputs,
+        function(input) {
+
+          input.addEventListener(
+            "change",
+            function() {
+              loadEventFeedData_();
+            }
+          );
+        }
+      );
+    }
+
+
+    function getSelectedSeverityLevels_() {
+
+      var levels = [];
+
+      Array.prototype.forEach.call(
+        eventFeedElements.severityInputs,
+        function(input) {
+
+          if (input.checked) {
+
+            levels.push(
+              Number(input.value)
+            );
+          }
+        }
+      );
+
+      return levels;
+    }
+
+
+    function getSelectedSourceKeys_() {
+
+      return eventFeedState.sourceAll
+        ? []
+        : eventFeedState.sourceKeys.slice();
+    }
+
+
+    function loadEventFeedData_() {
+
+      setEventFeedLoading_(true);
+
+      google.script.run
+        .withSuccessHandler(
+          function(data) {
+            renderEventFeedData_(data);
+          }
+        )
+        .withFailureHandler(
+          function(error) {
+            renderEventFeedError_(error);
+          }
+        )
+        .getEventFeedData({
+
+          view:
+            eventFeedState.view,
+
+          archive:
+            eventFeedState.archive,
+
+          filter:
+            eventFeedState.filter,
+
+          severityLevels:
+            getSelectedSeverityLevels_(),
+
+          sourceKeys:
+            getSelectedSourceKeys_(),
+
+          limit:
+            eventFeedState.limit
+
+        });
+    }
+
+
+    function renderEventFeedData_(
+      data
+    ) {
+
+      if (
+        !data ||
+        !data.success
+      ) {
+
+        renderEventFeedError_(
+          "INVALID EVENT FEED RESPONSE."
+        );
+
+        return;
+      }
+
+      eventFeedData = data;
+
+      updateEventFeedArchiveOptions_(
+        data.archiveBuckets || []
+      );
+
+      updateEventFeedViewButtons_();
+
+      updateEventFeedStatusButtons_();
+
+      renderEventFeedSourcePanel_(
+        data.sources || []
+      );
+
+      renderEventFeedStatus_(
+        data
+      );
+
+      renderEventStream_(
+        data.events || []
+      );
+
+      renderActiveConditions_(
+        data.activeConditions || {}
+      );
+
+      setEventFeedLoading_(false);
+    }
+
+
+    function updateEventFeedArchiveOptions_(
+      archiveBuckets
+    ) {
+
+      var selectedValue =
+        eventFeedState.view ===
+        "archive"
+          ? String(
+              eventFeedState.archive
+            )
+          : "";
+
+      eventFeedElements.archiveSelect.innerHTML =
+        '<option value="">SELECT</option>';
+
+      archiveBuckets.forEach(
+        function(archive) {
+
+          var option =
+            document.createElement(
+              "option"
+            );
+
+          option.value =
+            String(archive);
+
+          option.textContent =
+            "ARCHIVE " +
+            archive;
+
+          eventFeedElements.archiveSelect.appendChild(
+            option
+          );
+        }
+      );
+
+      eventFeedElements.archiveSelect.value =
+        selectedValue;
+    }
+
+
+    function updateEventFeedViewButtons_() {
+
+      eventFeedElements.currentViewButton.className =
+        eventFeedState.view ===
+        "current"
+          ? "active"
+          : "";
+
+      eventFeedElements.allViewButton.className =
+        eventFeedState.view ===
+        "all"
+          ? "active"
+          : "";
+    }
+
+
+    function updateEventFeedStatusButtons_() {
+
+      Array.prototype.forEach.call(
+        eventFeedElements.statusFilterButtons,
+        function(button) {
+
+          button.className =
+            String(
+              button.dataset.filter ||
+              "ALL"
+            )
+              .toUpperCase() ===
+            eventFeedState.filter
+              ? "status-filter-button active"
+              : "status-filter-button";
+        }
+      );
+    }
+
+
+    function reconcileEventFeedSourceKeys_(
+      sources
+    ) {
+
+      var activeMap =
+        Object.create(null);
+
+      sources.forEach(
+        function(source) {
+
+          activeMap[
+            String(
+              source.rawSource || ""
+            )
+              .trim()
+              .toUpperCase()
+          ] = true;
+        }
+      );
+
+      eventFeedState.sourceKeys =
+        eventFeedState.sourceKeys.filter(
+          function(rawSource) {
+
+            return !!activeMap[
+              String(rawSource)
+                .toUpperCase()
+            ];
+          }
+        );
+
+      if (
+        !eventFeedState.sourceAll &&
+        eventFeedState.sourceKeys.length === 0
+      ) {
+        eventFeedState.sourceAll =
+          true;
+      }
+    }
+
+
+    function renderEventFeedSourcePanel_(
+      sources
+    ) {
+
+      eventFeedElements.sourceCheckboxes.innerHTML =
+        "";
+
+      if (!Array.isArray(sources)) {
+        sources = [];
+      }
+
+      reconcileEventFeedSourceKeys_(
+        sources
+      );
+
+      var allLabel =
+        document.createElement(
+          "label"
+        );
+
+      allLabel.className =
+        "source-toggle";
+
+      var allInput =
+        document.createElement(
+          "input"
+        );
+
+      allInput.type =
+        "checkbox";
+
+      allInput.checked =
+        eventFeedState.sourceAll;
+
+      allInput.addEventListener(
+        "change",
+        function() {
+
+          eventFeedState.sourceAll =
+            true;
+
+          eventFeedState.sourceKeys =
+            [];
+
+          renderEventFeedSourcePanel_(
+            sources
+          );
+        }
+      );
+
+      var allText =
+        document.createElement(
+          "span"
+        );
+
+      allText.className =
+        "source-toggle-label";
+
+      allText.textContent =
+        "ALL SOURCES";
+
+      allLabel.appendChild(allInput);
+      allLabel.appendChild(allText);
+
+      eventFeedElements.sourceCheckboxes.appendChild(
+        allLabel
+      );
+
+      if (sources.length === 0) {
+
+        var empty =
+          document.createElement(
+            "div"
+          );
+
+        empty.className =
+          "source-empty";
+
+        empty.textContent =
+          "NO ACTIVE CONFIG SOURCES AVAILABLE.";
+
+        eventFeedElements.sourceCheckboxes.appendChild(
+          empty
+        );
+
+        return;
+      }
+
+      sources.forEach(
+        function(source) {
+
+          var rawSource =
+            String(
+              source.rawSource || ""
+            )
+              .trim()
+              .toUpperCase();
+
+          if (!rawSource) {
+            return;
+          }
+
+          var label =
+            document.createElement(
+              "label"
+            );
+
+          label.className =
+            "source-toggle";
+
+          var input =
+            document.createElement(
+              "input"
+            );
+
+          input.type =
+            "checkbox";
+
+          input.value =
+            rawSource;
+
+          input.checked =
+            !eventFeedState.sourceAll &&
+            eventFeedState.sourceKeys.indexOf(
+              rawSource
+            ) !== -1;
+
+          input.addEventListener(
+            "change",
+            function() {
+
+              eventFeedState.sourceAll =
+                false;
+
+              var index =
+                eventFeedState.sourceKeys.indexOf(
+                  rawSource
+                );
+
+              if (input.checked) {
+
+                if (index === -1) {
+
+                  eventFeedState.sourceKeys.push(
+                    rawSource
+                  );
+                }
+
+              } else if (index !== -1) {
+
+                eventFeedState.sourceKeys.splice(
+                  index,
+                  1
+                );
+              }
+
+              eventFeedState.sourceKeys.sort();
+
+              if (
+                eventFeedState.sourceKeys.length === 0
+              ) {
+
+                eventFeedState.sourceAll =
+                  true;
+              }
+
+              renderEventFeedSourcePanel_(
+                sources
+              );
+            }
+          );
+
+          var text =
+            document.createElement(
+              "span"
+            );
+
+          text.className =
+            "source-toggle-label";
+
+          text.style.color =
+            source.accentColor ||
+            "#111111";
+
+          text.textContent =
+            source.displayName ||
+            rawSource;
+
+          label.appendChild(input);
+          label.appendChild(text);
+
+          eventFeedElements.sourceCheckboxes.appendChild(
+            label
+          );
+        }
+      );
+    }
+
+
+    function getEventFeedViewLabel_(
+      data
+    ) {
+
+      if (
+        data.view === "all"
+      ) {
+        return "ALL";
+      }
+
+      if (
+        data.view === "archive"
+      ) {
+        return (
+          "ARCHIVE #" +
+          data.archive
+        );
+      }
+
+      return "CURRENT";
+    }
+
+
+    function getEventFeedSourceLabel_() {
+
+      if (eventFeedState.sourceAll) {
+        return "ALL SOURCES";
+      }
+
+      return eventFeedState.sourceKeys.length > 0
+        ? eventFeedState.sourceKeys.join(",")
+        : "ALL SOURCES";
+    }
+
+
+    function formatEventFeedUtcMinusFive_(
+      isoValue
+    ) {
+
+      if (!isoValue) {
+        return "--";
+      }
+
+      var date =
+        new Date(isoValue);
+
+      if (
+        isNaN(
+          date.getTime()
+        )
+      ) {
+        return "--";
+      }
+
+      var reportingDate =
+        new Date(
+          date.getTime() -
+          5 *
+          60 *
+          60 *
+          1000
+        );
+
+      return (
+
+        String(
+          reportingDate.getUTCMonth() + 1
+        )
+          .padStart(2, "0") +
+
+        "/" +
+
+        String(
+          reportingDate.getUTCDate()
+        )
+          .padStart(2, "0") +
+
+        "/" +
+
+        String(
+          reportingDate.getUTCFullYear()
+        )
+          .slice(-2) +
+
+        " " +
+
+        String(
+          reportingDate.getUTCHours()
+        )
+          .padStart(2, "0") +
+
+        ":" +
+
+        String(
+          reportingDate.getUTCMinutes()
+        )
+          .padStart(2, "0")
+      );
+    }
+
+
+    function formatEventFeedPollTime_() {
+
+      return (
+        formatEventFeedUtcMinusFive_(
+          new Date().toISOString()
+        ) +
+        " UTC-5"
+      );
+    }
+
+
+    function renderEventFeedStatus_(
+      data
+    ) {
+
+      var levels =
+        data.severityLevels || [];
+
+      eventFeedElements.statusStrip.className =
+        "status-strip bevel-inset";
+
+      eventFeedElements.statusStrip.textContent =
+        "FEED: ONLINE  |  " +
+        "LAST POLL: " +
+        formatEventFeedPollTime_() +
+        "  |  VIEW: " +
+        getEventFeedViewLabel_(data) +
+        "  |  STATUS: " +
+        eventFeedState.filter +
+        "  |  SOURCES: " +
+        getEventFeedSourceLabel_() +
+        "  |  SEVERITY: " +
+        (
+          levels.length > 0
+            ? levels.join(",")
+            : "NONE"
+        ) +
+        "  |  RECORDS: " +
+        (
+          data.events || []
+        ).length;
+    }
+
+
+    function getSeverityBadgeClass_(
+      event
+    ) {
+
+      var status =
+        String(
+          event.status || ""
+        )
+          .trim()
+          .toUpperCase();
+
+      if (status === "CRITICAL") {
+        return "severity-critical";
+      }
+
+      if (status === "ELEVATED") {
+        return "severity-elevated";
+      }
+
+      if (status === "WATCH") {
+        return "severity-watch";
+      }
+
+      return "severity-nominal";
+    }
+
+
+    function getSeverityBadgeText_(
+      event
+    ) {
+
+      return (
+        String(
+          event.status || "NOMINAL"
+        )
+          .trim()
+          .toUpperCase() +
+        " / S" +
+        event.severity
+      );
+    }
+
+
+    function buildEventFeedRoute_(
+      route
+    ) {
+
+      return String(
+        route || ""
+      )
+        .trim();
+    }
+
+
+    function openEventFeedRoute_(
+      route
+    ) {
+
+      route =
+        buildEventFeedRoute_(
+          route
+        );
+
+      if (!route) {
+        return;
+      }
+
+      window.open(
+        route,
+        "_blank",
+        "noopener"
+      );
+    }
+
+
+    function formatEventDetails_(
+      event
+    ) {
+
+      var detailsText =
+        String(
+          event.details || ""
+        ).trim();
+
+      if (detailsText) {
+
+        try {
+
+          detailsText =
+            JSON.stringify(
+              JSON.parse(detailsText),
+              null,
+              2
+            );
+
+        } catch (error) {
+          // Preserve raw Details text.
+        }
+      }
+
+      return [
+
+        "EVENT TYPE: " +
+        (
+          event.eventType ||
+          "--"
+        ),
+
+        "SOURCE: " +
+        (
+          event.source ||
+          "--"
+        ),
+
+        "SOURCE EVENT AT: " +
+        formatEventFeedUtcMinusFive_(
+          event.sourceEventAt
+        ),
+
+        "RADAR ID: " +
+        (
+          event.radarId ||
+          "--"
+        ),
+
+        "RADAR CREATED AT: " +
+        formatEventFeedUtcMinusFive_(
+          event.radarCreatedAt
+        ),
+
+        "EVENT ID: " +
+        (
+          event.eventId ||
+          "--"
+        ),
+
+        "ARCHIVE: " +
+        (
+          Number(event.archive) || 0
+        ),
+
+        "",
+
+        "RAW DETAILS:",
+
+        detailsText ||
+        "--"
+
+      ].join("\n");
+    }
+
+
+    function renderEventStream_(
+      events
+    ) {
+
+      eventFeedElements.eventStream.innerHTML =
+        "";
+
+      if (!events || events.length === 0) {
+
+        var empty =
+          document.createElement(
+            "div"
+          );
+
+        empty.className =
+          "empty-message";
+
+        empty.textContent =
+          "NO REPORTING EVENTS MATCH THE CURRENT FILTERS.";
+
+        eventFeedElements.eventStream.appendChild(
+          empty
+        );
+
+        return;
+      }
+
+      events.forEach(
+        function(event) {
+
+          eventFeedElements.eventStream.appendChild(
+            buildEventRow_(
+              event
+            )
+          );
+        }
+      );
+    }
+
+
+    function buildEventRow_(
+      event
+    ) {
+
+      var row =
+        document.createElement(
+          "article"
+        );
+
+      row.className =
+        "event-row";
+
+      var topline =
+        document.createElement(
+          "div"
+        );
+
+      topline.className =
+        "event-topline";
+
+      var timestamp =
+        document.createElement(
+          "span"
+        );
+
+      timestamp.className =
+        "event-time";
+
+      timestamp.textContent =
+        formatEventFeedUtcMinusFive_(
+          event.loggedAt
+        );
+
+      var badge =
+        document.createElement(
+          "span"
+        );
+
+      badge.className =
+        "severity-badge " +
+        getSeverityBadgeClass_(
+          event
+        );
+
+      badge.textContent =
+        getSeverityBadgeText_(
+          event
+        );
+
+      var route =
+        buildEventFeedRoute_(
+          event.route
+        );
+
+      var source =
+        document.createElement(
+          route
+            ? "a"
+            : "span"
+        );
+
+      source.className =
+        "event-source" +
+        (
+          route
+            ? " linked"
+            : ""
+        );
+
+      source.style.color =
+        event.sourceAccentColor ||
+        "#B0B0B0";
+
+      source.textContent =
+        event.sourceDisplayName ||
+        event.eventType ||
+        event.source ||
+        "SYSTEM EVENT";
+
+      if (route) {
+
+        source.href = route;
+        source.target = "_blank";
+        source.rel = "noopener noreferrer";
+      }
+
+      topline.appendChild(timestamp);
+      topline.appendChild(badge);
+      topline.appendChild(source);
+
+      var summary =
+        document.createElement(
+          "div"
+        );
+
+      summary.className =
+        "event-summary";
+
+      summary.textContent =
+        event.summary ||
+        "NO SUMMARY AVAILABLE.";
+
+      var footer =
+        document.createElement(
+          "div"
+        );
+
+      footer.className =
+        "event-footer";
+
+      var eventId =
+        document.createElement(
+          "span"
+        );
+
+      eventId.textContent =
+        "EVENT: " +
+        (
+          event.eventId ||
+          "--"
+        );
+
+      var detailsButton =
+        document.createElement(
+          "button"
+        );
+
+      detailsButton.className =
+        "details-button";
+
+      detailsButton.type = "button";
+
+      detailsButton.textContent =
+        "[ DETAILS ]";
+
+      var details =
+        document.createElement(
+          "div"
+        );
+
+      details.className =
+        "event-details";
+
+      details.textContent =
+        formatEventDetails_(
+          event
+        );
+
+      detailsButton.addEventListener(
+        "click",
+        function() {
+
+          var open =
+            details.classList.contains(
+              "open"
+            );
+
+          details.classList.toggle(
+            "open",
+            !open
+          );
+
+          detailsButton.textContent =
+            open
+              ? "[ DETAILS ]"
+              : "[ HIDE DETAILS ]";
+        }
+      );
+
+      footer.appendChild(eventId);
+      footer.appendChild(detailsButton);
+
+      row.appendChild(topline);
+      row.appendChild(summary);
+      row.appendChild(footer);
+      row.appendChild(details);
+
+      return row;
+    }
+
+
+    function getActiveConditionDetail_(
+      event
+    ) {
+
+      var details =
+        String(
+          event.details || ""
+        );
+
+      try {
+
+        var parsed =
+          JSON.parse(details);
+
+        if (
+          Number.isFinite(
+            Number(parsed.deviationF)
+          )
+        ) {
+
+          return (
+            (
+              Number(parsed.deviationF) > 0
+                ? "+"
+                : ""
+            ) +
+            Number(parsed.deviationF).toFixed(1) +
+            "°F"
+          );
+        }
+
+        if (
+          Number.isFinite(
+            Number(parsed.gridHealth)
+          )
+        ) {
+
+          return (
+            Number(parsed.gridHealth).toFixed(1) +
+            "%"
+          );
+        }
+
+        if (
+          Number.isFinite(
+            Number(parsed.magnitude)
+          )
+        ) {
+
+          return (
+            "M" +
+            Number(parsed.magnitude).toFixed(1)
+          );
+        }
+
+      } catch (error) {
+        // Details may be raw text.
+      }
+
+      return (
+        event.summary ||
+        "--"
+      );
+    }
+
+
+    function renderActiveConditions_(
+      activeConditions
+    ) {
+
+      eventFeedElements.conditionsBody.innerHTML =
+        "";
+
+      var counts =
+        activeConditions.counts || {};
+
+      var countBlock =
+        document.createElement(
+          "div"
+        );
+
+      countBlock.className =
+        "condition-counts";
+
+      countBlock.innerHTML =
+        'CRITICAL: <span class="condition-count-critical">' +
+        String(counts.critical || 0)
+          .padStart(2, "0") +
+        '</span><br>' +
+        'ELEVATED: <span class="condition-count-elevated">' +
+        String(counts.elevated || 0)
+          .padStart(2, "0") +
+        '</span><br>' +
+        'WATCH: <span class="condition-count-watch">' +
+        String(counts.watch || 0)
+          .padStart(2, "0");
+
+      eventFeedElements.conditionsBody.appendChild(
+        countBlock
+      );
+
+      var events =
+        activeConditions.events || [];
+
+      if (events.length === 0) {
+
+        var none =
+          document.createElement(
+            "div"
+          );
+
+        none.className =
+          "condition-none";
+
+        none.textContent =
+          "NO CURRENT ACTIVE CONDITIONS.";
+
+        eventFeedElements.conditionsBody.appendChild(
+          none
+        );
+
+        return;
+      }
+
+      events.forEach(
+        function(event) {
+
+          var route =
+            buildEventFeedRoute_(
+              event.route
+            );
+
+          var item =
+            document.createElement(
+              route
+                ? "a"
+                : "div"
+            );
+
+          item.className =
+            "condition-item" +
+            (
+              route
+                ? " linked"
+                : ""
+            );
+
+          if (route) {
+
+            item.href = route;
+            item.target = "_blank";
+            item.rel = "noopener noreferrer";
+          }
+
+          var source =
+            document.createElement(
+              "div"
+            );
+
+          source.className =
+            "condition-source";
+
+          source.style.color =
+            event.sourceAccentColor ||
+            "#B0B0B0";
+
+          source.textContent =
+            event.sourceDisplayName ||
+            event.eventType ||
+            event.source;
+
+          var status =
+            document.createElement(
+              "div"
+            );
+
+          status.className =
+            "condition-status";
+
+          status.textContent =
+            event.status +
+            " // " +
+            getActiveConditionDetail_(
+              event
+            );
+
+          item.appendChild(source);
+          item.appendChild(status);
+
+          eventFeedElements.conditionsBody.appendChild(
+            item
+          );
+        }
+      );
+    }
+
+
+    function setEventFeedLoading_(
+      loading
+    ) {
+
+      eventFeedElements.currentViewButton.disabled =
+        loading;
+
+      eventFeedElements.allViewButton.disabled =
+        loading;
+
+      eventFeedElements.archiveSelect.disabled =
+        loading;
+
+      eventFeedElements.archiveViewButton.disabled =
+        loading;
+
+      eventFeedElements.refreshButton.disabled =
+        loading;
+
+      eventFeedElements.applySourceFilterButton.disabled =
+        loading;
+
+      eventFeedElements.clearSourceFilterButton.disabled =
+        loading;
+
+      eventFeedElements.allOnButton.disabled =
+        loading;
+
+      Array.prototype.forEach.call(
+        eventFeedElements.statusFilterButtons,
+        function(button) {
+          button.disabled = loading;
+        }
+      );
+
+      Array.prototype.forEach.call(
+        eventFeedElements.severityInputs,
+        function(input) {
+          input.disabled = loading;
+        }
+      );
+
+      if (loading) {
+
+        eventFeedElements.statusStrip.className =
+          "status-strip bevel-inset";
+
+        eventFeedElements.statusStrip.textContent =
+          "FEED: RETRIEVING REPORTING EVENTS...";
+
+        eventFeedElements.eventStream.innerHTML =
+          '<div class="empty-message">' +
+          'RETRIEVING REPORTING EVENTS...' +
+          '</div>';
+      }
+    }
+
+
+    function renderEventFeedError_(
+      error
+    ) {
+
+      var message =
+        error &&
+        error.message
+          ? error.message
+          : String(
+              error ||
+              "UNKNOWN ERROR."
+            );
+
+      eventFeedElements.statusStrip.className =
+        "status-strip bevel-inset error";
+
+      eventFeedElements.statusStrip.textContent =
+        "FEED ERROR: " +
+        message;
+
+      eventFeedElements.eventStream.innerHTML =
+        '<div class="empty-message">' +
+        'EVENT STREAM UNAVAILABLE.' +
+        '</div>';
+
+      eventFeedElements.conditionsBody.innerHTML =
+        '<div class="condition-none">' +
+        'ACTIVE CONDITION SUMMARY UNAVAILABLE.' +
+        '</div>';
+
+      setEventFeedLoading_(false);
+    }
+
+
+    initializeEventFeedView();
+
+  </script>
+
+</body>
+</html>

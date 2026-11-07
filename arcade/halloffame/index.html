@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<title>The Great Darkness - Hall of Fame</title>
+  <base target="_top">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: "Courier New", monospace;
+    }
+
+    body {
+      min-height: 100vh;
+      padding: 20px 12px 40px;
+    }
+
+    .hof-container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    /* =========================
+       HEADER
+       ========================= */
+
+    .hof-title {
+      margin: 10px 0 4px;
+      color: #00ff00;
+      font-size: 3rem;
+      font-weight: bold;
+      letter-spacing: 5px;
+      text-shadow:
+        0 0 5px rgba(0,255,0,.8),
+        0 0 12px rgba(0,255,0,.5);
+    }
+
+    .hof-subtitle {
+      margin: 0 0 8px;
+      color: #ffff00;
+      font-size: 1.2rem;
+      letter-spacing: 2px;
+    }
+
+    .hof-tagline {
+      margin: 0 auto 28px;
+      color: #888;
+      font-size: .95rem;
+      letter-spacing: 1px;
+    }
+
+    /* =========================
+       GAME GRID
+       ========================= */
+
+    .hof-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+      width: 100%;
+    }
+
+    /* =========================
+       GAME BOARD
+       ========================= */
+
+    .hof-board {
+      background: #050505;
+      border: 2px solid #00ff00;
+      box-shadow:
+        0 0 10px rgba(0,255,0,.25),
+        inset 0 0 15px rgba(0,255,0,.05);
+      padding: 16px;
+      text-align: left;
+    }
+
+    .hof-game-title {
+      margin: 0 0 12px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #333;
+      color: #ffff00;
+      font-size: 1.35rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-align: center;
+      text-shadow: 0 0 6px rgba(255,255,0,.4);
+    }
+
+    .hof-loading {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 1rem;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .hof-error {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #aa0000;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .hof-empty {
+      min-height: 220px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 1rem;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    /* =========================
+       SCORE ROWS
+       ========================= */
+
+    .hof-scores {
+      min-height: 220px;
+    }
+
+    .hof-row {
+      display: grid;
+      grid-template-columns: 48px minmax(0, 1fr) 95px;
+      align-items: center;
+
+      min-height: 43px;
+      padding: 6px 4px;
+
+      border-bottom: 1px solid #202020;
+
+      font-size: 1.05rem;
+    }
+
+    .hof-row:last-child {
+      border-bottom: none;
+    }
+
+    .hof-rank {
+      color: #777;
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .hof-name {
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      color: #00ff00;
+      font-weight: bold;
+      text-shadow: 0 0 4px rgba(0,255,0,.2);
+    }
+
+    .hof-score {
+      color: #ffff00;
+      font-weight: bold;
+      text-align: right;
+      text-shadow: 0 0 4px rgba(255,255,0,.2);
+    }
+
+    /* =========================
+       TOP THREE
+       ========================= */
+
+    .hof-row:nth-child(1) .hof-rank {
+      color: #ffff00;
+      font-size: 1.15rem;
+    }
+
+    .hof-row:nth-child(1) .hof-name {
+      color: #ffff00;
+      font-size: 1.1rem;
+    }
+
+    .hof-row:nth-child(1) .hof-score {
+      color: #ffff00;
+      font-size: 1.1rem;
+    }
+
+    .hof-row:nth-child(2) .hof-rank {
+      color: #bbbbbb;
+    }
+
+    .hof-row:nth-child(3) .hof-rank {
+      color: #aa7744;
+    }
+
+    /* =========================
+       FOOTER / BACK BUTTON
+       ========================= */
+
+    .hof-footer {
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .back-button {
+      display: inline-block;
+
+      padding: 15px 28px;
+
+      background: #111;
+      border: 2px solid #00ff00;
+
+      color: #00ff00;
+      font-family: "Courier New", monospace;
+      font-size: 1.15rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+
+      text-decoration: none;
+      cursor: pointer;
+
+      box-shadow:
+        0 0 8px rgba(0,255,0,.3);
+    }
+
+    .back-button:hover {
+      background: #00ff00;
+      color: #000;
+      box-shadow:
+        0 0 15px rgba(0,255,0,.7);
+    }
+
+    .back-button:active {
+      transform: translateY(1px);
+    }
+
+    .hof-status {
+      margin-top: 18px;
+      color: #444;
+      font-size: .75rem;
+      letter-spacing: 1px;
+    }
+
+    /* =========================
+       MOBILE
+       ========================= */
+
+    @media (max-width: 700px) {
+
+      body {
+        padding: 14px 8px 30px;
+      }
+
+      .hof-title {
+        font-size: 2.2rem;
+        letter-spacing: 3px;
+      }
+
+      .hof-subtitle {
+        font-size: 1rem;
+        letter-spacing: 1px;
+      }
+
+      .hof-tagline {
+        font-size: .8rem;
+        margin-bottom: 20px;
+      }
+
+      .hof-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .hof-board {
+        padding: 14px;
+      }
+
+      .hof-game-title {
+        font-size: 1.3rem;
+      }
+
+      .hof-scores,
+      .hof-loading,
+      .hof-empty,
+      .hof-error {
+        min-height: 0;
+      }
+
+      .hof-row {
+        grid-template-columns: 46px minmax(0, 1fr) 90px;
+        min-height: 48px;
+        padding: 7px 4px;
+        font-size: 1.15rem;
+      }
+
+      .hof-rank {
+        font-size: 1.05rem;
+      }
+
+      .hof-name {
+        font-size: 1.15rem;
+      }
+
+      .hof-score {
+        font-size: 1.15rem;
+      }
+
+      .hof-row:nth-child(1) .hof-name,
+      .hof-row:nth-child(1) .hof-score {
+        font-size: 1.2rem;
+      }
+
+      .back-button {
+        width: 94%;
+        max-width: 420px;
+        padding: 17px 20px;
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="hof-container">
+
+    <div class="hof-title">HALL OF FAME</div>
+
+    <div class="hof-subtitle">
+      THE GREAT DARKNESS ARCADE
+    </div>
+
+    <div class="hof-tagline">
+      THOSE WHO ENTERED THE DARKNESS AND SURVIVED.
+    </div>
+
+    <div class="hof-grid">
+
+      <!-- ALIEN RUN -->
+      <div class="hof-board">
+        <div class="hof-game-title">ALIEN RUN</div>
+        <div id="board-AlienRun" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- ALIEN INVADERS -->
+      <div class="hof-board">
+        <div class="hof-game-title">ALIEN INVADERS</div>
+        <div id="board-AlienInvaders" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- DARKNESS BREAKOUT -->
+      <div class="hof-board">
+        <div class="hof-game-title">DARKNESS BREAKOUT</div>
+        <div id="board-DarknessBreakout" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- SNAKE -->
+      <div class="hof-board">
+        <div class="hof-game-title">SNAKE</div>
+        <div id="board-Snake" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- DARKNESS DODGE -->
+      <div class="hof-board">
+        <div class="hof-game-title">DARKNESS DODGE</div>
+        <div id="board-DarknessDodge" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- PONG -->
+      <div class="hof-board">
+        <div class="hof-game-title">PONG</div>
+        <div id="board-Pong" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- METEOR MINER -->
+      <div class="hof-board">
+        <div class="hof-game-title">METEOR MINER</div>
+        <div id="board-MeteorMiner" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+      <!-- SECTOR SWEEP -->
+      <div class="hof-board">
+        <div class="hof-game-title">SECTOR SWEEP</div>
+        <div id="board-SectorSweep" class="hof-scores">
+          <div class="hof-loading">LOADING...</div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="hof-footer">
+
+      <a
+        class="back-button"
+        href="/arcade/"
+      >
+        &lt; BACK TO ARCADE
+      </a>
+
+      <div class="hof-status">
+        RECORDS OF THE DARKNESS
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+
+    const HOF_GAMES = [
+      {
+        name: "AlienRun",
+        element: "board-AlienRun"
+      },
+      {
+        name: "AlienInvaders",
+        element: "board-AlienInvaders"
+      },
+      {
+        name: "DarknessBreakout",
+        element: "board-DarknessBreakout"
+      },
+      {
+        name: "Snake",
+        element: "board-Snake"
+      },
+      {
+        name: "DarknessDodge",
+        element: "board-DarknessDodge"
+      },
+      {
+        name: "Pong",
+        element: "board-Pong"
+      },
+      {
+        name: "MeteorMiner",
+        element: "board-MeteorMiner"
+      },
+      {
+        name: "SectorSweep",
+        element: "board-SectorSweep"
+      }
+    ];
+
+
+    function loadHallOfFameBoard(game) {
+
+      const container = document.getElementById(game.element);
+
+      if (!container) {
+        return;
+      }
+
+      container.innerHTML =
+        '<div class="hof-loading">LOADING...</div>';
+
+      google.script.run
+
+        .withSuccessHandler(function(scores) {
+
+          container.innerHTML = "";
+
+          if (!scores || scores.length === 0) {
+
+            container.innerHTML =
+              '<div class="hof-empty">NO RECORDS YET</div>';
+
+            return;
+          }
+
+          const scoresWrapper =
+            document.createElement("div");
+
+          scoresWrapper.className = "hof-scores";
+
+          scores.forEach(function(entry, index) {
+
+            const row =
+              document.createElement("div");
+
+            row.className = "hof-row";
+
+
+            const rank =
+              document.createElement("div");
+
+            rank.className = "hof-rank";
+
+            rank.textContent =
+              (index + 1) + ".";
+
+
+            const name =
+              document.createElement("div");
+
+            name.className = "hof-name";
+
+            name.textContent =
+              entry.name || "";
+
+
+            const score =
+              document.createElement("div");
+
+            score.className = "hof-score";
+
+            score.textContent =
+              entry.score !== undefined &&
+              entry.score !== null
+                ? entry.score
+                : "";
+
+
+            row.appendChild(rank);
+            row.appendChild(name);
+            row.appendChild(score);
+
+            scoresWrapper.appendChild(row);
+
+          });
+
+          container.appendChild(scoresWrapper);
+
+        })
+
+        .withFailureHandler(function(error) {
+
+          console.error(
+            "Hall of Fame error for " +
+            game.name,
+            error
+          );
+
+          container.innerHTML =
+            '<div class="hof-error">' +
+            'UNABLE TO LOAD RECORDS' +
+            '</div>';
+
+        })
+
+        .getHighScores(game.name);
+
+    }
+
+
+    function loadHallOfFame() {
+
+      HOF_GAMES.forEach(function(game) {
+
+        loadHallOfFameBoard(game);
+
+      });
+
+    }
+
+
+    window.addEventListener(
+      "load",
+      loadHallOfFame
+    );
+
+  </script>
+
+</body>
+</html>
