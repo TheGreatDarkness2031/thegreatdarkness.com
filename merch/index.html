@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Great Darkness - Merch</title>
+<script>
+  /* ============================================================
+     STORE LINK
+     When the merch store is ready, put its address between the
+     quotes, e.g. "https://store.example.com". While it's empty
+     the page shows NOT YET RELEASED and the button is switched off.
+     ============================================================ */
+  var MERCH_STORE_URL = "";
+</script>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+    text-align: center;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 56px 18px 48px;
+  }
+
+  .panel {
+    padding: 34px 20px 30px;
+    border: 3px double #bbbbbb;
+    background: #0a0a0a;
+    box-shadow: 0 0 0 1px #333333, 0 0 22px rgba(255, 255, 255, 0.06);
+  }
+
+  .tag {
+    display: inline-block;
+    margin-bottom: 22px;
+    padding: 4px 10px;
+    border: 1px solid #5a1717;
+    color: #ff4444;
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+  }
+
+  h1 {
+    margin: 0 0 8px;
+    font-size: 2rem;
+    letter-spacing: 4px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.35);
+  }
+
+  .sub {
+    margin: 0 0 30px;
+    color: #888888;
+    font-size: 0.78rem;
+    letter-spacing: 3px;
+  }
+
+  .status {
+    margin: 0 auto 26px;
+    padding: 14px 10px;
+    max-width: 420px;
+    border-top: 1px dashed #555555;
+    border-bottom: 1px dashed #555555;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    line-height: 1.8;
+  }
+
+  .status b { color: #ffbf00; }
+  .status.open b { color: #00ff00; }
+
+  .blink { animation: blink 1.2s steps(2, start) infinite; }
+  @keyframes blink { to { visibility: hidden; } }
+
+  .store {
+    display: inline-block;
+    padding: 12px 26px;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-decoration: none;
+  }
+
+  a.store:hover,
+  a.store:focus { background: #ffffff; color: #000000; }
+
+  .store.off {
+    border-color: #444444;
+    color: #555555;
+    cursor: not-allowed;
+  }
+
+  .back {
+    display: inline-block;
+    margin-top: 34px;
+    color: #bbbbbb;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-decoration: none;
+  }
+
+  .back:hover,
+  .back:focus { color: #ffffff; text-decoration: underline; }
+
+  @media (max-width: 479px) {
+    main { padding-top: 32px; }
+    h1 { font-size: 1.5rem; letter-spacing: 3px; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="panel">
+    <div class="tag">[ OER SUPPLY DEPOT // PUBLIC ISSUE ]</div>
+    <h1>GET THE MERCH</h1>
+    <p class="sub">THE GREAT DARKNESS // 01 JULY 2031</p>
+
+    <div class="status" id="depotStatus">
+      DEPOT STATUS: <b>SEALED</b><br>
+      INVENTORY: NOT YET RELEASED<span class="blink">_</span>
+    </div>
+
+    <span class="store off" id="storeButton" aria-disabled="true">[ ENTER THE STORE ]</span>
+  </div>
+
+  <a class="back" href="/home/">&lt;&lt; HOME</a>
+</main>
+
+<script>
+  (function() {
+    var url = String(MERCH_STORE_URL || "").trim();
+    if (!/^https:\/\//.test(url)) return;
+
+    var link = document.createElement("a");
+    link.className = "store";
+    link.id = "storeButton";
+    link.href = url;
+    link.target = "_blank";
+    link.rel = "noopener";
+    link.textContent = "[ ENTER THE STORE ]";
+    document.getElementById("storeButton").replaceWith(link);
+
+    var status = document.getElementById("depotStatus");
+    status.className = "status open";
+    status.innerHTML = "DEPOT STATUS: <b>OPEN</b><br>INVENTORY: AVAILABLE";
+  })();
+</script>
+</body>
+</html>
