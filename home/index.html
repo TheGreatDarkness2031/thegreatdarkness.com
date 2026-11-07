@@ -3,6 +3,7 @@
 <head>
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
+<script src="/assets/nav.js"></script>
   <meta charset="UTF-8">
 
   <meta
@@ -5730,7 +5731,10 @@
         !handle ||
         !message
       ) {
-        alert("FIELDS CANNOT BE BLANK.");
+        const blank =
+          document.getElementById(!handle ? "bbsHandle" : "bbsMsg");
+        blank.placeholder = "FIELDS CANNOT BE BLANK.";
+        blank.focus();
         return;
       }
 
@@ -5751,18 +5755,33 @@
       xhr.onreadystatechange =
         function() {
           if (xhr.readyState === 4) {
+            const msgField =
+              document.getElementById("bbsMsg");
             document.getElementById(
               "bbsHandle"
             ).value = "";
-
-            document.getElementById(
-              "bbsMsg"
-            ).value = "";
-
-            setTimeout(
-              loadDatabaseData,
-              1500
-            );
+            msgField.value = "";
+            msgField.placeholder =
+              "LINE ENTRY TRANSMITTED.";
+            // Saving can take a few seconds: check again until the
+            // entry is in the log (gives up after ~15 s).
+            [1500, 4000, 8000, 15000].forEach(function(ms) {
+              setTimeout(function() {
+                const arrived = allLogPosts.some(function(post) {
+                  return (
+                    String(post.handle) === handle &&
+                    String(post.message) === message
+                  );
+                });
+                if (!arrived) {
+                  loadDatabaseData();
+                }
+              }, ms);
+            });
+            setTimeout(function() {
+              msgField.placeholder =
+                "TYPE MESSAGE DIRECTLY TO DATABASE...";
+            }, 15000);
           }
         };
 
@@ -7304,6 +7323,10 @@
         pagerNext(1);
       } else if (e.key === "q" || e.key === "Q" || e.key === "Escape") {
         pagerQuit();
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Typing a command while paged: stop paging and start the command.
+        pagerQuit();
+        input.value += e.key;
       }
     });
 

@@ -3,6 +3,7 @@
 <head>
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
+<script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
 <title>OER // Event Reporting Console</title>
 
@@ -1786,10 +1787,13 @@
       route
     ) {
 
-      return String(
-        route || ""
-      )
-        .trim();
+      // Old Apps Script routes ("?quake=1") -> this site's pages (config.js).
+      return tgdPage(
+        String(
+          route || ""
+        )
+          .trim()
+      );
     }
 
 
