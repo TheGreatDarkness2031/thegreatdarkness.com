@@ -536,6 +536,24 @@
 
   </style>
 
+
+<style>
+  /* Phones held sideways: the GAME OVER panel floats over the game so
+     PLAY AGAIN and BACK TO ARCADE stay on screen. */
+  @media (orientation: landscape) and (max-height: 500px) {
+    #gameOverMessage {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 60;
+      width: min(520px, 92vw);
+      max-height: 94vh;
+      margin: 0;
+      background: rgba(5, 5, 5, 0.96);
+    }
+  }
+</style>
 </head>
 
 <body>
@@ -1587,6 +1605,22 @@
      HIGH SCORE SCREEN
      ========================================================== -->
 
+<style>
+  #skipScoreButton {
+    margin-top: 10px;
+    padding: 6px 16px;
+    background: transparent;
+    border: 1px solid #777777;
+    color: #bbbbbb;
+    font-family: inherit;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+  }
+  #skipScoreButton:hover,
+  #skipScoreButton:focus { border-color: #ffffff; color: #ffffff; }
+</style>
+
 <div id="highScoreScreen">
 
   <h2>NEW HIGH SCORE!</h2>
@@ -1615,6 +1649,10 @@
 
   <button id="submitScoreButton">
     SUBMIT
+  </button>
+
+  <button id="skipScoreButton" type="button">
+    SKIP
   </button>
 
   <div id="submitMessage"></div>
@@ -1918,6 +1956,15 @@
   submitScoreButton.addEventListener(
     "click",
     submitHighScore
+  );
+
+  // SKIP: no name, no save; back to the game's start screen.
+  document.getElementById("skipScoreButton").addEventListener(
+    "click",
+    function() {
+      if (highScoreSubmitting) return;
+      location.reload();
+    }
   );
 
 
@@ -2915,6 +2962,8 @@ function drawGround() {
    END GAME
    ============================================================ */
 
+let alienRunEnds = 0;
+
 function endGame() {
 
   if (gameOver) {
@@ -2925,6 +2974,10 @@ function endGame() {
 
 
   gameOver = true;
+  // The answer below takes a few seconds; the player may have started
+  // a new game by then. Only the game that just ended may show it.
+  const endedRun = ++alienRunEnds;
+  const endedScore = score;
 
 
   document.getElementById("gameOverScore")
@@ -2942,7 +2995,7 @@ function endGame() {
     .withSuccessHandler(
       function(qualifies) {
 
-        if (qualifies) {
+        if (qualifies && gameOver && endedRun === alienRunEnds) {
 
           /*
            * HighScore.html will return the
@@ -2963,7 +3016,7 @@ function endGame() {
 
           showHighScoreScreen(
             GAME_NAME,
-            score
+            endedScore
           );
 
         }
