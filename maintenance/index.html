@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
 <script src="/assets/nav.js"></script>
@@ -441,6 +443,19 @@
       }
     }
   </style>
+
+<style>
+  /* Phones: record index controls stack as label + field pairs. */
+  @media (max-width: 600px) {
+    .filter-table, .filter-table tbody, .filter-table tr { display: block; width: 100%; }
+    .filter-table td { display: inline-block; vertical-align: middle; box-sizing: border-box; padding: 3px 2px; }
+    .filter-table td.filter-label { width: 30%; text-align: right; padding-right: 6px; }
+    .filter-table td:not(.filter-label):not(.button-cell) { width: 68%; }
+    .filter-table td select, .filter-table td input { width: 100%; box-sizing: border-box; }
+    .filter-table td.button-cell { width: 48%; padding: 4px 1%; }
+    .filter-table td.button-cell button { width: 100%; }
+  }
+</style>
 </head>
 
 <body>
