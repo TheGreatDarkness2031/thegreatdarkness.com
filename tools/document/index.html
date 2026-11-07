@@ -4,7 +4,6 @@
 <head>
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
-<script src="/assets/gsr.js"></script>
 
   <base target="_top">
 
@@ -244,6 +243,41 @@
       }
     }
 
+  
+    /* Phones mostly can't show a PDF inside a page: they get a button that
+       opens it in the phone's own PDF viewer. */
+    .open-panel {
+      display: none;
+      padding: 54px 16px;
+      text-align: center;
+      background: #111111;
+    }
+
+    .open-panel-note {
+      margin-bottom: 22px;
+      color: #9a9a9a;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .open-pdf-link {
+      display: inline-block;
+      padding: 14px 24px;
+      border: 2px solid #ffffff;
+      color: #ffffff;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-decoration: none;
+    }
+
+    .open-pdf-link:hover,
+    .open-pdf-link:focus {
+      background: #ffffff;
+      color: #000000;
+    }
+
+    .preview-frame.phone .pdf-preview { display: none; }
+    .preview-frame.phone .open-panel { display: block; }
   </style>
 
 </head>
@@ -305,8 +339,15 @@
         <iframe
           id="pdfPreview"
           class="pdf-preview"
-          title="Google Drive PDF Preview"
+          title="OER document preview"
         ></iframe>
+
+        <div id="openPanel" class="open-panel">
+          <div class="open-panel-note">DOCUMENT READY // PDF</div>
+          <a id="openPdfLink" class="open-pdf-link" href="#" target="_blank" rel="noopener">
+            [ OPEN DOCUMENT ]
+          </a>
+        </div>
 
       </section>
 
@@ -337,6 +378,7 @@
           id="downloadPdfLink"
           class="action-link"
           href="#"
+          download
           target="_blank"
           rel="noopener noreferrer"
         >
@@ -463,7 +505,12 @@
 
     function initializePdfViewer() {
 
-      google.script.url.getLocation(
+      // The page address, e.g. /tools/document/?doc=TL_ECL
+      (function(callback) {
+        var parameter = {};
+        new URLSearchParams(window.location.search).forEach(function(v, k) { parameter[k] = v; });
+        callback({ parameter: parameter });
+      })(
         function(location) {
 
           var documentKey =
@@ -480,22 +527,32 @@
             return;
           }
 
-          google.script.run
-            .withSuccessHandler(
-              function(data) {
-                renderPdfViewerData_(data);
+          // The list of documents lives with the PDFs: /docs/documents.json
+          fetch("/docs/documents.json", { cache: "no-cache" })
+            .then(function(response) {
+              if (!response.ok) throw new Error("HTTP " + response.status);
+              return response.json();
+            })
+            .then(function(list) {
+              var entry = list[documentKey] ||
+                list[String(documentKey).toUpperCase()];
+              if (!entry) {
+                renderPdfViewerUnavailable_(documentKey);
+                return;
               }
-            )
-            .withFailureHandler(
-              function() {
-                renderPdfViewerUnavailable_(
-                  documentKey
-                );
-              }
-            )
-            .getPdfViewerDocumentData(
-              documentKey
-            );
+              renderPdfViewerData_({
+                success: true,
+                available: true,
+                documentKey: String(documentKey).toUpperCase(),
+                displayName: entry.name,
+                category: entry.category,
+                previewUrl: entry.file,
+                downloadUrl: entry.file
+              });
+            })
+            .catch(function() {
+              renderPdfViewerUnavailable_(documentKey);
+            });
         }
       );
     }
@@ -546,8 +603,23 @@
           "--"
         );
 
-      pdfViewerElements.pdfPreview.src =
+      // Computers show the PDF in the page; phones get the OPEN button.
+      var showInline =
+        navigator.pdfViewerEnabled === true &&
+        window.matchMedia("(pointer: fine)").matches;
+
+      document.getElementById("openPdfLink").href =
         data.previewUrl;
+
+      pdfViewerElements.previewFrame.classList.toggle(
+        "phone",
+        !showInline
+      );
+
+      if (showInline) {
+        pdfViewerElements.pdfPreview.src =
+          data.previewUrl + "#view=FitH";
+      }
 
       pdfViewerElements.downloadPdfLink.href =
         data.downloadUrl;

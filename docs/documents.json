@@ -1,0 +1,164 @@
+{
+ "TL_ECL": {
+  "name": "Emergency Checklist",
+  "category": "TOOL",
+  "file": "/docs/TL_ECL.pdf",
+  "bytes": 9827
+ },
+ "TL_WNC": {
+  "name": "Water Needs Calculator",
+  "category": "TOOL",
+  "file": "/docs/TL_WNC.pdf",
+  "bytes": 8917
+ },
+ "TL_FSC": {
+  "name": "Food Supply Calculator",
+  "category": "TOOL",
+  "file": "/docs/TL_FSC.pdf",
+  "bytes": 11391
+ },
+ "TL_PBC": {
+  "name": "Power Battery Calculator",
+  "category": "TOOL",
+  "file": "/docs/TL_PBC.pdf",
+  "bytes": 14067
+ },
+ "TL_BOC": {
+  "name": "Bug Out Bag Checklist",
+  "category": "TOOL",
+  "file": "/docs/TL_BOC.pdf",
+  "bytes": 11441
+ },
+ "TL_HEK": {
+  "name": "Home Emergency Kit",
+  "category": "TOOL",
+  "file": "/docs/TL_HEK.pdf",
+  "bytes": 8585
+ },
+ "TL_CP": {
+  "name": "Communication Plan",
+  "category": "TOOL",
+  "file": "/docs/TL_CP.pdf",
+  "bytes": 7760
+ },
+ "TL_NMP": {
+  "name": "Navigation Map Tools",
+  "category": "TOOL",
+  "file": "/docs/TL_NMP.pdf",
+  "bytes": 8749
+ },
+ "TL_WEP": {
+  "name": "Weather Emergency Profile",
+  "category": "TOOL",
+  "file": "/docs/TL_WEP.pdf",
+  "bytes": 6539
+ },
+ "TL_BGR": {
+  "name": "Basic Gear Reference",
+  "category": "TOOL",
+  "file": "/docs/TL_BGR.pdf",
+  "bytes": 6696
+ },
+ "TR_FS": {
+  "name": "Fire Starting",
+  "category": "TRAINING",
+  "file": "/docs/TR_FS.pdf",
+  "bytes": 9294
+ },
+ "TR_WP": {
+  "name": "Water Purification",
+  "category": "TRAINING",
+  "file": "/docs/TR_WP.pdf",
+  "bytes": 6159
+ },
+ "TR_SB": {
+  "name": "Shelter Basics",
+  "category": "TRAINING",
+  "file": "/docs/TR_SB.pdf",
+  "bytes": 6427
+ },
+ "TR_NAV": {
+  "name": "Navigation",
+  "category": "TRAINING",
+  "file": "/docs/TR_NAV.pdf",
+  "bytes": 6642
+ },
+ "TR_FAB": {
+  "name": "First Aid Basics",
+  "category": "TRAINING",
+  "file": "/docs/TR_FAB.pdf",
+  "bytes": 5065
+ },
+ "TR_CWP": {
+  "name": "Cooking Without Power",
+  "category": "TRAINING",
+  "file": "/docs/TR_CWP.pdf",
+  "bytes": 4389
+ },
+ "TR_PC": {
+  "name": "Power Charging",
+  "category": "TRAINING",
+  "file": "/docs/TR_PC.pdf",
+  "bytes": 4248
+ },
+ "TR_RC": {
+  "name": "Radio Communications",
+  "category": "TRAINING",
+  "file": "/docs/TR_RC.pdf",
+  "bytes": 4331
+ },
+ "TR_VEP": {
+  "name": "Vehicle Emergency Prep",
+  "category": "TRAINING",
+  "file": "/docs/TR_VEP.pdf",
+  "bytes": 4171
+ },
+ "TR_HEP": {
+  "name": "Home Emergency Prep",
+  "category": "TRAINING",
+  "file": "/docs/TR_HEP.pdf",
+  "bytes": 4132
+ },
+ "DC_ECS": {
+  "name": "Emergency Contact Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_ECS.pdf",
+  "bytes": 4023
+ },
+ "DC_FEP": {
+  "name": "Family Emergency Plan",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_FEP.pdf",
+  "bytes": 4241
+ },
+ "DC_HIS": {
+  "name": "Household Information Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_HIS.pdf",
+  "bytes": 3970
+ },
+ "DC_MIS": {
+  "name": "Medical Information Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_MIS.pdf",
+  "bytes": 4020
+ },
+ "DC_IDC": {
+  "name": "Important Document Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_IDC.pdf",
+  "bytes": 4656
+ },
+ "DC_EIS": {
+  "name": "Emergency Inventory Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_EIS.pdf",
+  "bytes": 4773
+ },
+ "DC_GBI": {
+  "name": "Go Bag Inventory Sheet",
+  "category": "DOCUMENTS",
+  "file": "/docs/DC_GBI.pdf",
+  "bytes": 5008
+ }
+}
