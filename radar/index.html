@@ -964,9 +964,8 @@
       }
 
       .radar-screen {
-        /* Fits the window height: title, status line and padding
-           take ~ 96 px. */
-        width: min(44vw, 820px, calc(100vh - 96px));
+        /* Fits the window height: the console frame's bars above, the status line and bottom banner below. */
+        width: min(44vw, 820px, calc(100vh - 164px));
         min-width: 380px;
       }
 
@@ -998,6 +997,22 @@
         padding: 2px 8px;
       }
     }
+
+    /* Short windows (a laptop browser is often ~650 px tall): tighter
+       side panels so the whole console fits without scrolling. */
+    @media (min-width: 1100px) and (max-height: 720px) {
+      .radar-side .radar-console { padding: 6px 10px; }
+      .radar-side .console-header { margin-bottom: 5px; padding: 4px; font-size: 0.85rem; }
+      .radar-side .sound-button { margin-bottom: 4px; padding: 4px 5px; }
+      .radar-side .console-row { margin: 2px 0; padding: 3px 8px; }
+      .radar-side { gap: 6px; }
+      .radar-side .playback-readout { padding-top: 4px; padding-bottom: 4px; }
+      .radar-side .playback-body { padding-top: 3px; }
+      .radar-side .console-row { margin: 1px 0; }
+      .radar-register-col .source-register { gap: 3px; }
+      html body.oerc { padding-bottom: calc(var(--oerc-banner) + 2px) !important; }
+    }
+
 
     @media (max-width: 520px) {
 
