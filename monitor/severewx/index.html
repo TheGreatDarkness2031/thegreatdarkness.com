@@ -361,7 +361,7 @@ canvas {
     </div>
 
     <div class="panel">
-        <div class="section-title">STATUS CHANGE LOG</div>
+        <div class="section-title">WARNING LOG</div>
         <div id="eventList" class="event-list">LOADING...</div>
     </div>
 
@@ -469,7 +469,7 @@ function render(data) {
     }
 
     renderItems(data);
-    renderLog(data.history ? data.history.changes : []);
+    renderWarningLog(data.items || []);
     drawGraph(data.history ? data.history.points : []);
 }
 
@@ -530,6 +530,51 @@ function renderItems(data) {
         more.textContent = "LIST SHORTENED";
         grid.appendChild(more);
     }
+}
+
+// Severe weather: the log lists the warnings themselves, newest first,
+// with OER level and NWS severity.
+function renderWarningLog(items) {
+
+    var list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    if (!items.length) {
+        var none = document.createElement("div");
+        none.className = "event-row";
+        none.textContent = "NO ACTIVE LAND WARNINGS.";
+        list.appendChild(none);
+        return;
+    }
+
+    var sorted = items.slice().sort(function(a, b) {
+        return (Number(b.issuedAt) || 0) - (Number(a.issuedAt) || 0);
+    });
+
+    sorted.forEach(function(item) {
+        var lines = item.lines || [];
+        var level = item.level || item.status || "WATCH";
+
+        var row = document.createElement("div");
+        row.className = "event-row";
+
+        var time = document.createElement("div");
+        time.className = "event-time";
+        time.textContent = (item.issued ? "ISSUED " + item.issued + (lines[2] ? " // " : "") : "") + (lines[2] || "");
+
+        var status = document.createElement("div");
+        status.className = statusClass(level);
+        status.textContent = level + (item.severity ? " // NWS SEVERITY: " + item.severity : "") + " // " + item.title;
+
+        var detail = document.createElement("div");
+        detail.className = "event-detail";
+        detail.textContent = (lines[0] || "") + (lines[1] ? " // " + lines[1] : "");
+
+        row.appendChild(time);
+        row.appendChild(status);
+        row.appendChild(detail);
+        list.appendChild(row);
+    });
 }
 
 function renderLog(changes) {

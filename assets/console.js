@@ -15,7 +15,6 @@
       ["SEISMIC", "/monitor/quake/"],
       ["TEMPERATURE", "/monitor/temp/"],
       ["POWER GRID", "/monitor/powergridreal/"],
-      ["GRID HISTORY", "/monitor/powergrid/"],
       ["SPACE WX", "/monitor/spacewx/"],
       ["SEVERE WX", "/monitor/severewx/"],
       ["WILDFIRE", "/monitor/wildfire/"],

@@ -4,7 +4,7 @@ var TGD_API_URL =
   "https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec";
 
 // Monitor pages: /monitor/<name>/ (Config tile routes look like "?quake=1").
-var TGD_MONITOR_PAGES = ["quake", "temp", "powergridreal", "powergrid",
+var TGD_MONITOR_PAGES = ["quake", "temp", "powergridreal",
   "spacewx", "severewx", "wildfire", "volcano", "netout", "gps", "aiinc"];
 
 var TGD_ARCADE_GAMES = ["alienrun", "alieninvaders", "breakout", "snake",
@@ -31,6 +31,8 @@ function tgdPage(route) {
     maintenance: "/maintenance/", watch: "/watch/", oerprofile: "/profile/",
     tools: "/tools/", wellness: "/wellness/", share: "/share/" };
   for (var k in flags) if (p[k] === "1") return flags[k];
+  // Grid History (?powergrid=1) was removed 2026-11-08: old links open the power grid monitor.
+  if (p.powergrid === "1") return "/monitor/powergridreal/";
   for (var i = 0; i !== TGD_MONITOR_PAGES.length; i++) {
     if (p[TGD_MONITOR_PAGES[i]] === "1") return "/monitor/" + TGD_MONITOR_PAGES[i] + "/";
   }

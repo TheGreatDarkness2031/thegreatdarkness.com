@@ -1891,6 +1891,22 @@
       }
     }
   </style>
+
+<style>
+  /* The four crossed-out icons across the top of the homepage. */
+  .no-power-row {
+    display: flex;
+    justify-content: center;
+    margin: 4px auto 14px;
+  }
+  .no-power-row img {
+    display: block;
+    width: min(360px, 86vw);
+    height: auto;
+    /* the picture's near-black background becomes the page's black */
+    filter: contrast(1.15);
+  }
+</style>
 </head>
 
 <body>
@@ -1905,6 +1921,12 @@
   </div>
 
   <main class="page-shell">
+    <div class="no-power-row">
+      <img
+        src="/assets/img/no-power-icons.png"
+        alt="No power, no signal, no fuel, no light"
+      >
+    </div>
     <section class="oer-header">
       <div class="oer-header-inner">
 
@@ -1917,7 +1939,7 @@
         >
           <img
             class="oer-header-image"
-            src="https://drive.google.com/thumbnail?id=1p4VqTEhyqAmlT-CHRTdP0rbaRfPPEAuu&sz=w1000"
+            src="/assets/img/oer-header.png"
             alt="Operational Event Register archival header"
           >
         </a>
