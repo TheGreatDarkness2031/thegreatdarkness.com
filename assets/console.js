@@ -51,6 +51,10 @@
 
   function here(href) {
     var p = location.pathname;
+    // Wellness documents open in the shared viewer: light WELLNESS, not TOOLS.
+    if (p.indexOf("/tools/document/") === 0 && /[?&]doc=WL_/i.test(location.search)) {
+      return href === "/wellness/";
+    }
     return p === href || (href !== "/home/" && p.indexOf(href) === 0);
   }
 
