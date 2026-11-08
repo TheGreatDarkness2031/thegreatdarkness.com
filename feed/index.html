@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
-<link rel="alternate" type="application/rss+xml" title="OER // Event Reporting Console" href="https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec?rss=1">
+<link rel="alternate" type="application/rss+xml" title="OER // Event Reporting Console" href="https://thegreatdarkness.com/feed.xml">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
@@ -253,12 +253,13 @@
 
 <script>
 (function () {
-  var FEED = TGD_API_URL + "?rss=1";
+  var FEED = TGD_API_URL + "?rss=1";            // read live (fresher than feed.xml)
+  var PUBLIC_FEED = "https://thegreatdarkness.com/feed.xml";  // the address readers subscribe to
   var REFRESH_MS = 5 * 60 * 1000;
   var lastXml = "";
 
   var el = function (id) { return document.getElementById(id); };
-  el("feedAddr").value = FEED;
+  el("feedAddr").value = PUBLIC_FEED;
 
   // ---- saved viewer settings (like a 1999 portal remembered yours) ----
   function setting(name, fallback) {
@@ -388,7 +389,7 @@
   el("copyBtn").addEventListener("click", function () {
     var done = function () { el("copyBtn").textContent = "COPIED"; setTimeout(function () { el("copyBtn").textContent = "COPY"; }, 1500); };
     if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(FEED).then(done, function () { el("feedAddr").select(); });
+      navigator.clipboard.writeText(PUBLIC_FEED).then(done, function () { el("feedAddr").select(); });
     } else {
       el("feedAddr").select();
       try { document.execCommand("copy"); done(); } catch (e) {}
