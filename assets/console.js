@@ -25,6 +25,7 @@
       ["AI INCIDENT", "/monitor/aiinc/"]
     ]],
     ["TOOLS", "/tools/"],
+    ["TERMINAL", "/terminal/"],
     ["WELLNESS", "/wellness/"],
     ["ARCADE", "/arcade/"]
   ];

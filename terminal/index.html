@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+<title>The Great Darkness // NEXUS Terminal</title>
+<style>
+  html, body { margin: 0; background: #000; color: #00ff00; font-family: "Courier New", Courier, monospace; }
+  body { padding: 16px 8px 28px; box-sizing: border-box; min-height: 100vh; }
+</style>
+<style>
+      .oer-term-section {
+        width: 96%;
+        max-width: 760px;
+        margin: 0 auto 24px;
+        text-align: left;
+      }
+
+      .oer-term-title {
+        margin-bottom: 8px;
+        color: #00ff00;
+        font-size: 0.85rem;
+        letter-spacing: 2px;
+        text-align: center;
+      }
+
+      .oer-term-screen {
+        position: relative;
+        box-sizing: border-box;
+        height: 420px;
+        padding: 10px 12px;
+        overflow: hidden;
+        background: #000800;
+        border: 2px solid #00aa00;
+        box-shadow: inset 0 0 18px rgba(0, 255, 0, 0.12);
+        color: #00ff00;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 13px;
+        line-height: 1.3;
+        cursor: text;
+        outline: none;
+        text-shadow: 0 0 4px rgba(0, 255, 0, 0.25);
+      }
+
+      .oer-term-screen:focus-within,
+      .oer-term-screen:focus {
+        border-color: #00ff00;
+      }
+
+      .oer-term-line {
+        min-height: 1.3em;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .oer-term-line.art {
+        white-space: pre;
+        overflow: hidden;
+      }
+
+      .oer-term-dim { color: #00aa00; }
+      .oer-term-hdr { color: #ffffff; }
+      .oer-term-err { color: #ff6666; }
+      .oer-term-dir { color: #00ccff; }
+      .oer-term-lock { color: #ff9900; }
+
+      .oer-term-more {
+        color: #000000;
+        background: #00ff00;
+        text-shadow: none;
+      }
+
+      .oer-term-input-line {
+        display: flex;
+        white-space: pre;
+      }
+
+      .oer-term-input {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        caret-color: #00ff00;
+      }
+
+      .oer-term-hint {
+        margin-top: 6px;
+        color: #00aa00;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        text-align: center;
+      }
+
+      /* Phones: the input needs 16 px or the browser zooms in on it;
+         scale it back down so it matches the screen text. */
+      @media (pointer: coarse) {
+        .oer-term-screen {
+          height: 380px;
+          font-size: 12px;
+        }
+
+        .oer-term-input {
+          font-size: 16px;
+          transform: scale(0.75);
+          transform-origin: left center;
+          margin-right: -33%;
+        }
+      }
+</style>
+<style>
+  /* Standalone screen: the terminal fills the window between the frame's bars. */
+  .oer-term-section { max-width: 980px; margin: 0 auto; }
+  .oer-term-screen { height: calc(100vh - 150px); min-height: 300px; }
+  @media (pointer: coarse) {
+    .oer-term-screen { height: calc(100vh - 170px); min-height: 280px; }
+  }
+</style>
+</head>
+<body>
+
+    <section class="oer-term-section">
+      <div class="oer-term-title">
+        === NEXUS TERMINAL ACCESS ===
+      </div>
+
+      <div
+        id="oerTermScreen"
+        class="oer-term-screen"
+        tabindex="0"
+        aria-label="NEXUS terminal"
+      >
+        <div id="oerTermOut"></div>
+        <div id="oerTermInputLine" class="oer-term-input-line">
+          <span id="oerTermPrompt"></span>
+          <input
+            id="oerTermInput"
+            class="oer-term-input"
+            type="text"
+            autocomplete="off"
+            autocapitalize="off"
+            autocorrect="off"
+            spellcheck="false"
+            aria-label="terminal input"
+          >
+        </div>
+      </div>
+
+      <div class="oer-term-hint">
+        CLICK OR TAP THE SCREEN TO TYPE
+      </div>
+    </section>
+
+  <script>
+  // =========================================================
+  // OER TERMINAL (2026-11-06). Its own script block and private
+  // scope, so nothing here can clash with the page's other code.
+  // =========================================================
+  (function() {
+    var screen = document.getElementById("oerTermScreen");
+
+    if (!screen) {
+      return;
+    }
+
+    var out = document.getElementById("oerTermOut");
+    var input = document.getElementById("oerTermInput");
+    var promptEl = document.getElementById("oerTermPrompt");
+    var inputLine = document.getElementById("oerTermInputLine");
+
+    // =======================================================
+    // TERMINAL FILE SYSTEM
+    // dir({...}) is a folder; file("text") is a file.
+    // Options:
+    //   owner: "name"         shown by ls -l (default "oer")
+    //   date: "1996-05-16"    shown by ls -l
+    //   restricted: true      always "Permission denied"
+    //   password: oerTermHash("word")   opened with: unlock <name>
+    //   unlock: Date.UTC(...)  sealed until that moment
+    //   art: true             keep spacing exactly (ASCII art)
+    // Names starting with "." are hidden (ls -a shows them).
+    // =======================================================
+    function dir(children, opts) {
+      return Object.assign({ type: "dir", children: children }, opts || {});
+    }
+
+    function file(text, opts) {
+      return Object.assign({ type: "file", text: text }, opts || {});
+    }
+
+    function staffHome(name) {
+      return dir({}, { owner: name, restricted: true, date: "1996-04-16" });
+    }
+
+    var ART_OER = [
+      " ####   #####  ##### ",
+      "#    #  #      #    #",
+      "#    #  ####   ##### ",
+      "#    #  #      #   # ",
+      " ####   #####  #    #"
+    ].join("\n");
+
+    var ART_DISH = String.raw`
+        \    |    /
+         \   |   /
+     _____\__|__/_____
+     \               /
+      \             /
+       '._________.'
+            | |
+           /| |\
+          / | | \
+      ___/__|_|__\___
+     |   NEXUS-DEV   |
+     |___STATION 04__|`.slice(1);
+
+    var ART_TESTCARD = String.raw`
++--------------------------------+
+|  ## ## ## ## ## ## ## ## ## ## |
+|                                |
+|      .------------------.      |
+|     /    NEXUS - DEV     \     |
+|    |     SIGNAL CHECK     |    |
+|     \    LINE 04 / 525   /     |
+|      '------------------'      |
+|                                |
+| |||||||||||||||||||||||||||||| |
++--------------------------------+`.slice(1);
+
+    function collectLog() {
+      // A deterministic run log for three prototype jobs.
+      var lines = [];
+      var jobs = ["collect-a", "collect-b", "collect-c"];
+      var seed = 7;
+
+      function next() {
+        seed = (seed * 9301 + 49297) % 233280;
+        return seed / 233280;
+      }
+
+      for (var d = 20; d !== 31; d++) {
+        jobs.forEach(function(job, j) {
+          var r = next();
+          var count = Math.floor(120 + r * 380);
+          var line = "1996-05-" + d + " 0" + (2 + j) + ":00Z  " + job + "  exit 0  ";
+          if (job === "collect-c" && r > 0.62) {
+            line += "records 0     WARN empty output";
+          } else if (r > 0.9) {
+            line += "records " + String(count).padEnd(5, " ") + " WARN late start (+14m)";
+          } else {
+            line += "records " + count;
+          }
+          lines.push(line);
+        });
+      }
+      return lines.join("\n");
+    }
+
+    var ROOT = dir({
+      etc: dir({
+        motd: file([
+          "NEXUS DEVELOPMENT HOST",
+          "Shared development and test environment.",
+          "Read /docs/nexus/directory_layout.txt before",
+          "creating folders. Report faults through the",
+          "maintenance log."
+        ].join("\n")),
+        passwd: file([
+          "root:x:0:0:system:/root:/bin/sh",
+          "mvoss:x:1001:100:Systems Architect:/home/mvoss:/bin/sh",
+          "mkeene:x:1002:100:Systems / Infrastructure:/home/mkeene:/bin/sh",
+          "nbell:x:1003:100:Network / Regional Nodes:/home/nbell:/bin/sh",
+          "ychen:x:1004:100:Database / Archive:/home/ychen:/bin/sh",
+          "etrent:x:1005:100:Data Integration:/home/etrent:/bin/sh",
+          "crusk:x:1006:100:Monitoring / Automation:/home/crusk:/bin/sh",
+          "slaurent:x:1007:100:Communications / Feeds:/home/slaurent:/bin/sh",
+          "pnanduri:x:1008:100:Data Quality:/home/pnanduri:/bin/sh",
+          "wpike:x:1009:100:Configuration / Release:/home/wpike:/bin/sh",
+          "hsato:x:1010:100:Security / Integrity:/home/hsato:/bin/sh",
+          "vhale:x:1011:100:Reliability / Performance:/home/vhale:/bin/sh",
+          "guest:x:2000:200:Public read-only:/home/guest:/bin/sh"
+        ].join("\n")),
+        hosts: file([
+          "127.0.0.1   localhost",
+          "10.4.1.10   nexus-dev    # shared dev + test (temporary)",
+          "10.4.1.20   nexus-test   # requested, not delivered",
+          "10.4.1.30   archive01"
+        ].join("\n"))
+      }),
+
+      home: dir({
+        guest: dir({
+          "README.txt": file([
+            "NEXUS DEVELOPMENT HOST - GUEST ACCOUNT",
+            "",
+            "This account is read-only. Files outside",
+            "/home/guest may be read where permissions allow.",
+            "",
+            "Start here:",
+            "  /docs/nexus        project documents",
+            "  /docs/procedures   operating procedures",
+            "  /var/log           job and access logs",
+            "  /usr/share/art     terminal banners",
+            "",
+            "Do not leave sessions open on shared workstations."
+          ].join("\n"), { owner: "guest" })
+        }, { owner: "guest" }),
+        mvoss: staffHome("mvoss"),
+        mkeene: staffHome("mkeene"),
+        nbell: staffHome("nbell"),
+        ychen: staffHome("ychen"),
+        etrent: staffHome("etrent"),
+        crusk: staffHome("crusk"),
+        slaurent: staffHome("slaurent"),
+        pnanduri: staffHome("pnanduri"),
+        wpike: staffHome("wpike"),
+        hsato: staffHome("hsato"),
+        vhale: staffHome("vhale")
+      }),
+
+      docs: dir({
+        nexus: dir({
+          "overview.txt": file([
+            "NEXUS - PROJECT OVERVIEW               rev 0.3",
+            "Author: M. Voss                     1996-04-12",
+            "",
+            "PURPOSE",
+            "A common environment to collect, normalize,",
+            "time-align and review observations from",
+            "distributed sources.",
+            "",
+            "PRINCIPLES",
+            "1. Keep the source record. Normalized values",
+            "   are derived; they never replace the original.",
+            "2. Keep source identity. Every value can be",
+            "   traced to where it came from and when it",
+            "   arrived.",
+            "3. Separate observation from interpretation.",
+            "4. A missing value is not a zero.",
+            "",
+            "STATUS",
+            "Prototype development approved. Operational",
+            "deployment is not authorized at this stage."
+          ].join("\n"), { owner: "mvoss", date: "1996-04-12" }),
+
+          "directory_layout.txt": file([
+            "NEXUS - DIRECTORY LAYOUT               rev 1.0",
+            "Author: W. Pike                     1996-05-09",
+            "",
+            "/src        source files          edit",
+            "/build      generated output      do not edit",
+            "/testdata   test datasets         read-only",
+            "/release    release candidates    do not edit",
+            "",
+            "Generated files can be rebuilt. Source files",
+            "cannot. If you are unsure which one you are",
+            "looking at, ask before deleting it.",
+            "",
+            "Do not rename the shared folders, even if a",
+            "more convenient name occurs to you."
+          ].join("\n"), { owner: "wpike", date: "1996-05-09" }),
+
+          "topology.txt": file([
+            "NEXUS - EXPECTED REGIONAL LINKS        DRAFT",
+            "Author: N. Bell                     1996-04-19",
+            "",
+            " [SITE A]--+",
+            "           |",
+            " [SITE B]--+--[NEXUS]--[ARCHIVE]",
+            "           |",
+            " [SITE C]--?",
+            "",
+            "PLANNING DOCUMENT. Lines show expected paths,",
+            "not confirmed ones. ? = owner and addressing",
+            "not yet confirmed by the responsible site."
+          ].join("\n"), { owner: "nbell", date: "1996-04-19" }),
+
+          "time_conventions.txt": file([
+            "NEXUS - TIME CONVENTIONS               rev 0.2",
+            "Author: E. Trent                    1996-04-26",
+            "",
+            "1. Store every time in UTC.",
+            "2. Keep the time exactly as the source supplied",
+            "   it, in the raw record, beside the converted",
+            "   value.",
+            "3. If a source gives local time with no offset,",
+            "   mark the converted value UNVERIFIED. Do not",
+            "   guess.",
+            "4. Record when NEXUS received a record apart",
+            "   from when the source says it was observed.",
+            "   They are different facts."
+          ].join("\n"), { owner: "etrent", date: "1996-04-26" })
+        }),
+
+        procedures: dir({
+          "health_check.txt": file([
+            "COLLECTION JOB HEALTH CHECK            rev 0.4",
+            "Author: C. Rusk                     1996-05-21",
+            "",
+            "A run is COMPLETE only when all are true:",
+            "  [ ] process exited with status 0",
+            "  [ ] output file exists",
+            "  [ ] output file is not empty",
+            "  [ ] record count is within expected range",
+            "  [ ] newest record is recent for that source",
+            "",
+            "Exit status 0 alone means the program stopped.",
+            "It does not mean it worked."
+          ].join("\n"), { owner: "crusk", date: "1996-05-21" }),
+
+          "shift_handover.txt": file([
+            "SHIFT HANDOVER CHECKLIST               rev 0.1",
+            "",
+            "Before leaving:",
+            "  [ ] note open faults and who owns them",
+            "  [ ] note any job that ran late, empty, or twice",
+            "  [ ] note any source that went quiet",
+            "  [ ] log out of shared workstations",
+            "  [ ] write it down even if it seems minor",
+            "",
+            "\"Nothing to report\" is a report. Write it."
+          ].join("\n"), { date: "1996-05-24" }),
+
+          "source_contacts.txt": file([
+            "SOURCE CONTACT REGISTER - FIELDS       rev 0.2",
+            "Author: S. Laurent                  1996-05-02",
+            "",
+            "Each source needs:",
+            "  technical contact (a person, not an office)",
+            "  responsible organization",
+            "  connection method",
+            "  maintenance window",
+            "  escalation path",
+            "",
+            "A telephone number in a directory is not the",
+            "same thing as a confirmed support path."
+          ].join("\n"), { owner: "slaurent", date: "1996-05-02" })
+        })
+      }),
+
+      var: dir({
+        log: dir({
+          "nexus-collect.log": file(collectLog(), { date: "1996-05-30" }),
+          "auth.log": file([
+            "1996-05-28 13:02Z  login  mkeene    tty1",
+            "1996-05-28 13:40Z  login  crusk     tty2",
+            "1996-05-28 17:55Z  logout crusk     tty2",
+            "1996-05-28 18:10Z  FAILED login  user 'admin' (unknown)",
+            "1996-05-28 18:11Z  FAILED login  user 'root'",
+            "1996-05-29 08:31Z  login  mvoss     tty1",
+            "1996-05-29 09:15Z  login  guest     public",
+            "1996-05-29 09:16Z  logout guest     public"
+          ].join("\n"), { date: "1996-05-29" })
+        })
+      }),
+
+      usr: dir({
+        share: dir({
+          art: dir({
+            "oer.txt": file(ART_OER, { art: true }),
+            "dish.txt": file(ART_DISH, { art: true }),
+            "testcard.txt": file(ART_TESTCARD, { art: true })
+          })
+        })
+      }),
+
+      archive: dir({
+        "1996": dir({
+          "release_notes_0.1.txt": file([
+            "NEXUS 0.1 - RELEASE NOTES            1996-06-03",
+            "Prepared by: W. Pike",
+            "",
+            "Built from: /src as of 1996-05-31",
+            "Environment: nexus-dev (shared; see /etc/hosts)",
+            "",
+            "Included:",
+            "  - scheduled collection (prototype)",
+            "  - raw + normalized record storage",
+            "  - source contact register",
+            "",
+            "Known issues:",
+            "  - empty output still reported as success by",
+            "    older job scripts (see health_check.txt)",
+            "  - three sources supply local time only",
+            "  - no separate test host",
+            "",
+            "Not for operational use."
+          ].join("\n"), { owner: "wpike", date: "1996-06-03" })
+        }, { date: "1996-06-03" }),
+        restricted: dir({}, { owner: "root", restricted: true, date: "1996-06-10" }),
+        "2031": dir({}, { owner: "root", unlock: Date.UTC(2031, 6, 1, 12, 0, 0), date: "1996-06-10" })
+      })
+    }, { date: "1996-04-16" });
+
+    // Accounts. Staff accounts exist but no password opens them yet
+    // (add password: oerTermHash("word") to make one work).
+    var ACCOUNTS = {
+      guest: { home: "/home/guest", open: true },
+      root: {},
+      mvoss: {}, mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
+      slaurent: {}, pnanduri: {}, wpike: {}, hsato: {}, vhale: {}
+    };
+
+    var HOST = "nexus";
+
+    // Small non-cryptographic hash (FNV-1a) so passwords aren't
+    // plain text in the page. A puzzle lock, not real security.
+    function oerTermHash(text) {
+      var h = 0x811c9dc5;
+      for (var i = 0; i !== text.length; i++) {
+        h ^= text.charCodeAt(i);
+        h = Math.imul(h, 0x01000193) >>> 0;
+      }
+      return h.toString(16);
+    }
+
+    // =======================================================
+    // STATE
+    // =======================================================
+    var user = "";
+    var home = "/";
+    var cwd = "/";
+    var cmdHistory = [];
+    var historyPos = 0;
+    var unlocked = {};
+    var sessionStart = Date.now();
+    var mode = "login";      // login | loginpass | cmd | pager | password
+    var loginName = "";
+    var failedLogins = 0;
+    var pager = null;
+    var pendingUnlock = null;
+
+    // =======================================================
+    // SCREEN
+    // =======================================================
+    function makeLine(parts, extraClass) {
+      var line = document.createElement("div");
+      line.className = "oer-term-line" + (extraClass ? " " + extraClass : "");
+      parts.forEach(function(p) {
+        var span = document.createElement("span");
+        if (p.c) {
+          span.className = "oer-term-" + p.c;
+        }
+        span.textContent = p.t;
+        line.appendChild(span);
+      });
+      out.appendChild(line);
+      return line;
+    }
+
+    function print(text, cls) {
+      String(text).split("\n").forEach(function(t) {
+        makeLine([{ t: t, c: cls }]);
+      });
+    }
+
+    function printArt(text) {
+      String(text).split("\n").forEach(function(t) {
+        makeLine([{ t: t }], "art");
+      });
+    }
+
+    function printParts(parts) {
+      return makeLine(parts);
+    }
+
+    function overflowing() {
+      return screen.scrollHeight > screen.clientHeight + 1;
+    }
+
+    // Old lines roll off the top; the screen itself never scrolls.
+    function roll() {
+      while (overflowing() && out.firstChild) {
+        out.removeChild(out.firstChild);
+      }
+      screen.scrollTop = 0;
+    }
+
+    function lineHeight() {
+      return parseFloat(getComputedStyle(screen).lineHeight) || 17;
+    }
+
+    function rows() {
+      return Math.max(5, Math.floor((screen.clientHeight - 20) / lineHeight()));
+    }
+
+    function charsPerLine() {
+      var probe = document.createElement("span");
+      probe.textContent = "MMMMMMMMMM";
+      probe.style.visibility = "hidden";
+      out.appendChild(probe);
+      var w = probe.getBoundingClientRect().width / 10;
+      out.removeChild(probe);
+      return Math.floor((screen.clientWidth - 24) / (w || 8));
+    }
+
+    function promptText() {
+      var shown = cwd === home ? "~" :
+        cwd.indexOf(home + "/") === 0 ? "~" + cwd.slice(home.length) : cwd;
+      return user + "@" + HOST + ":" + shown + "$ ";
+    }
+
+    function updatePrompt() {
+      if (mode === "closing") {
+        promptEl.textContent = "";
+      } else if (mode === "login") {
+        promptEl.textContent = HOST + " login: ";
+      } else if (mode === "loginpass" || mode === "password") {
+        promptEl.textContent = "Password: ";
+      } else {
+        promptEl.textContent = promptText();
+      }
+      input.type = mode === "loginpass" || mode === "password" ? "password" : "text";
+    }
+
+    // =======================================================
+    // PATHS
+    // =======================================================
+    function splitPath(p) {
+      return p.split("/").filter(Boolean);
+    }
+
+    function resolveParts(p) {
+      var base;
+      if (p === "~" || p.indexOf("~/") === 0) {
+        base = splitPath(home);
+        p = p.slice(1);
+      } else if (p.charAt(0) === "/") {
+        base = [];
+      } else {
+        base = splitPath(cwd);
+      }
+      splitPath(p).forEach(function(seg) {
+        if (seg === ".") {
+          return;
+        }
+        if (seg === "..") {
+          base.pop();
+          return;
+        }
+        base.push(seg);
+      });
+      return base;
+    }
+
+    function getNode(parts) {
+      var n = ROOT;
+      for (var i = 0; i !== parts.length; i++) {
+        if (!n || n.type !== "dir" ||
+            !Object.prototype.hasOwnProperty.call(n.children, parts[i])) {
+          return null;
+        }
+        n = n.children[parts[i]];
+      }
+      return n;
+    }
+
+    function pathString(parts) {
+      return "/" + parts.join("/");
+    }
+
+    function pad2(n) {
+      return String(n).padStart(2, "0");
+    }
+
+    function utcStamp(ms) {
+      var d = new Date(ms);
+      return d.getUTCFullYear() + "-" + pad2(d.getUTCMonth() + 1) + "-" +
+        pad2(d.getUTCDate()) + " " + pad2(d.getUTCHours()) + ":" +
+        pad2(d.getUTCMinutes()) + " UTC";
+    }
+
+    // Why a file or folder can't be opened, or "" if it can.
+    function blocked(node, parts) {
+      if (node.unlock && node.unlock > Date.now()) {
+        return "Permission denied (sealed until " + utcStamp(node.unlock) + ")";
+      }
+      if (node.restricted) {
+        return "Permission denied";
+      }
+      if (node.password && !unlocked[pathString(parts)]) {
+        return "Permission denied";
+      }
+      return "";
+    }
+
+    function isLocked(node, parts) {
+      return blocked(node, parts) !== "";
+    }
+
+    function readFile(cmd, arg) {
+      var parts = resolveParts(arg);
+      var node = getNode(parts);
+      if (!node) {
+        print(cmd + ": " + arg + ": No such file or directory", "err");
+        return null;
+      }
+      if (node.type === "dir") {
+        print(cmd + ": " + arg + ": Is a directory", "err");
+        return null;
+      }
+      var why = blocked(node, parts);
+      if (why) {
+        print(cmd + ": " + arg + ": " + why, "err");
+        return null;
+      }
+      return node;
+    }
+
+    function printFile(node) {
+      if (node.art) {
+        printArt(node.text);
+      } else {
+        print(node.text);
+      }
+    }
+
+    // =======================================================
+    // COMMANDS
+    // =======================================================
+    var GROUPS = ["NAVIGATION", "READING", "SEARCHING", "SYSTEM", "HELP"];
+
+    var COMMANDS = {
+      ls: {
+        group: "NAVIGATION", usage: "ls [-l] [-a] [folder]", summary: "list files and folders",
+        detail: [
+          "Lists what is in a folder (the current one if none",
+          "is given). Folders are blue with a / on the end.",
+          "  -l   long list: permissions, owner, size, date",
+          "  -a   also show hidden files (names starting with .)",
+          "Examples:  ls     ls -l /docs     ls -la"
+        ],
+        run: cmdLs
+      },
+      cd: {
+        group: "NAVIGATION", usage: "cd [folder]", summary: "change folder",
+        detail: [
+          "Moves into a folder.",
+          "  cd ..     up one folder",
+          "  cd /      the top folder",
+          "  cd ~      your home folder (also: cd on its own)",
+          "Examples:  cd /docs/nexus     cd ..     cd ~"
+        ],
+        run: cmdCd
+      },
+      pwd: {
+        group: "NAVIGATION", usage: "pwd", summary: "show the current folder",
+        detail: ["Prints the full path of the folder you are in."],
+        run: function() { print(cwd); }
+      },
+      tree: {
+        group: "NAVIGATION", usage: "tree [-a] [folder]", summary: "show folders as a tree",
+        detail: [
+          "Draws everything inside a folder, folders within",
+          "folders.",
+          "  -a   include hidden files",
+          "Example:  tree /docs"
+        ],
+        run: cmdTree
+      },
+      cat: {
+        group: "READING", usage: "cat <file>", summary: "print a file",
+        detail: [
+          "Prints a file. Long files are shown a screen at a",
+          "time (SPACE or tap for more, Q to stop).",
+          "Example:  cat README.txt"
+        ],
+        run: cmdCat
+      },
+      more: {
+        group: "READING", usage: "more <file>", summary: "read a file a screen at a time",
+        detail: [
+          "Shows one screen, then waits.",
+          "  SPACE or tap   next screen",
+          "  ENTER          next line",
+          "  Q              stop reading",
+          "Example:  more /var/log/nexus-collect.log"
+        ],
+        run: cmdCat
+      },
+      less: {
+        group: "READING", usage: "less <file>", summary: "same as more",
+        detail: ["Works the same as more. Type help more for the keys."],
+        run: cmdCat
+      },
+      head: {
+        group: "READING", usage: "head [-n N] <file>", summary: "first lines of a file",
+        detail: [
+          "Prints the first 10 lines, or N lines with -n N.",
+          "Example:  head -n 5 /var/log/nexus-collect.log"
+        ],
+        run: function(args) { cmdHeadTail("head", args); }
+      },
+      tail: {
+        group: "READING", usage: "tail [-n N] <file>", summary: "last lines of a file",
+        detail: [
+          "Prints the last 10 lines, or N lines with -n N.",
+          "Example:  tail -n 5 /var/log/auth.log"
+        ],
+        run: function(args) { cmdHeadTail("tail", args); }
+      },
+      grep: {
+        group: "SEARCHING", usage: "grep [-i] <text> <file...>", summary: "find lines containing text",
+        detail: [
+          "Prints every line in the file(s) that contains the",
+          "text. Put text with spaces in quotes.",
+          "  -i   ignore upper/lower case",
+          "Examples:  grep WARN /var/log/nexus-collect.log",
+          "           grep -i \"not authorized\" /docs/nexus/overview.txt"
+        ],
+        run: cmdGrep
+      },
+      find: {
+        group: "SEARCHING", usage: "find [folder] [-name pattern]", summary: "find files by name",
+        detail: [
+          "Lists every file and folder inside a folder.",
+          "  -name pattern   only names that match; * = anything",
+          "Examples:  find /docs     find / -name \"*.log\""
+        ],
+        run: cmdFind
+      },
+      unlock: {
+        group: "SYSTEM", usage: "unlock <file>", summary: "open a locked file with a password",
+        detail: [
+          "Asks for the password of a locked file or folder.",
+          "Example:  unlock /archive/restricted"
+        ],
+        run: cmdUnlock
+      },
+      whoami: {
+        group: "SYSTEM", usage: "whoami", summary: "show your user name",
+        detail: ["Prints the name you are logged in as."],
+        run: function() { print(user); }
+      },
+      date: {
+        group: "SYSTEM", usage: "date", summary: "show the date and time (UTC)",
+        detail: ["Prints the current date and time in UTC."],
+        run: function() { print(new Date().toUTCString().replace("GMT", "UTC")); }
+      },
+      uptime: {
+        group: "SYSTEM", usage: "uptime", summary: "how long this session has run",
+        detail: ["Prints how long you have been logged in."],
+        run: function() {
+          var s = Math.floor((Date.now() - sessionStart) / 1000);
+          print("session up " + Math.floor(s / 3600) + ":" + pad2(Math.floor(s / 60) % 60) + ":" + pad2(s % 60));
+        }
+      },
+      echo: {
+        group: "SYSTEM", usage: "echo <text>", summary: "print text",
+        detail: ["Prints whatever you type after it."],
+        run: function(args) { print(args.join(" ")); }
+      },
+      history: {
+        group: "SYSTEM", usage: "history", summary: "list the commands you have typed",
+        detail: ["Numbered list of this session's commands.", "UP / DOWN arrows recall them."],
+        run: function() {
+          cmdHistory.forEach(function(h, i) {
+            print(String(i + 1).padStart(4, " ") + "  " + h);
+          });
+        }
+      },
+      clear: {
+        group: "SYSTEM", usage: "clear", summary: "clear the screen",
+        detail: ["Clears the screen. CTRL+L does the same."],
+        run: function() { out.textContent = ""; }
+      },
+      logout: {
+        group: "SYSTEM", usage: "logout", summary: "end the session",
+        detail: ["Logs you out and returns to the login prompt.", "exit does the same."],
+        run: logout
+      },
+      exit: {
+        group: "SYSTEM", usage: "exit", summary: "same as logout",
+        detail: ["Same as logout."],
+        run: logout
+      },
+      help: {
+        group: "HELP", usage: "help [command]", summary: "list commands, or explain one",
+        detail: [
+          "help on its own lists every command.",
+          "help <command> explains one command, with examples.",
+          "? does the same as help. So does <command> --help."
+        ],
+        run: cmdHelp
+      },
+      "?": {
+        group: "HELP", usage: "? [command]", summary: "same as help",
+        detail: ["Same as help."],
+        run: cmdHelp
+      },
+      man: {
+        group: "HELP", usage: "man <command>", summary: "manual page for a command",
+        detail: ["Same as help <command>."],
+        run: function(args) {
+          if (!args.length) {
+            print("What manual page do you want? Try: man ls", "err");
+            return;
+          }
+          cmdHelp(args);
+        }
+      }
+    };
+
+    // ---------- help ----------
+    function cmdHelp(args) {
+      if (args.length) {
+        showCommandHelp(args[0]);
+        return;
+      }
+      var narrow = charsPerLine() !== 0 && 60 > charsPerLine();
+      print("AVAILABLE COMMANDS", "hdr");
+      GROUPS.forEach(function(g) {
+        print("");
+        print("  " + g, "hdr");
+        Object.keys(COMMANDS).forEach(function(name) {
+          var c = COMMANDS[name];
+          if (c.group !== g) {
+            return;
+          }
+          if (narrow) {
+            printParts([{ t: "    " + c.usage }]);
+            printParts([{ t: "      " + c.summary, c: "dim" }]);
+          } else {
+            printParts([{ t: "    " + c.usage.padEnd(32, " ") }, { t: c.summary, c: "dim" }]);
+          }
+        });
+      });
+      print("");
+      print("TIPS", "hdr");
+      var tips = [["help <command>", "explains one command (e.g. help grep)"]];
+      if (!window.matchMedia("(pointer: coarse)").matches) {
+        tips.push(["TAB", "completes command and file names"]);
+        tips.push(["UP / DOWN", "recall earlier commands"]);
+      }
+      tips.push(["Start with:", "ls     then     cat README.txt"]);
+      tips.forEach(function(tip) {
+        if (narrow) {
+          print("  " + tip[0]);
+          print("    " + tip[1], "dim");
+        } else {
+          print("  " + tip[0].padEnd(16, " ") + tip[1], "dim");
+        }
+      });
+    }
+
+    function showCommandHelp(name) {
+      var c = COMMANDS[name];
+      if (!c) {
+        print("help: no command called '" + name + "'. Type help to list commands.", "err");
+        return;
+      }
+      print(name.toUpperCase() + " - " + c.summary, "hdr");
+      print("  usage:  " + c.usage);
+      c.detail.forEach(function(d) {
+        print("  " + d, "dim");
+      });
+    }
+
+    // ---------- ls ----------
+    function parseFlags(args, allowed) {
+      var flags = {};
+      var rest = [];
+      args.forEach(function(a) {
+        if (a.length > 1 && /^-[a-z]+$/.test(a)) {
+          a.slice(1).split("").forEach(function(f) { flags[f] = true; });
+        } else {
+          rest.push(a);
+        }
+      });
+      var bad = Object.keys(flags).filter(function(f) { return allowed.indexOf(f) === -1; });
+      return { flags: flags, rest: rest, bad: bad };
+    }
+
+    function entryClass(node, parts) {
+      return node.type === "dir" ? (isLocked(node, parts) ? "lock" : "dir") : isLocked(node, parts) ? "lock" : "";
+    }
+
+    function cmdLs(args) {
+      var p = parseFlags(args, ["l", "a"]);
+      if (p.bad.length) {
+        print("ls: unknown option -" + p.bad[0] + ". Type help ls.", "err");
+        return;
+      }
+      var targets = p.rest.length ? p.rest : ["."];
+      targets.forEach(function(t, ti) {
+        var parts = resolveParts(t);
+        var node = getNode(parts);
+        if (!node) {
+          print("ls: " + t + ": No such file or directory", "err");
+          return;
+        }
+        if (node.type === "file") {
+          lsEntry(parts[parts.length - 1], node, parts, p.flags.l);
+          return;
+        }
+        var why = blocked(node, parts);
+        if (why) {
+          print("ls: " + t + ": " + why, "err");
+          return;
+        }
+        if (targets.length > 1) {
+          if (ti) {
+            print("");
+          }
+          print(t + ":", "hdr");
+        }
+        var names = Object.keys(node.children).sort().filter(function(n) {
+          return p.flags.a || n.charAt(0) !== ".";
+        });
+        if (!names.length) {
+          return;
+        }
+        if (p.flags.l) {
+          print("total " + names.length, "dim");
+          names.forEach(function(n) {
+            lsEntry(n, node.children[n], parts.concat(n), true);
+          });
+          return;
+        }
+        var row = [];
+        names.forEach(function(n) {
+          var child = node.children[n];
+          row.push({ t: n + (child.type === "dir" ? "/" : ""), c: entryClass(child, parts.concat(n)) });
+          row.push({ t: "   " });
+        });
+        printParts(row);
+      });
+    }
+
+    function lsEntry(name, node, parts, long) {
+      var cls = entryClass(node, parts);
+      if (!long) {
+        printParts([{ t: name + (node.type === "dir" ? "/" : ""), c: cls }]);
+        return;
+      }
+      var locked = isLocked(node, parts);
+      var perms = node.type === "dir" ? (locked ? "drwx------" : "drwxr-xr-x") : (locked ? "-r--------" : "-rw-r--r--");
+      var owner = (node.owner || "oer").padEnd(8, " ");
+      var size = node.type === "dir" ? 4096 : node.text.length;
+      printParts([
+        { t: perms + " " + owner + String(size).padStart(5, " ") + " " + (node.date || "1996-05-16") + " " },
+        { t: name + (node.type === "dir" ? "/" : ""), c: cls }
+      ]);
+    }
+
+    // ---------- cd ----------
+    function cmdCd(args) {
+      var target = args[0] || "~";
+      var parts = resolveParts(target);
+      var node = getNode(parts);
+      if (!node) {
+        print("cd: " + target + ": No such file or directory", "err");
+        return;
+      }
+      if (node.type !== "dir") {
+        print("cd: " + target + ": Not a directory", "err");
+        return;
+      }
+      var why = blocked(node, parts);
+      if (why) {
+        print("cd: " + target + ": " + why, "err");
+        return;
+      }
+      cwd = pathString(parts);
+    }
+
+    // ---------- tree ----------
+    function cmdTree(args) {
+      var p = parseFlags(args, ["a"]);
+      var target = p.rest[0] || ".";
+      var parts = resolveParts(target);
+      var node = getNode(parts);
+      if (!node || node.type !== "dir") {
+        print("tree: " + target + ": No such directory", "err");
+        return;
+      }
+      if (isLocked(node, parts)) {
+        print("tree: " + target + ": " + blocked(node, parts), "err");
+        return;
+      }
+      printParts([{ t: target, c: "dir" }]);
+      var counts = { d: 0, f: 0 };
+      (function walk(n, np, indent) {
+        var names = Object.keys(n.children).sort().filter(function(x) {
+          return p.flags.a || x.charAt(0) !== ".";
+        });
+        names.forEach(function(name, i) {
+          var child = n.children[name];
+          var last = i === names.length - 1;
+          var cp = np.concat(name);
+          printParts([
+            { t: indent + (last ? "└── " : "├── ") },
+            { t: name, c: entryClass(child, cp) }
+          ]);
+          if (child.type === "dir") {
+            counts.d++;
+            if (!isLocked(child, cp)) {
+              walk(child, cp, indent + (last ? "    " : "│   "));
+            }
+          } else {
+            counts.f++;
+          }
+        });
+      })(node, parts, "");
+      print(counts.d + " directories, " + counts.f + " files", "dim");
+    }
+
+    // ---------- cat / more / head / tail ----------
+    function cmdCat(args) {
+      if (!args.length) {
+        print("cat: which file? Example: cat README.txt", "err");
+        return;
+      }
+      args.forEach(function(a) {
+        var node = readFile("cat", a);
+        if (node) {
+          printFile(node);
+        }
+      });
+    }
+
+    function cmdHeadTail(name, args) {
+      var count = 10;
+      var files = [];
+      for (var i = 0; i !== args.length; i++) {
+        if (args[i] === "-n" && i + 1 !== args.length) {
+          count = parseInt(args[i + 1], 10);
+          i++;
+        } else if (/^-\d+$/.test(args[i])) {
+          count = parseInt(args[i].slice(1), 10);
+        } else {
+          files.push(args[i]);
+        }
+      }
+      if (!files.length || !(count >= 0)) {
+        print(name + ": usage: " + COMMANDS[name].usage, "err");
+        return;
+      }
+      files.forEach(function(f) {
+        var node = readFile(name, f);
+        if (!node) {
+          return;
+        }
+        var lines = node.text.split("\n");
+        var pick = name === "head" ? lines.slice(0, count) : lines.slice(Math.max(0, lines.length - count));
+        (node.art ? printArt : print)(pick.join("\n"));
+      });
+    }
+
+    // ---------- grep ----------
+    function cmdGrep(args) {
+      var p = parseFlags(args, ["i"]);
+      if (p.bad.length) {
+        print("grep: unknown option -" + p.bad[0] + ". Type help grep.", "err");
+        return;
+      }
+      if (!p.rest.length) {
+        print("grep: usage: " + COMMANDS.grep.usage + "  (type help grep)", "err");
+        return;
+      }
+      if (p.rest.length === 1) {
+        print("grep: which file? Example: grep " + p.rest[0] + " /var/log/auth.log", "err");
+        return;
+      }
+      var needle = p.flags.i ? p.rest[0].toLowerCase() : p.rest[0];
+      var files = p.rest.slice(1);
+      var found = 0;
+      files.forEach(function(f) {
+        var node = readFile("grep", f);
+        if (!node) {
+          return;
+        }
+        node.text.split("\n").forEach(function(line) {
+          var hay = p.flags.i ? line.toLowerCase() : line;
+          if (hay.indexOf(needle) !== -1) {
+            found++;
+            print((files.length > 1 ? f + ":" : "") + line);
+          }
+        });
+      });
+      if (!found) {
+        print("(no matching lines)", "dim");
+      }
+    }
+
+    // ---------- find ----------
+    function globToRegex(glob) {
+      var re = glob.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
+      return new RegExp("^" + re + "$", "i");
+    }
+
+    function cmdFind(args) {
+      var start = ".";
+      var pattern = null;
+      for (var i = 0; i !== args.length; i++) {
+        if (args[i] === "-name" && i + 1 !== args.length) {
+          pattern = globToRegex(args[i + 1]);
+          i++;
+        } else if (args[i].charAt(0) !== "-") {
+          start = args[i];
+        }
+      }
+      var parts = resolveParts(start);
+      var node = getNode(parts);
+      if (!node) {
+        print("find: " + start + ": No such file or directory", "err");
+        return;
+      }
+      var found = 0;
+      (function walk(n, np, shown) {
+        if (!pattern || pattern.test(np.length ? np[np.length - 1] : "/")) {
+          found++;
+          print(shown);
+        }
+        if (n.type !== "dir") {
+          return;
+        }
+        if (isLocked(n, np)) {
+          print("find: " + shown + ": Permission denied", "err");
+          return;
+        }
+        Object.keys(n.children).sort().forEach(function(name) {
+          walk(n.children[name], np.concat(name), shown.replace(/\/$/, "") + "/" + name);
+        });
+      })(node, parts, start);
+      if (!found) {
+        print("(nothing found)", "dim");
+      }
+    }
+
+    // ---------- unlock ----------
+    function cmdUnlock(args) {
+      if (!args.length) {
+        print("unlock: which file? Example: unlock /archive/restricted", "err");
+        return;
+      }
+      var parts = resolveParts(args[0]);
+      var node = getNode(parts);
+      if (!node) {
+        print("unlock: " + args[0] + ": No such file or directory", "err");
+        return;
+      }
+      if (node.unlock && node.unlock > Date.now()) {
+        print("unlock: " + args[0] + ": sealed until " + utcStamp(node.unlock), "err");
+        return;
+      }
+      if (!node.restricted && (!node.password || unlocked[pathString(parts)])) {
+        print("unlock: " + args[0] + ": not locked");
+        return;
+      }
+      pendingUnlock = { parts: parts, node: node, name: args[0] };
+      mode = "password";
+    }
+
+    function finishUnlock(word) {
+      var p = pendingUnlock;
+      pendingUnlock = null;
+      mode = "cmd";
+      if (p.node.password && oerTermHash(word) === p.node.password) {
+        unlocked[pathString(p.parts)] = true;
+        print("Access granted: " + p.name);
+      } else {
+        print("unlock: incorrect password", "err");
+      }
+    }
+
+    // =======================================================
+    // LOGIN
+    // =======================================================
+    function showLoginScreen() {
+      out.textContent = "";
+      printArt(ART_OER);
+      print("");
+      print("NEXUS DEVELOPMENT HOST  //  OER ENGINEERING", "hdr");
+      print("AUTHORIZED USE ONLY.");
+      print("Public access: log in as guest (no password).", "dim");
+      print("");
+      mode = "login";
+      updatePrompt();
+    }
+
+    function loginUser(name) {
+      print(HOST + " login: " + name);
+      name = name.trim();
+      if (!name) {
+        return;
+      }
+      if (name === "help" || name === "?") {
+        print("Type guest and press ENTER to log in. No password is needed.", "dim");
+        return;
+      }
+      loginName = name;
+      if (ACCOUNTS[name] && ACCOUNTS[name].open) {
+        startSession(name);
+        return;
+      }
+      mode = "loginpass";
+    }
+
+    function loginPassword(word) {
+      print("Password: ");
+      var acct = ACCOUNTS[loginName];
+      if (acct && acct.password && oerTermHash(word) === acct.password) {
+        startSession(loginName);
+        return;
+      }
+      failedLogins++;
+      print("Login incorrect", "err");
+      if (failedLogins >= 2) {
+        print("Public access: log in as guest (no password).", "dim");
+      }
+      print("");
+      mode = "login";
+    }
+
+    function startSession(name) {
+      var acct = ACCOUNTS[name];
+      user = name;
+      home = acct.home || "/home/" + name;
+      cwd = home;
+      sessionStart = Date.now();
+      unlocked = {};
+      mode = "cmd";
+      out.textContent = "";
+      print("Last login: " + new Date(Date.now() - 86400000 * 3).toUTCString().replace("GMT", "UTC") + " from public", "dim");
+      print("");
+      print(ROOT.children.etc.children.motd.text);
+      print("");
+      print("Type help or ? to list commands. Type help <command> for details.", "hdr");
+      print("");
+    }
+
+    function logout() {
+      user = "";
+      cmdHistory = [];
+      historyPos = 0;
+      print("Connection closed.", "dim");
+      mode = "closing";
+      setTimeout(showLoginScreen, 700);
+    }
+
+    // =======================================================
+    // RUNNING A LINE, WITH AUTOMATIC PAGING
+    // =======================================================
+    function tokenize(line) {
+      var tokens = [];
+      var re = /"([^"]*)"|'([^']*)'|(\S+)/g;
+      var m;
+      while ((m = re.exec(line)) !== null) {
+        tokens.push(m[1] !== undefined ? m[1] : m[2] !== undefined ? m[2] : m[3]);
+      }
+      return tokens;
+    }
+
+    function run(line) {
+      if (mode === "login") {
+        loginUser(line);
+        finish();
+        return;
+      }
+      if (mode === "loginpass") {
+        loginPassword(line);
+        finish();
+        return;
+      }
+      if (mode === "password") {
+        print("Password: ");
+        finishUnlock(line);
+        finish();
+        return;
+      }
+      if (mode !== "cmd") {
+        return;
+      }
+
+      print(promptText() + line);
+      var trimmed = line.trim();
+      if (trimmed) {
+        cmdHistory.push(trimmed);
+      }
+      historyPos = cmdHistory.length;
+
+      var tokens = tokenize(trimmed);
+      var firstNew = out.children.length;
+
+      if (tokens.length) {
+        var name = tokens[0];
+        var args = tokens.slice(1);
+        if (COMMANDS[name] && args.length === 1 &&
+            (args[0] === "--help" || args[0] === "-h" || args[0] === "?")) {
+          showCommandHelp(name);
+        } else if (!COMMANDS[name]) {
+          print(name + ": command not found. Type help or ? to list commands.", "err");
+        } else {
+          COMMANDS[name].run(args);
+        }
+      }
+
+      finish(firstNew);
+    }
+
+    // If this command printed more than one screen, page it.
+    function finish(firstNew) {
+      updatePrompt();
+      if (firstNew !== undefined && overflowing()) {
+        var fresh = Array.prototype.slice.call(out.children, firstNew);
+        var height = 0;
+        fresh.forEach(function(el) { height += el.getBoundingClientRect().height; });
+        if (height > screen.clientHeight - lineHeight() * 3) {
+          fresh.forEach(function(el) { out.removeChild(el); });
+          startPager(fresh);
+          return;
+        }
+      }
+      roll();
+    }
+
+    function startPager(lines) {
+      pager = { lines: lines, pos: 0, status: null };
+      mode = "pager";
+      inputLine.style.display = "none";
+      screen.focus({ preventScroll: true });
+      pagerNext(rows() - 1);
+    }
+
+    function pagerNext(count) {
+      if (pager.status) {
+        out.removeChild(pager.status);
+        pager.status = null;
+      }
+      var shown = 0;
+      while (pager.pos !== pager.lines.length && count > shown) {
+        var el = pager.lines[pager.pos];
+        out.appendChild(el);
+        pager.pos++;
+        shown += Math.max(1, Math.round(el.getBoundingClientRect().height / lineHeight()));
+      }
+      if (pager.pos === pager.lines.length) {
+        pagerQuit();
+        return;
+      }
+      pager.status = makeLine([{
+        t: "--More-- (" + Math.floor(pager.pos * 100 / pager.lines.length) + "%) SPACE/tap: more  Q: quit",
+        c: "more"
+      }]);
+      roll();
+    }
+
+    function pagerQuit() {
+      if (pager && pager.status && pager.status.parentNode) {
+        out.removeChild(pager.status);
+      }
+      pager = null;
+      mode = "cmd";
+      inputLine.style.display = "";
+      updatePrompt();
+      roll();
+      input.focus({ preventScroll: true });
+    }
+
+    // =======================================================
+    // TAB COMPLETION
+    // =======================================================
+    function commonPrefix(list) {
+      var p = list[0] || "";
+      list.forEach(function(s) {
+        while (s.indexOf(p) !== 0) {
+          p = p.slice(0, -1);
+        }
+      });
+      return p;
+    }
+
+    function complete() {
+      if (mode !== "cmd") {
+        return;
+      }
+      var value = input.value;
+      var lastSpace = value.lastIndexOf(" ");
+      var word = value.slice(lastSpace + 1);
+      var before = value.slice(0, lastSpace + 1);
+      var candidates;
+
+      if (lastSpace === -1) {
+        candidates = Object.keys(COMMANDS).filter(function(c) {
+          return c.indexOf(word) === 0 && c !== "?";
+        }).map(function(c) { return c + " "; });
+      } else {
+        var slash = word.lastIndexOf("/");
+        var dirPart = slash === -1 ? "" : word.slice(0, slash + 1);
+        var namePart = word.slice(slash + 1);
+        var dparts = resolveParts(dirPart || ".");
+        var dnode = getNode(dparts);
+        if (!dnode || dnode.type !== "dir" || isLocked(dnode, dparts)) {
+          return;
+        }
+        candidates = Object.keys(dnode.children).filter(function(n) {
+          return n.indexOf(namePart) === 0 && (namePart.charAt(0) === "." || n.charAt(0) !== ".");
+        }).map(function(n) {
+          return dirPart + n + (dnode.children[n].type === "dir" ? "/" : " ");
+        });
+      }
+
+      if (candidates.length === 1) {
+        input.value = before + candidates[0];
+      } else if (candidates.length > 1) {
+        print(promptText() + value);
+        print(candidates.map(function(c) { return c.trim(); }).join("   "), "dim");
+        input.value = before + commonPrefix(candidates);
+        roll();
+      }
+    }
+
+    // =======================================================
+    // KEYS AND TAPS (only while the terminal has focus)
+    // =======================================================
+    input.addEventListener("keydown", function(e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        var line = input.value;
+        input.value = "";
+        run(line);
+      } else if (e.key === "Tab") {
+        e.preventDefault();
+        complete();
+      } else if (e.key === "ArrowUp" && mode === "cmd") {
+        e.preventDefault();
+        if (historyPos > 0) {
+          historyPos--;
+          input.value = cmdHistory[historyPos];
+        }
+      } else if (e.key === "ArrowDown" && mode === "cmd") {
+        e.preventDefault();
+        if (historyPos !== cmdHistory.length) {
+          historyPos++;
+          input.value = historyPos === cmdHistory.length ? "" : cmdHistory[historyPos];
+        }
+      } else if (e.ctrlKey && (e.key === "l" || e.key === "L") && mode === "cmd") {
+        e.preventDefault();
+        out.textContent = "";
+      } else if (e.ctrlKey && (e.key === "c" || e.key === "C") &&
+                 input.selectionStart === input.selectionEnd && !String(window.getSelection())) {
+        e.preventDefault();
+        print((mode === "cmd" ? promptText() : "") + (input.type === "password" ? "" : input.value) + "^C");
+        input.value = "";
+        pendingUnlock = null;
+        if (mode !== "login" && mode !== "cmd") {
+          mode = user ? "cmd" : "login";
+        }
+        finish();
+      }
+    });
+
+    screen.addEventListener("keydown", function(e) {
+      if (mode !== "pager") {
+        return;
+      }
+      e.preventDefault();
+      if (e.key === " " || e.key === "PageDown") {
+        pagerNext(rows() - 1);
+      } else if (e.key === "Enter" || e.key === "ArrowDown") {
+        pagerNext(1);
+      } else if (e.key === "q" || e.key === "Q" || e.key === "Escape") {
+        pagerQuit();
+      } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        // Typing a command while paged: stop paging and start the command.
+        pagerQuit();
+        input.value += e.key;
+      }
+    });
+
+    screen.addEventListener("click", function() {
+      if (mode === "pager") {
+        pagerNext(rows() - 1);
+        return;
+      }
+      if (!String(window.getSelection())) {
+        input.focus({ preventScroll: true });
+      }
+    });
+
+    // The screen size changes on phone rotation: keep it tidy.
+    window.addEventListener("resize", function() {
+      if (mode !== "pager") {
+        roll();
+      }
+    });
+
+    showLoginScreen();
+    roll();
+
+    // For tests, and for making password hashes in the browser
+    // console: oerTerm.hash("word").
+    window.oerTerm = { run: run, hash: oerTermHash, complete: complete, input: input };
+  })();
+  </script>
+<script>
+  // On a computer the keyboard is ready at once; on phones a tap opens it.
+  if (window.matchMedia && window.matchMedia("(pointer: fine)").matches) {
+    var t = document.getElementById("oerTermInput");
+    if (t) t.focus({ preventScroll: true });
+  }
+</script>
+
+</body>
+</html>
