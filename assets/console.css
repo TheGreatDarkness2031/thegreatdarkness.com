@@ -362,3 +362,25 @@ a.oer-badge88:hover { outline-color: #fff; }
 @media (prefers-reduced-motion: reduce) {
   .oerc-new, .oer-applet-fill { animation: none; }
 }
+
+/* ---- OER seal watermark (record and document screens only) ----
+   Sits over the page like a watermark printed into the paper: very faint,
+   gray, fixed in place, and it never takes clicks. */
+.oer-seal-mark {
+  position: fixed;
+  top: calc(50% + (var(--oerc-bar) / 2));
+  left: calc(50% + (var(--oerc-rail) / 2));
+  width: min(560px, 62vh, 60vw);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%);
+  background: url("/assets/img/oer-seal-300.png") center / contain no-repeat;
+  border-radius: 50%;
+  filter: grayscale(1);
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 900;
+}
+@media (max-width: 1000px) {
+  .oer-seal-mark { left: 50%; width: min(420px, 80vw); }
+}
+@media print { .oer-seal-mark { display: none; } }

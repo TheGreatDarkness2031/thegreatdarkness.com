@@ -318,8 +318,21 @@
     }
   };
 
+  // ---- OER seal watermark: record and document screens only ----
+  // (not Profile: it already shows the seal itself)
+  var SEAL_PAGES = ["/tools/", "/watch/", "/maintenance/"];
+  function sealMark() {
+    if (!framed) return;
+    var p = location.pathname;
+    if (!SEAL_PAGES.some(function (s) { return p.indexOf(s) === 0; })) return;
+    var m = el("div", "oer-seal-mark");
+    m.setAttribute("aria-hidden", "true");
+    document.body.appendChild(m);
+  }
+
   function start() {
     if (framed) build();
+    sealMark();
     footer();
     connectScreen();
   }
