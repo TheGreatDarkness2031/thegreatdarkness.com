@@ -602,6 +602,23 @@
 
   </style>
 
+
+<style>
+  /* The orange XML button: opens the OER channel viewer. */
+  .xml-button {
+    display: inline-block;
+    padding: 1px 5px;
+    background: #ff6600;
+    color: #ffffff !important;
+    font: bold 10px Verdana, Arial, sans-serif;
+    letter-spacing: 0;
+    text-decoration: none !important;
+    border: 1px solid;
+    border-color: #ffa060 #803000 #803000 #ffa060;
+    vertical-align: middle;
+  }
+  .xml-button:hover, .xml-button:focus { background: #ff7f2a; }
+</style>
 </head>
 
 <body>
@@ -675,6 +692,8 @@
           >
             REFRESH FEED
           </button>
+
+          <a href="/feed/" class="xml-button" title="OER channel (RSS)">XML</a>
 
         </div>
 

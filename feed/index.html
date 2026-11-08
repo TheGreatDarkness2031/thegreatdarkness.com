@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="alternate" type="application/rss+xml" title="OER // Event Reporting Console" href="https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec?rss=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+<title>OER // Channel Viewer</title>
+<style>
+  html, body { margin: 0; background: #000; }
+  body { font-family: "Courier New", Courier, monospace; color: #000; }
+
+  .viewer {
+    max-width: 880px;
+    margin: 0 auto;
+    background: #c0c0c0;
+    border: 2px solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    box-shadow: 1px 1px 0 #000;
+  }
+  .title-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    background: linear-gradient(90deg, #000080, #1084d0);
+    color: #fff;
+    font: bold 13px Arial, Helvetica, sans-serif;
+  }
+  .title-bar small { font: 11px "Courier New", monospace; opacity: 0.85; }
+  .viewer-body { padding: 10px; }
+
+  .bevel-btn {
+    font: bold 11px Arial, Helvetica, sans-serif;
+    padding: 4px 10px;
+    background: #c0c0c0;
+    color: #000;
+    border: 2px solid;
+    border-color: #ffffff #404040 #404040 #ffffff;
+    cursor: pointer;
+  }
+  .bevel-btn:active, .bevel-btn.on { border-color: #404040 #ffffff #ffffff #404040; background: #b0b0b0; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; }
+  .toolbar .spacer { flex: 1; }
+  .xml-badge {
+    display: inline-block;
+    padding: 1px 4px;
+    background: #ff6600;
+    color: #fff;
+    font: bold 10px Verdana, Arial, sans-serif;
+    border: 1px solid;
+    border-color: #ffa060 #803000 #803000 #ffa060;
+    letter-spacing: 0;
+  }
+
+  /* ---- the channel box ---- */
+  .channel {
+    background: #ffffff;
+    border: 2px solid;
+    border-color: #404040 #ffffff #ffffff #404040;
+  }
+  .channel-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 4px 3px 8px;
+    background: #000080;
+    color: #ffffff;
+    font: bold 12px Arial, Helvetica, sans-serif;
+  }
+  .channel-head .name { flex: 1; letter-spacing: 1px; }
+  .chan-btn {
+    width: 18px; height: 16px; padding: 0;
+    font: bold 10px Arial, sans-serif; line-height: 12px;
+    background: #c0c0c0; color: #000;
+    border: 2px solid; border-color: #ffffff #404040 #404040 #ffffff;
+    cursor: pointer;
+  }
+  .chan-btn.wide { width: auto; padding: 0 5px; }
+  .channel-desc {
+    padding: 6px 10px;
+    border-bottom: 1px solid #c0c0c0;
+    color: #444;
+    font-size: 11px;
+    letter-spacing: 1px;
+  }
+  .edit-panel {
+    display: none;
+    padding: 8px 10px;
+    background: #ffffe1;
+    border-bottom: 1px solid #c0c0c0;
+    font: 12px Arial, Helvetica, sans-serif;
+  }
+  .edit-panel.open { display: block; }
+  .edit-panel label { margin-right: 12px; cursor: pointer; }
+
+  .headlines { list-style: none; margin: 0; padding: 4px 0; }
+  .headlines li {
+    display: flex;
+    gap: 8px;
+    padding: 5px 10px;
+    border-bottom: 1px dotted #c8c8c8;
+    font: 13px/1.35 Arial, Helvetica, sans-serif;
+  }
+  .headlines li::before { content: "\25AA"; color: #000080; }
+  .headlines a { color: #0000ee; font-weight: bold; text-decoration: underline; }
+  .headlines a:visited { color: #551a8b; }
+  .headlines .meta { display: block; color: #555; font: 11px "Courier New", monospace; }
+  .headlines .sum { display: block; color: #222; font-size: 12px; margin-top: 2px; }
+  .lv { font: bold 11px "Courier New", monospace; padding: 0 3px; border: 1px solid #888; }
+  .lv-NOMINAL { color: #006400; }
+  .lv-WATCH { color: #8a7000; background: #fff8c0; }
+  .lv-ELEVATED { color: #b85c00; background: #ffe8cc; }
+  .lv-CRITICAL { color: #c00000; background: #ffd8d8; }
+  .channel-foot {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 4px 10px;
+    background: #e8e8e8;
+    border-top: 1px solid #c0c0c0;
+    color: #444;
+    font: 11px "Courier New", monospace;
+  }
+  .removed {
+    display: none;
+    padding: 30px 10px;
+    text-align: center;
+    background: #fff;
+    border: 2px solid; border-color: #404040 #ffffff #ffffff #404040;
+    font: 12px Arial, sans-serif;
+  }
+
+  /* ---- subscribe + source ---- */
+  .panel {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border: 2px groove #ffffff;
+    font: 12px Arial, Helvetica, sans-serif;
+  }
+  .panel-title { font: bold 11px "Courier New", monospace; letter-spacing: 2px; margin-bottom: 6px; }
+  .addr-row { display: flex; gap: 6px; }
+  .addr-row input {
+    flex: 1;
+    min-width: 0;
+    font: 12px "Courier New", monospace;
+    padding: 3px 4px;
+    border: 2px solid; border-color: #404040 #ffffff #ffffff #404040;
+    background: #fff;
+  }
+  .source {
+    display: none;
+    margin: 10px 0 0;
+    padding: 10px;
+    max-height: 420px;
+    overflow: auto;
+    background: #000;
+    color: #33ff33;
+    font: 11px/1.4 "Courier New", monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+    border: 2px solid; border-color: #404040 #ffffff #ffffff #404040;
+  }
+  .source.open { display: block; }
+  .status-line {
+    margin-top: 10px;
+    padding: 3px 6px;
+    border: 1px solid; border-color: #808080 #ffffff #ffffff #808080;
+    font: 11px "Courier New", monospace;
+  }
+
+  @media (max-width: 600px) {
+    .viewer-body { padding: 6px; }
+    .headlines li { padding: 6px 8px; }
+    .title-bar small { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<main class="viewer">
+  <div class="title-bar">
+    <span>=== OER CHANNEL VIEWER ===</span>
+    <small>NODE: GDK-001</small>
+  </div>
+
+  <div class="viewer-body">
+    <div class="toolbar">
+      <button class="bevel-btn" id="refreshBtn" type="button">REFRESH</button>
+      <button class="bevel-btn" id="sourceBtn" type="button">VIEW SOURCE</button>
+      <span class="spacer"></span>
+      <span class="xml-badge">XML</span>
+      <span style="font: 11px 'Courier New', monospace;">RSS 2.0</span>
+    </div>
+
+    <section class="channel" id="channel">
+      <div class="channel-head">
+        <span class="name" id="channelName">OER // EVENT REPORTING CONSOLE</span>
+        <button class="chan-btn wide" id="editBtn" type="button" title="Edit channel">EDIT</button>
+        <button class="chan-btn" id="minBtn" type="button" title="Minimize channel">_</button>
+        <button class="chan-btn" id="closeBtn" type="button" title="Remove channel">X</button>
+      </div>
+      <div class="channel-desc" id="channelDesc">TUNING CHANNEL...</div>
+      <div class="edit-panel" id="editPanel">
+        HEADLINES SHOWN:
+        <label><input type="radio" name="count" value="5"> 5</label>
+        <label><input type="radio" name="count" value="10"> 10</label>
+        <label><input type="radio" name="count" value="25"> ALL</label>
+      </div>
+      <div id="channelBody">
+        <ul class="headlines" id="headlines"></ul>
+        <div class="channel-foot">
+          <span id="lastUpdated">LAST UPDATED: --</span>
+          <a href="/events/" style="color:#0000ee;">MORE &raquo;</a>
+        </div>
+      </div>
+    </section>
+
+    <div class="removed" id="removed">
+      CHANNEL REMOVED FROM THIS VIEWER.<br><br>
+      <button class="bevel-btn" id="restoreBtn" type="button">RESTORE CHANNEL</button>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">CHANNEL ADDRESS</div>
+      <div class="addr-row">
+        <input id="feedAddr" type="text" readonly>
+        <button class="bevel-btn" id="copyBtn" type="button">COPY</button>
+      </div>
+    </div>
+
+    <pre class="source" id="source"></pre>
+
+    <div class="status-line" id="statusLine">CHANNEL: CONNECTING...</div>
+  </div>
+</main>
+
+<script>
+(function () {
+  var FEED = TGD_API_URL + "?rss=1";
+  var REFRESH_MS = 5 * 60 * 1000;
+  var lastXml = "";
+
+  var el = function (id) { return document.getElementById(id); };
+  el("feedAddr").value = FEED;
+
+  // ---- saved viewer settings (like a 1999 portal remembered yours) ----
+  function setting(name, fallback) {
+    try { var v = localStorage.getItem("oerChannel_" + name); return v === null ? fallback : v; } catch (e) { return fallback; }
+  }
+  function save(name, value) {
+    try { localStorage.setItem("oerChannel_" + name, value); } catch (e) {}
+  }
+  var count = Number(setting("count", "10")) || 10;
+  [].forEach.call(document.querySelectorAll('input[name="count"]'), function (r) {
+    r.checked = Number(r.value) === count;
+    r.addEventListener("change", function () { count = Number(r.value); save("count", count); render(); });
+  });
+
+  function pad(n) { return (n > 9 ? "" : "0") + n; }
+  function utc(d) {
+    return pad(d.getUTCMonth() + 1) + "/" + pad(d.getUTCDate()) + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + " UTC";
+  }
+  function text(node, tag) {
+    var t = node.getElementsByTagName(tag)[0];
+    return t ? t.textContent : "";
+  }
+
+  var items = [];
+
+  function render() {
+    var list = el("headlines");
+    list.innerHTML = "";
+    if (!items.length) {
+      var li = document.createElement("li");
+      li.textContent = "NO HEADLINES ON THIS CHANNEL.";
+      list.appendChild(li);
+      return;
+    }
+    items.slice(0, count).forEach(function (it) {
+      var li = document.createElement("li");
+      var box = document.createElement("div");
+
+      var level = (it.title.split(" / ")[0] || "").trim().toUpperCase();
+      var headline = it.title.indexOf("//") >= 0 ? it.title.slice(it.title.indexOf("//") + 2).trim() : it.title;
+
+      var a = document.createElement("a");
+      a.href = it.link || "/events/";
+      a.textContent = headline;
+
+      var lv = document.createElement("span");
+      lv.className = "lv lv-" + level;
+      lv.textContent = it.title.split("//")[0].trim();
+
+      var meta = document.createElement("span");
+      meta.className = "meta";
+      meta.textContent = it.date ? utc(it.date) : "";
+
+      var sum = document.createElement("span");
+      sum.className = "sum";
+      sum.textContent = it.description;
+
+      box.appendChild(a);
+      box.appendChild(document.createTextNode(" "));
+      box.appendChild(lv);
+      box.appendChild(meta);
+      box.appendChild(sum);
+      li.appendChild(box);
+      list.appendChild(li);
+    });
+  }
+
+  function load() {
+    el("statusLine").textContent = "CHANNEL: RECEIVING...";
+    fetch(FEED, { cache: "no-store" })
+      .then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.text();
+      })
+      .then(function (xml) {
+        var doc = new DOMParser().parseFromString(xml, "application/xml");
+        if (doc.getElementsByTagName("parsererror").length || !doc.getElementsByTagName("channel").length) {
+          throw new Error("NOT A CHANNEL");
+        }
+        lastXml = xml;
+        var ch = doc.getElementsByTagName("channel")[0];
+        el("channelName").textContent = text(ch, "title").toUpperCase() || "OER CHANNEL";
+        el("channelDesc").textContent = text(ch, "description");
+        items = [].map.call(doc.getElementsByTagName("item"), function (n) {
+          var d = new Date(text(n, "pubDate"));
+          return {
+            title: text(n, "title"),
+            link: text(n, "link"),
+            description: text(n, "description"),
+            date: isNaN(d.getTime()) ? null : d
+          };
+        });
+        render();
+        if (el("source").classList.contains("open")) el("source").textContent = lastXml;
+        el("lastUpdated").textContent = "LAST UPDATED: " + utc(new Date());
+        el("statusLine").textContent = "CHANNEL: ONLINE // " + items.length + " ITEMS // NEXT REFRESH IN 5 MIN";
+      })
+      .catch(function (err) {
+        el("statusLine").textContent = "CHANNEL: NO SIGNAL (" + err.message + ") // RETRYING";
+        if (!items.length) el("channelDesc").textContent = "CHANNEL UNAVAILABLE.";
+      });
+  }
+
+  // ---- buttons ----
+  el("refreshBtn").addEventListener("click", load);
+  el("sourceBtn").addEventListener("click", function () {
+    var open = el("source").classList.toggle("open");
+    el("sourceBtn").classList.toggle("on", open);
+    el("sourceBtn").textContent = open ? "HIDE SOURCE" : "VIEW SOURCE";
+    el("source").textContent = lastXml || "NO DATA RECEIVED YET.";
+  });
+  el("editBtn").addEventListener("click", function () { el("editPanel").classList.toggle("open"); });
+  el("minBtn").addEventListener("click", function () {
+    var hidden = el("channelBody").style.display === "none";
+    el("channelBody").style.display = hidden ? "" : "none";
+    el("minBtn").textContent = hidden ? "_" : "□";
+  });
+  function setRemoved(on) {
+    el("channel").style.display = on ? "none" : "";
+    el("removed").style.display = on ? "block" : "none";
+    save("removed", on ? "1" : "0");
+  }
+  el("closeBtn").addEventListener("click", function () { setRemoved(true); });
+  el("restoreBtn").addEventListener("click", function () { setRemoved(false); });
+  if (setting("removed", "0") === "1") setRemoved(true);
+
+  el("copyBtn").addEventListener("click", function () {
+    var done = function () { el("copyBtn").textContent = "COPIED"; setTimeout(function () { el("copyBtn").textContent = "COPY"; }, 1500); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(FEED).then(done, function () { el("feedAddr").select(); });
+    } else {
+      el("feedAddr").select();
+      try { document.execCommand("copy"); done(); } catch (e) {}
+    }
+  });
+
+  load();
+  setInterval(load, REFRESH_MS);
+})();
+</script>
+</body>
+</html>

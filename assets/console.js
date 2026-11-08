@@ -8,6 +8,7 @@
     ["HOME", "/home/"],
     ["RADAR", "/radar/"],
     ["EVENTS", "/events/"],
+    ["RSS CHANNEL", "/feed/"],
     ["WATCH LOG", "/watch/"],
     ["MAINTENANCE", "/maintenance/"],
     ["PROFILE", "/profile/"],
