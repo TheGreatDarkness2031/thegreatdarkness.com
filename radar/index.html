@@ -2648,7 +2648,7 @@
     function loadRadarData() {
 
       // One request at a time. An answer can take longer than the
-      // 2.5 s poll; removing a request still on its way throws its
+      // 5 s poll; removing a request still on its way throws its
       // answer away, so a slow server could leave the Radar at
       // INITIALIZING forever (2026-11-06). Give up after 20 s.
       if (
@@ -2691,7 +2691,7 @@
           Date.now() +
           Math.min(
             RADAR_ERROR_BACKOFF_MAX_MS,
-            2500 * Math.pow(2, radarErrorCount - 1)
+            5000 * Math.pow(2, radarErrorCount - 1)
           );
       };
 
@@ -2709,7 +2709,9 @@
 
 
     // Both Radar pages start polling here. Quake blips last 4-12 s,
-    // so the visible rate stays 2.5 s; a hidden tab makes no requests
+    // so the visible rate was 2.5 s until 2026-11-08; 5 s since (load
+    // test: about 30 Apps Script runs at once is the account limit,
+    // and the Radar was 90% of all requests). A hidden tab makes no requests
     // and catches up the moment it is shown again.
     function startRadarPolling_(intervalMs) {
 
@@ -3399,7 +3401,7 @@
        INITIALIZATION
        ======================================================= */
 
-    startRadarPolling_(2500);
+    startRadarPolling_(5000);
   </script>
 
 </body>

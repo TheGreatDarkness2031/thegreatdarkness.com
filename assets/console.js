@@ -30,7 +30,8 @@
       ["VOLCANIC", "/monitor/volcano/"],
       ["NETWORK", "/monitor/netout/"],
       ["GPS / NAV", "/monitor/gps/"],
-      ["AI INCIDENT", "/monitor/aiinc/"]
+      ["AI INCIDENT", "/monitor/aiinc/"],
+      ["NEAR-EARTH", "/monitor/neo/", "2026-12-08"]
     ]],
     ["TOOLS", "/tools/"],
     ["TERMINAL", "/terminal/", "2026-12-08"],

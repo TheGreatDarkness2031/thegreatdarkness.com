@@ -5,7 +5,7 @@ var TGD_API_URL =
 
 // Monitor pages: /monitor/<name>/ (Config tile routes look like "?quake=1").
 var TGD_MONITOR_PAGES = ["quake", "temp", "powergridreal",
-  "spacewx", "severewx", "wildfire", "volcano", "netout", "gps", "aiinc"];
+  "spacewx", "severewx", "wildfire", "volcano", "netout", "gps", "aiinc", "neo"];
 
 var TGD_ARCADE_GAMES = ["alienrun", "alieninvaders", "breakout", "snake",
   "dodge", "pong", "meteorminer", "sectorsweep"];
