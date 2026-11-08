@@ -171,3 +171,194 @@ body.oerc a.action-link[href="/tools/"] { display: none !important; }
 .oerc-rail li { margin: 0; padding: 0; border: 0; background: none; }
 .oerc-rail a, .oerc-rail summary { width: auto; box-sizing: border-box; font: inherit; letter-spacing: inherit; }
 .oerc-bar *, .oerc-banner * { margin: 0; }
+
+/* ============================================================
+   1998 TOUCHES (console.js): connecting screen, footer badges and
+   last-modified line, NEW! tags, error dialog, loading box.
+   ============================================================ */
+
+/* ---- connecting screen (first page of a session) ---- */
+html.oer-connecting body { visibility: hidden; }
+.oer-connect {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  visibility: visible;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #00ff00;
+  font: 14px/1.6 "Courier New", Courier, monospace;
+  letter-spacing: 1px;
+  text-shadow: 0 0 4px rgba(0, 255, 0, 0.3);
+  cursor: pointer;
+}
+.oer-connect-box { width: min(520px, 90vw); text-align: left; white-space: pre-wrap; }
+.oer-connect-skip { margin-top: 14px; color: #007700; font-size: 11px; }
+
+/* ---- footer: badges and last-modified line ---- */
+.oer-retro-foot {
+  clear: both;
+  width: 100%;
+  margin: 26px auto 6px;
+  text-align: center;
+  font: 10px/1.4 "Courier New", Courier, monospace;
+  color: #666;
+  letter-spacing: 1px;
+}
+.oer-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 8px; }
+.oer-badge88 {
+  display: flex;
+  width: 88px;
+  height: 31px;
+  box-sizing: border-box;
+  border: 1px solid #000;
+  outline: 1px solid #777;
+  background: #c0c0c0;
+  color: #000;
+  font: bold 8px/1 Verdana, Tahoma, Arial, sans-serif;
+  letter-spacing: 0;
+  text-decoration: none;
+  text-align: center;
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+.oer-badge88 .k {
+  flex: 0 0 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #fff;
+}
+.oer-badge88 .t { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 2px; }
+.oer-badge88.y2k .k { background: #000080; }
+.oer-badge88.y2k .t { background: #ffff66; }
+.oer-badge88.res .k { background: #008080; font-size: 9px; }
+.oer-badge88.pad .k { background: #3a3a3a; font-size: 13px; }
+.oer-badge88.pad .t { background: #ffffff; }
+.oer-badge88.net .k { background: #005500; color: #00ff00; font-family: "Courier New", monospace; }
+.oer-badge88.net .t { background: #002200; color: #00ff00; }
+.oer-badge88.xml .k { background: #ff6600; }
+.oer-badge88.xml .t { background: #ffe0c0; }
+a.oer-badge88:hover { outline-color: #fff; }
+
+/* ---- NEW! tag in the directory rail ---- */
+.oerc-new {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 3px;
+  background: #ff0000;
+  color: #ffff00;
+  font-size: 8px;
+  letter-spacing: 1px;
+  vertical-align: 1px;
+  animation: oerc-new-blink 1s steps(1) infinite;
+}
+@keyframes oerc-new-blink { 50% { color: #ff0000; background: #ffff00; } }
+
+/* ---- Windows 98 style dialog ---- */
+.oer-dialog-shade {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+}
+.oer-dialog {
+  width: min(380px, 92vw);
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #ffffff #404040 #404040 #ffffff;
+  box-shadow: 1px 1px 0 #000;
+  color: #000;
+  font: 12px/1.4 Tahoma, Verdana, Arial, sans-serif;
+  text-align: left;
+}
+.oer-dialog-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 4px 3px 6px;
+  background: linear-gradient(90deg, #000080, #1084d0);
+  color: #fff;
+  font-weight: bold;
+  letter-spacing: 0;
+}
+.oer-dialog-x {
+  width: 16px;
+  height: 14px;
+  padding: 0;
+  background: #c0c0c0;
+  border: 1px solid;
+  border-color: #fff #404040 #404040 #fff;
+  font: bold 10px/1 Tahoma, Arial, sans-serif;
+  color: #000;
+  cursor: pointer;
+}
+.oer-dialog-body { display: flex; gap: 14px; padding: 16px 14px 10px; }
+.oer-dialog-icon {
+  flex: 0 0 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #ff0000;
+  border: 1px solid #800000;
+  color: #fff;
+  font: bold 20px/30px Arial, sans-serif;
+  text-align: center;
+}
+.oer-dialog-text { white-space: pre-wrap; }
+.oer-dialog-buttons { padding: 4px 0 12px; text-align: center; }
+.oer-dialog-ok {
+  min-width: 75px;
+  padding: 4px 10px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  outline: 1px dotted #000;
+  outline-offset: -5px;
+  font: 12px Tahoma, Verdana, Arial, sans-serif;
+  color: #000;
+  cursor: pointer;
+}
+.oer-dialog-ok:active { border-color: #404040 #fff #fff #404040; }
+
+/* ---- applet loading box ---- */
+.oer-applet {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  z-index: 99980;
+  width: 250px;
+  transform: translate(-50%, -50%);
+  padding: 12px 14px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  color: #000;
+  font: 11px/1.4 Tahoma, Verdana, Arial, sans-serif;
+  text-align: left;
+  pointer-events: none;
+}
+.oer-applet-bar {
+  height: 14px;
+  margin-top: 8px;
+  padding: 1px;
+  background: #fff;
+  border: 1px solid;
+  border-color: #404040 #fff #fff #404040;
+  overflow: hidden;
+}
+.oer-applet-fill {
+  height: 100%;
+  width: 40%;
+  background: repeating-linear-gradient(90deg, #000080 0 9px, transparent 9px 11px);
+  animation: oer-applet-move 1.6s linear infinite;
+}
+@keyframes oer-applet-move { from { margin-left: -40%; } to { margin-left: 100%; } }
+@media (prefers-reduced-motion: reduce) {
+  .oerc-new, .oer-applet-fill { animation: none; }
+}

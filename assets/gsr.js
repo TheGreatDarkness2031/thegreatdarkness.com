@@ -19,6 +19,8 @@
       if (done) return;
       done = true;
       clearTimeout(timer);
+      // The console frame's applet box and failure dialog (console.js).
+      if (window.oerRpcEnd) window.oerRpcEnd(!!(answer && answer.ok));
       window[cb] = function() {};
       if (script.parentNode) script.parentNode.removeChild(script);
       if (answer && answer.ok) {
@@ -30,6 +32,7 @@
       }
     }
 
+    if (window.oerRpcStart) window.oerRpcStart();
     window[cb] = function(answer) { finish(answer); };
     script.onerror = function() { finish(null, "NETWORK ERROR"); };
     script.src = TGD_API_URL +

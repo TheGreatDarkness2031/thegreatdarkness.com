@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OER Watch Log Archive - Text-Only Version</title>
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<style>
+  body { max-width: 760px; margin: 12px auto; padding: 0 10px; background: #ffffff; color: #000000; font: 16px/1.4 "Times New Roman", Times, serif; }
+  a { color: #0000ee; }
+  a:visited { color: #551a8b; }
+  h1 { font-size: 1.4em; margin: 0.4em 0; }
+  dt { margin-top: 1em; font-family: "Courier New", Courier, monospace; font-size: 0.9em; font-weight: bold; }
+  dd { margin: 0.2em 0 0 1.5em; }
+  address { margin-top: 1.5em; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<p>[ <a href="/watch/">Graphical version</a> | <a href="/home/">Home</a> | <a href="/events/text/">Events (text)</a> ]</p>
+
+<h1>OER Watch Log Archive</h1>
+<p><b>Text-only version.</b> <span id="years"></span></p>
+<hr>
+
+<p id="status">Retrieving watch log...</p>
+<dl id="records"></dl>
+<p id="pages"></p>
+
+<hr>
+<address>Operational Event Register // Public Access Node GDK-001</address>
+
+<script>
+  var PAGE_SIZE = 50;
+  var params = new URLSearchParams(location.search);
+  var year = /^\d{4}$/.test(params.get("year") || "") ? params.get("year") : "";
+  var page = Math.max(1, parseInt(params.get("page"), 10) || 1);
+
+  function link(text, y, p) {
+    var a = document.createElement("a");
+    a.href = "?year=" + encodeURIComponent(y) + (p > 1 ? "&page=" + p : "");
+    a.textContent = text;
+    return a;
+  }
+
+  google.script.run
+    .withSuccessHandler(function (data) {
+      if (!data || !data.success) {
+        document.getElementById("status").textContent = (data && data.message) || "The watch log is not available.";
+        return;
+      }
+      var shown = data.selectedYear;
+      var years = document.getElementById("years");
+      years.appendChild(document.createTextNode("Year: "));
+      (data.years || []).forEach(function (y, i) {
+        if (i) years.appendChild(document.createTextNode(" | "));
+        if (String(y.year) === String(shown)) {
+          var b = document.createElement("b");
+          b.textContent = y.year;
+          years.appendChild(b);
+        } else {
+          years.appendChild(link(y.year, y.year, 1));
+        }
+      });
+
+      document.getElementById("status").textContent =
+        shown + ": " + data.totalMatching + " records. Page " + data.page + " of " + data.totalPages + ".";
+
+      var dl = document.getElementById("records");
+      (data.records || []).forEach(function (r) {
+        var dt = document.createElement("dt");
+        dt.textContent = [r.recordId, r.timestampLocal, r.responsibleRole, r.entryType, (r.condition || "") + "/" + (r.priority || ""), r.systemArea, r.relatedReference]
+          .filter(function (v) { return v && v !== "/"; }).join(" | ");
+        var dd = document.createElement("dd");
+        dd.textContent = r.logEntry || "";
+        dl.appendChild(dt);
+        dl.appendChild(dd);
+        if (r.followUpOrDisposition) {
+          var f = document.createElement("dd");
+          f.textContent = "Follow-up: " + r.followUpOrDisposition;
+          dl.appendChild(f);
+        }
+      });
+
+      var pages = document.getElementById("pages");
+      if (data.hasPrevious) pages.appendChild(link("<< Previous page", shown, data.page - 1));
+      if (data.hasPrevious && data.hasNext) pages.appendChild(document.createTextNode(" | "));
+      if (data.hasNext) pages.appendChild(link("Next page >>", shown, data.page + 1));
+    })
+    .withFailureHandler(function () {
+      document.getElementById("status").textContent = "The watch log is not responding. Please try again later.";
+    })
+    .getWatchLogPage({ year: year, page: page, pageSize: PAGE_SIZE });
+</script>
+
+</body>
+</html>

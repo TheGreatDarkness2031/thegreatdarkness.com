@@ -2,13 +2,21 @@
    One frame for every OER screen: network banner (top + bottom), a title
    bar with the UTC clock and link light, and a menu rail on the left
    (a MENU button on phones). Pages include this file before nav.js.
+   A page that sets window.OER_NO_FRAME = true first (the homepage) gets
+   the 1998 touches below without the frame.
+
+   1998 touches: a connecting screen on the first page of a session,
+   footer badges with a last-modified line, NEW! tags in the rail, a
+   Windows-style dialog when the data service fails, and an applet
+   loading box while a page's first data arrives (gsr.js reports calls).
    No less-than characters in this file (pages may inline it later). */
 (function () {
+  // [label, address, "NEW!" shown until this date (optional)]
   var MENU = [
     ["HOME", "/home/"],
     ["RADAR", "/radar/"],
     ["EVENTS", "/events/"],
-    ["RSS CHANNEL", "/feed/"],
+    ["RSS CHANNEL", "/feed/", "2026-12-08"],
     ["WATCH LOG", "/watch/"],
     ["MAINTENANCE", "/maintenance/"],
     ["PROFILE", "/profile/"],
@@ -25,11 +33,14 @@
       ["AI INCIDENT", "/monitor/aiinc/"]
     ]],
     ["TOOLS", "/tools/"],
-    ["TERMINAL", "/terminal/"],
+    ["TERMINAL", "/terminal/", "2026-12-08"],
     ["WELLNESS", "/wellness/"],
     ["ARCADE", "/arcade/"]
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
+  // Screens sized to fit the window exactly: no footer below them.
+  var NO_FOOTER = ["/radar/", "/terminal/"];
+  var framed = !window.OER_NO_FRAME;
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -43,6 +54,10 @@
     return p === href || (href !== "/home/" && p.indexOf(href) === 0);
   }
 
+  function isNew(until) {
+    return !!until && Date.parse(until + "T00:00:00Z") > Date.now();
+  }
+
   function menuList() {
     var ul = el("ul", "oerc-menu");
     MENU.forEach(function (item) {
@@ -50,6 +65,7 @@
       if (typeof item[1] === "string") {
         var a = el("a", "oerc-item" + (here(item[1]) ? " oerc-here" : ""), item[0]);
         a.href = item[1];
+        if (isNew(item[2])) a.appendChild(el("span", "oerc-new", "NEW!"));
         li.appendChild(a);
       } else {
         var open = item[1].some(function (s) { return here(s[1]); });
@@ -143,9 +159,174 @@
     setInterval(tick, 1000);
   }
 
+  // ---- footer: 88x31 badges and the page's last-modified time ----
+  function badge(cls, key, text, href) {
+    var b = el(href ? "a" : "span", "oer-badge88 " + cls);
+    if (href) b.href = href;
+    b.appendChild(el("span", "k", key));
+    b.appendChild(el("span", "t", text));
+    return b;
+  }
+
+  function footer() {
+    if (NO_FOOTER.some(function (p) { return location.pathname === p; })) return;
+    var f = el("div", "oer-retro-foot");
+    var row = el("div", "oer-badges");
+    row.appendChild(badge("y2k", "Y2K", "COMPLIANT"));
+    row.appendChild(badge("res", "800 600", "BEST VIEWED"));
+    row.appendChild(badge("pad", "✎", "MADE WITH NOTEPAD"));
+    row.appendChild(badge("net", "OER", "NET MEMBER"));
+    row.appendChild(badge("xml", "XML", "RSS CHANNEL", "/feed/"));
+    f.appendChild(row);
+    var m = new Date(document.lastModified);
+    if (!isNaN(m.getTime())) {
+      f.appendChild(el("div", "",
+        "PAGE LAST MODIFIED: " + pad(m.getUTCMonth() + 1) + "/" + pad(m.getUTCDate()) + "/" + m.getUTCFullYear() +
+        " " + pad(m.getUTCHours()) + ":" + pad(m.getUTCMinutes()) + " UTC // NODE GDK-001"));
+    }
+    var bottomBanner = document.querySelector(".oerc-banner-bottom");
+    document.body.insertBefore(f, bottomBanner || null);
+
+    // Shown only on pages that already scroll: on a screen that fits the
+    // window, the footer would otherwise add a small, pointless scroll.
+    function place() {
+      f.style.display = "none";
+      var tall = document.documentElement.scrollHeight > window.innerHeight + 1;
+      f.style.display = tall ? "" : "none";
+    }
+    place();
+    window.addEventListener("load", place);
+    window.addEventListener("resize", place);
+    if (window.ResizeObserver) {
+      var last = 0;
+      new ResizeObserver(function () {
+        var h = document.body.scrollHeight;
+        if (Math.abs(h - last) > 2) { last = h; place(); }
+      }).observe(document.body);
+    }
+  }
+
+  // ---- connecting screen: first OER page of a browser session ----
+  var CONNECT_KEY = "oerSessionOpen";
+  var connecting = false;
+  try { connecting = !sessionStorage.getItem(CONNECT_KEY); } catch (e) { connecting = false; }
+  if (connecting) {
+    document.documentElement.classList.add("oer-connecting");
+    try { sessionStorage.setItem(CONNECT_KEY, "1"); } catch (e) {}
+  }
+
+  function connectScreen() {
+    if (!connecting) return;
+    var LINES = [
+      "OER PUBLIC NETWORK ACCESS NODE",
+      "",
+      "ATZ",
+      "OK",
+      "ATDT *** *** ****",
+      "DIALING NODE GDK-001...",
+      "CONNECT 28800/ARQ/V34/LAPM/V42BIS",
+      "NEGOTIATING SESSION... GUEST",
+      "SESSION OPEN."
+    ];
+    var shade = el("div", "oer-connect");
+    var box = el("div", "oer-connect-box");
+    var skip = el("div", "oer-connect-skip", "[ CLICK OR PRESS ANY KEY TO SKIP ]");
+    shade.appendChild(box);
+    box.appendChild(skip);
+    document.body.appendChild(shade);
+    var i = 0, timer = null, done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      clearTimeout(timer);
+      document.documentElement.classList.remove("oer-connecting");
+      if (shade.parentNode) shade.parentNode.removeChild(shade);
+      document.removeEventListener("keydown", finish);
+    }
+    function next() {
+      if (i === LINES.length) { timer = setTimeout(finish, 350); return; }
+      box.insertBefore(document.createTextNode(LINES[i++] + "\n"), skip);
+      timer = setTimeout(next, i === 6 ? 520 : 170);
+    }
+    shade.addEventListener("click", finish);
+    document.addEventListener("keydown", finish);
+    next();
+  }
+
+  // ---- Windows-style dialog (window.oerDialog) ----
+  var dialogOpen = false;
+  function oerDialog(title, text) {
+    if (dialogOpen) return;
+    dialogOpen = true;
+    var shade = el("div", "oer-dialog-shade");
+    var d = el("div", "oer-dialog");
+    d.setAttribute("role", "alertdialog");
+    var t = el("div", "oer-dialog-title");
+    t.appendChild(el("span", "", title));
+    var x = el("button", "oer-dialog-x", "x");
+    x.type = "button";
+    x.setAttribute("aria-label", "Close");
+    t.appendChild(x);
+    var body = el("div", "oer-dialog-body");
+    body.appendChild(el("div", "oer-dialog-icon", "X"));
+    body.appendChild(el("div", "oer-dialog-text", text));
+    var buttons = el("div", "oer-dialog-buttons");
+    var ok = el("button", "oer-dialog-ok", "OK");
+    ok.type = "button";
+    buttons.appendChild(ok);
+    d.appendChild(t);
+    d.appendChild(body);
+    d.appendChild(buttons);
+    shade.appendChild(d);
+    document.body.appendChild(shade);
+    function close() {
+      if (shade.parentNode) shade.parentNode.removeChild(shade);
+      dialogOpen = false;
+    }
+    ok.addEventListener("click", close);
+    x.addEventListener("click", close);
+    ok.focus();
+  }
+  window.oerDialog = oerDialog;
+
+  // ---- data calls (reported by gsr.js): applet box and failure dialog ----
+  var pending = 0, firstLoadOver = false, appletTimer = null, applet = null, failedOnce = false;
+  function showApplet() {
+    if (applet || firstLoadOver) return;
+    applet = el("div", "oer-applet");
+    applet.appendChild(el("div", "", "LOADING OER CONSOLE APPLET..."));
+    var bar = el("div", "oer-applet-bar");
+    bar.appendChild(el("div", "oer-applet-fill"));
+    applet.appendChild(bar);
+    document.body.appendChild(applet);
+  }
+  window.oerRpcStart = function () {
+    pending++;
+    if (!firstLoadOver && !appletTimer) appletTimer = setTimeout(showApplet, 700);
+  };
+  window.oerRpcEnd = function (ok) {
+    pending = Math.max(0, pending - 1);
+    if (!ok && !failedOnce) {
+      failedOnce = true;
+      oerDialog("OER CONSOLE",
+        "The OER data service did not respond.\n\nSome information on this screen may be missing or out of date.");
+    }
+    if (pending === 0 && !firstLoadOver) {
+      firstLoadOver = true;
+      clearTimeout(appletTimer);
+      if (applet && applet.parentNode) applet.parentNode.removeChild(applet);
+    }
+  };
+
+  function start() {
+    if (framed) build();
+    footer();
+    connectScreen();
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", build);
+    document.addEventListener("DOMContentLoaded", start);
   } else {
-    build();
+    start();
   }
 })();

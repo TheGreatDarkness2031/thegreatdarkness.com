@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OER Event Reporting Console - Text-Only Version</title>
+<script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
+<style>
+  body { max-width: 760px; margin: 12px auto; padding: 0 10px; background: #ffffff; color: #000000; font: 16px/1.4 "Times New Roman", Times, serif; }
+  a { color: #0000ee; }
+  a:visited { color: #551a8b; }
+  h1 { font-size: 1.4em; margin: 0.4em 0; }
+  li { margin-bottom: 0.8em; }
+  .when { font-family: "Courier New", Courier, monospace; font-size: 0.9em; }
+  address { margin-top: 1.5em; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<p>[ <a href="/events/">Graphical version</a> | <a href="/home/">Home</a> | <a href="/watch/text/">Watch Log (text)</a> | <a href="/feed/">RSS</a> ]</p>
+
+<h1>OER Event Reporting Console</h1>
+<p><b>Text-only version.</b> Current events, newest first.</p>
+<hr>
+
+<p id="status">Retrieving reporting events...</p>
+<ol id="events"></ol>
+
+<hr>
+<address>Operational Event Register // Public Access Node GDK-001</address>
+
+<script>
+  function pad(n) { return (n > 9 ? "" : "0") + n; }
+  function when(e) {
+    var t = Number(e.loggedAtMillis) || Date.parse(e.loggedAt);
+    if (!t) return "";
+    var d = new Date(t);
+    return pad(d.getUTCMonth() + 1) + "/" + pad(d.getUTCDate()) + "/" + d.getUTCFullYear() + " " + pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()) + " UTC";
+  }
+
+  google.script.run
+    .withSuccessHandler(function (data) {
+      var list = document.getElementById("events");
+      var events = (data && data.events) || [];
+      document.getElementById("status").textContent = events.length
+        ? events.length + " events. Updated " + when({ loggedAt: data.generatedAt }) + "."
+        : "No current events.";
+      events.forEach(function (e) {
+        var li = document.createElement("li");
+        var head = document.createElement("b");
+        head.textContent = String(e.status || "EVENT") + (e.severity ? " / S" + e.severity : "") + " -- " + String(e.sourceDisplayName || e.source || "OER");
+        var time = document.createElement("span");
+        time.className = "when";
+        time.textContent = " " + when(e);
+        li.appendChild(head);
+        li.appendChild(time);
+        if (e.summary) {
+          li.appendChild(document.createElement("br"));
+          li.appendChild(document.createTextNode(String(e.summary)));
+        }
+        list.appendChild(li);
+      });
+    })
+    .withFailureHandler(function () {
+      document.getElementById("status").textContent = "The event feed is not responding. Please try again later.";
+    })
+    .getEventFeedData({ view: "current", limit: 50 });
+</script>
+
+</body>
+</html>
