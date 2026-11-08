@@ -1611,6 +1611,7 @@
       font-size: 0.62rem;
       letter-spacing: 0.7px;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .system-record-link:hover,
@@ -1618,6 +1619,10 @@
       color: #aaaaaa;
       text-decoration: underline;
     }
+
+    .system-record-terminal { color: #00cc00; }
+    .system-record-terminal:hover,
+    .system-record-terminal:focus { color: #00ff00; }
 
     .retro-status-green {
       color: #00ff00;
@@ -2495,6 +2500,11 @@
              [ OER WATCH LOG ]
            </a>
 
+          <a
+            href="/terminal/"
+            class="system-record-link system-record-terminal"
+          >[ NEXUS TERMINAL ]</a>
+
 
 
         </div>
@@ -2524,12 +2534,11 @@
       .oer-term-link .dim { display: block; margin-top: 4px; color: #00aa00; font-size: 11px; font-weight: normal; letter-spacing: 1px; }
       .oer-term-link .cur { animation: oer-term-link-blink 1s steps(1) infinite; }
       @keyframes oer-term-link-blink { 50% { opacity: 0; } }
-      .oer-term-link a.oer-support-link { margin-top: 10px; padding: 10px 12px; font-size: 13px; }
+      .oer-term-link a.oer-support-link { padding: 12px 12px; font-size: 14px; }
     </style>
 
     <section class="oer-term-link">
-      <a href="/terminal/">&gt; NEXUS TERMINAL ACCESS<span class="cur">_</span><span class="dim">nexus-dev login:</span></a>
-      <!-- Support link (Ko-fi), same terminal style as the NEXUS box. -->
+      <!-- Support link (Ko-fi). The NEXUS terminal link is on the LEGACY RECORD line above. -->
       <a class="oer-support-link" href="https://ko-fi.com/thegreatdarkness" target="_blank" rel="noopener noreferrer">&gt; SUPPORT CONTINUED OPERATIONS<span class="dim">ko-fi.com/thegreatdarkness // keep the network online</span></a>
     </section>
 
