@@ -13,16 +13,24 @@
 
     html,
     body {
-      height: 100%;
       margin: 0;
       background: #000000;
     }
 
+    html {
+      height: 100%;
+    }
+
+    /* min-height, not height: on a short screen the page scrolls
+       instead of the top being cut off. */
     body {
+      min-height: 100%;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 10px;
+      gap: 18px;
+      padding: 14px 10px;
       box-sizing: border-box;
       overflow-x: hidden;
       color: #ffffff;
@@ -106,6 +114,125 @@
       border-top: 1px dashed #8b3a3a;
     }
 
+    /* ---- OER public access screen (the original 1998 system) ---- */
+    .access-node {
+      width: 96%;
+      max-width: 760px;
+      padding: 5px;
+      box-sizing: border-box;
+      background: #0a0a0a;
+      border: 2px outset #888888;
+      box-shadow: 4px 4px 0 #1a1a1a;
+      color: #bbbbbb;
+      text-align: center;
+    }
+
+    .access-node-inner {
+      padding: 14px 18px 12px;
+      border: 1px inset #777777;
+    }
+
+    .access-node-label {
+      color: #777777;
+      font-size: 0.6rem;
+      letter-spacing: 2px;
+    }
+
+    .access-node-title {
+      margin: 8px 0 4px;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(1.15rem, 3.6vw, 1.6rem);
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .access-node-sub {
+      color: #888888;
+      font-size: 0.62rem;
+      letter-spacing: 2px;
+    }
+
+    .access-node hr {
+      margin: 12px 0;
+      border: 0;
+      border-top: 1px dashed #555555;
+    }
+
+    .access-notice {
+      max-width: 620px;
+      margin: 0 auto;
+      color: #aaaaaa;
+      font-size: 0.74rem;
+      line-height: 1.55;
+      text-align: left;
+    }
+
+    .access-notice-head {
+      margin-bottom: 6px;
+      color: #ffffff;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .access-notice p {
+      margin: 0 0 6px;
+    }
+
+    .access-button {
+      display: inline-block;
+      padding: 7px 26px;
+      background: #222222;
+      border: 3px outset #aaaaaa;
+      box-shadow: 3px 3px 0 #111111;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 3px;
+      cursor: pointer;
+    }
+
+    .access-button:hover,
+    .access-button:focus {
+      background: #333333;
+      outline: none;
+    }
+
+    .access-button:active {
+      border-style: inset;
+      box-shadow: 1px 1px 0 #111111;
+    }
+
+    .access-button[disabled] {
+      color: #777777;
+      cursor: default;
+    }
+
+    .access-status {
+      min-height: 1.3em;
+      margin-top: 9px;
+      color: #00cc00;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    .access-status.refused {
+      color: #ff5555;
+    }
+
+    .access-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 4px 16px;
+      margin-top: 10px;
+      color: #555555;
+      font-size: 0.55rem;
+      letter-spacing: 1px;
+    }
+
     @keyframes titleFlicker {
       0%, 88%, 100% { opacity: 1; }
       89%, 92% { opacity: 0.62; }
@@ -118,6 +245,35 @@
   </style>
 </head>
 <body>
+
+  <section class="access-node" aria-label="OER public access">
+    <div class="access-node-inner">
+
+      <div class="access-node-label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
+      <div class="access-node-title">OPERATIONAL EVENT REGISTER</div>
+      <div class="access-node-sub">PUBLIC ACCESS TERMINAL // SYSTEM ACTIVATION: 01 JULY 1998</div>
+
+      <hr>
+
+      <div class="access-notice">
+        <div class="access-notice-head">*** SYSTEM USE NOTIFICATION ***</div>
+        <p>You are accessing the Operational Event Register (OER) network. This system is provided for authorized monitoring and public information use only.</p>
+        <p>All activity on this system may be monitored, recorded and reviewed. Use of this system constitutes consent to monitoring.</p>
+        <p>Unauthorized or improper use may result in termination of access.</p>
+      </div>
+
+      <hr>
+
+      <button type="button" class="access-button" id="accessButton">[ I ACCEPT ]</button>
+      <div class="access-status" id="accessStatus" role="status" aria-live="polite"></div>
+
+      <div class="access-footer">
+        <span>OER/PAN v2.1 // 06/1998</span>
+        <span>FOR ASSISTANCE CONTACT THE OER NETWORK OPERATIONS CENTER</span>
+      </div>
+
+    </div>
+  </section>
 
   <section class="late-addendum">
     <div class="late-addendum-inner">
@@ -140,6 +296,39 @@
 
     </div>
   </section>
+
+  <script>
+    // I ACCEPT. Set ACCESS_OPEN to true to let visitors into the site
+    // (it then goes to ACCESS_TARGET). Until then the node refuses.
+    (function () {
+      var ACCESS_OPEN = false;
+      var ACCESS_TARGET = "/home/";
+      var button = document.getElementById("accessButton");
+      var status = document.getElementById("accessStatus");
+
+      function say(text, refused) {
+        status.textContent = text;
+        status.className = "access-status" + (refused ? " refused" : "");
+      }
+
+      button.addEventListener("click", function () {
+        button.disabled = true;
+        say("ESTABLISHING SESSION...");
+        setTimeout(function () {
+          say("VERIFYING NODE GDK-001...");
+        }, 900);
+        setTimeout(function () {
+          if (ACCESS_OPEN) {
+            say("SESSION GRANTED. CONNECTING...");
+            setTimeout(function () { location.href = ACCESS_TARGET; }, 700);
+          } else {
+            say("CONNECTION REFUSED // NODE GDK-001 NOT ACCEPTING PUBLIC SESSIONS", true);
+            button.disabled = false;
+          }
+        }, 2000);
+      });
+    })();
+  </script>
 
   <script>
     // Same countdown as the homepage (HomeView.html): 01 JULY 2031, 12:00 UTC.
