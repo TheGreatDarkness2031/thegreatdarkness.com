@@ -330,8 +330,42 @@
     document.body.appendChild(m);
   }
 
+  // ---- DAY / NIGHT switch: a page puts
+  //   <span data-oer-daynight="watch" data-default="night"></span>
+  // where the switch goes, and styles body.oer-day / body.oer-night.
+  // The choice is remembered per page (localStorage). ----
+  function dayNight() {
+    var spot = document.querySelector("[data-oer-daynight]");
+    if (!spot) return;
+    var key = "oerDisplay_" + spot.getAttribute("data-oer-daynight");
+    var mode = spot.getAttribute("data-default") === "day" ? "day" : "night";
+    try { var saved = localStorage.getItem(key); if (saved === "day" || saved === "night") mode = saved; } catch (e) {}
+    spot.className = "oer-daynight";
+    spot.setAttribute("role", "group");
+    spot.setAttribute("aria-label", "Display");
+    spot.appendChild(el("span", "oer-daynight-label", "DISPLAY:"));
+    var buttons = {};
+    ["day", "night"].forEach(function (m) {
+      var b = el("button", "", m.toUpperCase());
+      b.type = "button";
+      b.addEventListener("click", function () { set(m, true); });
+      buttons[m] = b;
+      spot.appendChild(b);
+    });
+    function set(m, save) {
+      mode = m;
+      document.body.classList.toggle("oer-day", m === "day");
+      document.body.classList.toggle("oer-night", m === "night");
+      buttons.day.setAttribute("aria-pressed", m === "day" ? "true" : "false");
+      buttons.night.setAttribute("aria-pressed", m === "night" ? "true" : "false");
+      if (save) { try { localStorage.setItem(key, m); } catch (e) {} }
+    }
+    set(mode, false);
+  }
+
   function start() {
     if (framed) build();
+    dayNight();
     sealMark();
     footer();
     connectScreen();

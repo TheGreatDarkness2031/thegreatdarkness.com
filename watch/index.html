@@ -533,6 +533,32 @@
       }
     }
 
+    /* DAY display (switch in the heading): records on white paper. */
+    body.oer-day .watch-log-stream,
+    body.oer-day .watch-log-row,
+    body.oer-day .selected-details-body { background: #ffffff; }
+    body.oer-day .watch-log-row { border-bottom-color: #a0a0a0; }
+    body.oer-day .watch-log-row:hover { background: #e8e8e8; }
+    body.oer-day .watch-log-time,
+    body.oer-day .watch-log-footer,
+    body.oer-day .empty-message,
+    body.oer-day .selected-none { color: #555555; }
+    body.oer-day .watch-log-role,
+    body.oer-day .watch-log-name,
+    body.oer-day .selected-name,
+    body.oer-day .detail-label { color: #000080; }
+    body.oer-day .watch-log-type,
+    body.oer-day .watch-log-system,
+    body.oer-day .selected-summary,
+    body.oer-day .selected-status { color: #222222; }
+    body.oer-day .selected-summary { border-bottom-color: #999999; }
+    body.oer-day .watch-log-summary { color: #000000; }
+    body.oer-day .watch-log-details { background: #f2f2f2; border-color: #999999; color: #222222; }
+    body.oer-day .severity-nominal { color: #444444; }
+    body.oer-day .severity-watch { color: #8a6d00; }
+    body.oer-day .severity-elevated { color: #c05800; }
+    body.oer-day .severity-critical { color: #c00000; }
+
     .text-only-link { color: #000080 !important; font: 11px "Courier New", Courier, monospace; letter-spacing: 1px; }
     .text-only-link:hover, .text-only-link:focus { color: #0000ee !important; }
 
@@ -555,6 +581,7 @@
     <section class="window-body">
 
       <div class="console-heading">
+        <span data-oer-daynight="watch" data-default="night"></span>
         OPERATIONAL EVENT REGISTER // WATCH-FLOOR RECORD ARCHIVE<br>
 
         <span class="console-heading-muted">

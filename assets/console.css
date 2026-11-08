@@ -384,3 +384,33 @@ a.oer-badge88:hover { outline-color: #fff; }
   .oer-seal-mark { left: 50%; width: min(420px, 80vw); }
 }
 @media print { .oer-seal-mark { display: none; } }
+/* ---- DAY / NIGHT display switch (log viewers) ---- */
+.oer-daynight {
+  float: right;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  margin-left: 10px;
+  font: bold 10px "Courier New", Courier, monospace;
+  color: #000;
+}
+.oer-daynight-label { margin-right: 5px; letter-spacing: 1px; }
+.oer-daynight button {
+  min-width: 52px;
+  padding: 2px 6px;
+  background: #c0c0c0;
+  border: 2px solid;
+  border-color: #fff #404040 #404040 #fff;
+  color: #000;
+  font: bold 10px "Courier New", Courier, monospace;
+  letter-spacing: 1px;
+  cursor: pointer;
+}
+.oer-daynight button[aria-pressed="true"] {
+  background: #a8a8a8;
+  border-color: #404040 #fff #fff #404040;
+  color: #000080;
+}
+@media (max-width: 560px) {
+  .oer-daynight { float: none; display: flex; margin: 6px 0 0; }
+}
