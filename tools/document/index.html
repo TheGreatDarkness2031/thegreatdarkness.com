@@ -280,8 +280,30 @@
       color: #000000;
     }
 
-    .preview-frame.phone .pdf-preview { display: none; }
-    .preview-frame.phone .open-panel { display: block; }
+    /* Document navigation: previous / back to the list / next, within the
+       same section of the Tools / Training list. */
+    .doc-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      background: var(--light-gray);
+      border-top: 2px solid #ffffff;
+      border-left: 2px solid #ffffff;
+      border-right: 2px solid #404040;
+      border-bottom: 2px solid #404040;
+    }
+    .doc-nav-mid { display: flex; align-items: center; gap: 10px; }
+    .doc-nav-count { color: #000000; font: bold 10px "Courier New", Courier, monospace; letter-spacing: 1px; }
+    .doc-nav .action-link.off { color: #808080; text-shadow: 1px 1px 0 #ffffff; pointer-events: none; }
+    @media (max-width: 560px) {
+      .doc-nav { flex-wrap: wrap; justify-content: center; }
+      .doc-nav-mid { order: -1; width: 100%; justify-content: center; }
+    }
+
+    .preview-frame.phone .pdf-preview { display: none; }    .preview-frame.phone .open-panel { display: block; }
   </style>
 
 </head>
@@ -335,9 +357,17 @@
 
       </section>
 
+      <nav id="docNav" class="doc-nav" aria-label="Documents" hidden>
+        <a id="docPrev" class="action-link off" href="#">[ &lt;&lt; PREVIOUS ]</a>
+        <div class="doc-nav-mid">
+          <a class="action-link" href="/tools/" id="docReturn">[ RETURN TO DOCUMENTS ]</a>
+          <span id="docCount" class="doc-nav-count"></span>
+        </div>
+        <a id="docNext" class="action-link off" href="#">[ NEXT &gt;&gt; ]</a>
+      </nav>
+
       <section
-        id="previewFrame"
-        class="preview-frame"
+        id="previewFrame"        class="preview-frame"
       >
 
         <iframe
@@ -553,7 +583,7 @@
                 previewUrl: entry.file,
                 downloadUrl: entry.file
               });
-            })
+              renderDocNav_(list, String(documentKey).toUpperCase(), entry.category);            })
             .catch(function() {
               renderPdfViewerUnavailable_(documentKey);
             });
@@ -639,8 +669,35 @@
     }
 
 
-    function renderPdfViewerUnavailable_(
-      documentKey
+    // PREVIOUS / NEXT step through the documents of the same section, in
+    // the order of /docs/documents.json (the same order as the list page).
+    function renderDocNav_(list, key, category) {
+      var keys = Object.keys(list).filter(function(k) {
+        return list[k].category === category;
+      });
+      var at = keys.indexOf(key);
+      if (at === -1) return;
+      function setLink(id, k, label) {
+        var a = document.getElementById(id);
+        if (k) {
+          a.href = "/tools/document/?doc=" + encodeURIComponent(k);
+          a.title = list[k].name;
+          a.classList.remove("off");
+          a.removeAttribute("aria-disabled");
+        } else {
+          a.removeAttribute("href");
+          a.setAttribute("aria-disabled", "true");
+        }
+      }
+      setLink("docPrev", keys[at - 1]);
+      setLink("docNext", keys[at + 1]);
+      document.getElementById("docCount").textContent =
+        String(category || "").toUpperCase() + " " + (at + 1) + " OF " + keys.length;
+      document.getElementById("docNav").hidden = false;
+    }
+
+
+    function renderPdfViewerUnavailable_(      documentKey
     ) {
 
       pdfViewerElements.documentTitle.textContent =
