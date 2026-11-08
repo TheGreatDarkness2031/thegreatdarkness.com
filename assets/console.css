@@ -19,7 +19,8 @@ body.oerc {
 body.oerc .tgd-home-link,
 body.oerc .oer-badge,
 body.oerc .close-button,
-body.oerc .action-panel a.action-link[href="/tools/"] { display: none !important; }
+body.oerc .action-panel a.action-link[href="/tools/"],
+body.oerc #docReturnBottom { display: none !important; }
 
 /* ---- network banners ---- */
 .oerc-banner {

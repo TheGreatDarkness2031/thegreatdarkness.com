@@ -1,164 +1,182 @@
 {
  "TL_ECL": {
-  "name": "Emergency Checklist",
+  "name": "Household Readiness Checklist",
   "category": "TOOL",
   "file": "/docs/TL_ECL.pdf",
-  "bytes": 9827
+  "bytes": 135675
  },
  "TL_WNC": {
-  "name": "Water Needs Calculator",
+  "name": "Water & Food Calculator",
   "category": "TOOL",
   "file": "/docs/TL_WNC.pdf",
-  "bytes": 8917
- },
- "TL_FSC": {
-  "name": "Food Supply Calculator",
-  "category": "TOOL",
-  "file": "/docs/TL_FSC.pdf",
-  "bytes": 11391
- },
- "TL_PBC": {
-  "name": "Power Battery Calculator",
-  "category": "TOOL",
-  "file": "/docs/TL_PBC.pdf",
-  "bytes": 14067
- },
- "TL_BOC": {
-  "name": "Bug Out Bag Checklist",
-  "category": "TOOL",
-  "file": "/docs/TL_BOC.pdf",
-  "bytes": 11441
+  "bytes": 162529
  },
  "TL_HEK": {
   "name": "Home Emergency Kit",
   "category": "TOOL",
   "file": "/docs/TL_HEK.pdf",
-  "bytes": 8585
+  "bytes": 143688
  },
- "TL_CP": {
-  "name": "Communication Plan",
+ "TL_BOC": {
+  "name": "Go-Bag Checklist",
   "category": "TOOL",
-  "file": "/docs/TL_CP.pdf",
-  "bytes": 7760
- },
- "TL_NMP": {
-  "name": "Navigation Map Tools",
-  "category": "TOOL",
-  "file": "/docs/TL_NMP.pdf",
-  "bytes": 8749
+  "file": "/docs/TL_BOC.pdf",
+  "bytes": 128735
  },
  "TL_WEP": {
-  "name": "Weather Emergency Profile",
+  "name": "Severe Weather Reference",
   "category": "TOOL",
   "file": "/docs/TL_WEP.pdf",
-  "bytes": 6539
- },
- "TL_BGR": {
-  "name": "Basic Gear Reference",
-  "category": "TOOL",
-  "file": "/docs/TL_BGR.pdf",
-  "bytes": 6696
- },
- "TR_FS": {
-  "name": "Fire Starting",
-  "category": "TRAINING",
-  "file": "/docs/TR_FS.pdf",
-  "bytes": 9294
- },
- "TR_WP": {
-  "name": "Water Purification",
-  "category": "TRAINING",
-  "file": "/docs/TR_WP.pdf",
-  "bytes": 6159
- },
- "TR_SB": {
-  "name": "Shelter Basics",
-  "category": "TRAINING",
-  "file": "/docs/TR_SB.pdf",
-  "bytes": 6427
- },
- "TR_NAV": {
-  "name": "Navigation",
-  "category": "TRAINING",
-  "file": "/docs/TR_NAV.pdf",
-  "bytes": 6642
- },
- "TR_FAB": {
-  "name": "First Aid Basics",
-  "category": "TRAINING",
-  "file": "/docs/TR_FAB.pdf",
-  "bytes": 5065
- },
- "TR_CWP": {
-  "name": "Cooking Without Power",
-  "category": "TRAINING",
-  "file": "/docs/TR_CWP.pdf",
-  "bytes": 4389
- },
- "TR_PC": {
-  "name": "Power Charging",
-  "category": "TRAINING",
-  "file": "/docs/TR_PC.pdf",
-  "bytes": 4248
- },
- "TR_RC": {
-  "name": "Radio Communications",
-  "category": "TRAINING",
-  "file": "/docs/TR_RC.pdf",
-  "bytes": 4331
- },
- "TR_VEP": {
-  "name": "Vehicle Emergency Prep",
-  "category": "TRAINING",
-  "file": "/docs/TR_VEP.pdf",
-  "bytes": 4171
- },
- "TR_HEP": {
-  "name": "Home Emergency Prep",
-  "category": "TRAINING",
-  "file": "/docs/TR_HEP.pdf",
-  "bytes": 4132
+  "bytes": 147748
  },
  "DC_ECS": {
   "name": "Emergency Contact Sheet",
   "category": "DOCUMENTS",
   "file": "/docs/DC_ECS.pdf",
-  "bytes": 4023
+  "bytes": 137782
  },
  "DC_FEP": {
   "name": "Family Emergency Plan",
   "category": "DOCUMENTS",
   "file": "/docs/DC_FEP.pdf",
-  "bytes": 4241
+  "bytes": 141542
  },
  "DC_HIS": {
   "name": "Household Information Sheet",
   "category": "DOCUMENTS",
   "file": "/docs/DC_HIS.pdf",
-  "bytes": 3970
+  "bytes": 141757
  },
  "DC_MIS": {
   "name": "Medical Information Sheet",
   "category": "DOCUMENTS",
   "file": "/docs/DC_MIS.pdf",
-  "bytes": 4020
+  "bytes": 128098
  },
  "DC_IDC": {
-  "name": "Important Document Sheet",
+  "name": "Important Documents Checklist",
   "category": "DOCUMENTS",
   "file": "/docs/DC_IDC.pdf",
-  "bytes": 4656
+  "bytes": 151606
  },
  "DC_EIS": {
-  "name": "Emergency Inventory Sheet",
+  "name": "Supply Inventory & Rotation Log",
   "category": "DOCUMENTS",
   "file": "/docs/DC_EIS.pdf",
-  "bytes": 4773
+  "bytes": 130177
  },
- "DC_GBI": {
-  "name": "Go Bag Inventory Sheet",
-  "category": "DOCUMENTS",
-  "file": "/docs/DC_GBI.pdf",
-  "bytes": 5008
+ "TR_FS": {
+  "name": "Fire Starting",
+  "category": "TRAINING",
+  "file": "/docs/TR_FS.pdf",
+  "bytes": 180285
+ },
+ "TR_WP": {
+  "name": "Water Purification",
+  "category": "TRAINING",
+  "file": "/docs/TR_WP.pdf",
+  "bytes": 147030
+ },
+ "TR_SB": {
+  "name": "Shelter & Staying Warm",
+  "category": "TRAINING",
+  "file": "/docs/TR_SB.pdf",
+  "bytes": 143589
+ },
+ "TR_NAV": {
+  "name": "Navigation",
+  "category": "TRAINING",
+  "file": "/docs/TR_NAV.pdf",
+  "bytes": 132990
+ },
+ "TR_FAB": {
+  "name": "First Aid Basics",
+  "category": "TRAINING",
+  "file": "/docs/TR_FAB.pdf",
+  "bytes": 156819
+ },
+ "TR_CWP": {
+  "name": "Cooking Without Power",
+  "category": "TRAINING",
+  "file": "/docs/TR_CWP.pdf",
+  "bytes": 150102
+ },
+ "TR_PC": {
+  "name": "Power & Charging",
+  "category": "TRAINING",
+  "file": "/docs/TR_PC.pdf",
+  "bytes": 156023
+ },
+ "TR_RC": {
+  "name": "Radio & Communications",
+  "category": "TRAINING",
+  "file": "/docs/TR_RC.pdf",
+  "bytes": 143518
+ },
+ "TR_VEP": {
+  "name": "Vehicle Emergency Prep",
+  "category": "TRAINING",
+  "file": "/docs/TR_VEP.pdf",
+  "bytes": 136330
+ },
+ "TR_HEP": {
+  "name": "Home Systems & Safety",
+  "category": "TRAINING",
+  "file": "/docs/TR_HEP.pdf",
+  "bytes": 149722
+ },
+ "WL_FIT": {
+  "name": "Fitness Basics",
+  "category": "WELLNESS",
+  "file": "/docs/WL_FIT.pdf",
+  "bytes": 161497
+ },
+ "WL_STR": {
+  "name": "Strength & Mobility",
+  "category": "WELLNESS",
+  "file": "/docs/WL_STR.pdf",
+  "bytes": 150005
+ },
+ "WL_NUT": {
+  "name": "Nutrition & Food Labels",
+  "category": "WELLNESS",
+  "file": "/docs/WL_NUT.pdf",
+  "bytes": 144996
+ },
+ "WL_MEAL": {
+  "name": "Meal Planning",
+  "category": "WELLNESS",
+  "file": "/docs/WL_MEAL.pdf",
+  "bytes": 131369
+ },
+ "WL_HYD": {
+  "name": "Hydration",
+  "category": "WELLNESS",
+  "file": "/docs/WL_HYD.pdf",
+  "bytes": 146654
+ },
+ "WL_SLP": {
+  "name": "Sleep",
+  "category": "WELLNESS",
+  "file": "/docs/WL_SLP.pdf",
+  "bytes": 132156
+ },
+ "WL_STRS": {
+  "name": "Stress & Breathing",
+  "category": "WELLNESS",
+  "file": "/docs/WL_STRS.pdf",
+  "bytes": 145510
+ },
+ "WL_RES": {
+  "name": "Resilience & Connection",
+  "category": "WELLNESS",
+  "file": "/docs/WL_RES.pdf",
+  "bytes": 133038
+ },
+ "WL_CHK": {
+  "name": "Health Checkup Checklist",
+  "category": "WELLNESS",
+  "file": "/docs/WL_CHK.pdf",
+  "bytes": 152570
  }
 }

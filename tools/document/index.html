@@ -421,6 +421,7 @@
 
         <a
           class="action-link"
+          id="docReturnBottom"
           href="/tools/"
         >
           [ RETURN TO TOOLS / TRAINING ]
@@ -694,6 +695,17 @@
       document.getElementById("docCount").textContent =
         String(category || "").toUpperCase() + " " + (at + 1) + " OF " + keys.length;
       document.getElementById("docNav").hidden = false;
+      // Wellness documents return to the Wellness page.
+      if (category === "WELLNESS") {
+        var back = document.getElementById("docReturn");
+        back.href = "/wellness/";
+        back.textContent = "[ RETURN TO WELLNESS ]";
+        var back2 = document.getElementById("docReturnBottom");
+        if (back2) {
+          back2.href = "/wellness/";
+          back2.textContent = "[ RETURN TO WELLNESS ]";
+        }
+      }
     }
 
 
