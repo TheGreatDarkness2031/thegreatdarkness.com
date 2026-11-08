@@ -14,8 +14,12 @@ body.oerc {
   padding-left: calc(var(--oerc-rail) + 12px) !important;
   box-sizing: border-box;
 }
+/* The directory rail is the way around: the corner HOME link and the
+   pages' own BACK / CLOSE buttons are hidden on framed pages. */
 body.oerc .tgd-home-link,
-body.oerc .oer-badge { display: none !important; }
+body.oerc .oer-badge,
+body.oerc .close-button,
+body.oerc a.action-link[href="/tools/"] { display: none !important; }
 
 /* ---- network banners ---- */
 .oerc-banner {
@@ -60,7 +64,7 @@ body.oerc .oer-badge { display: none !important; }
   letter-spacing: 2px;
 }
 .oerc-bar-left, .oerc-bar-right { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.oerc-bar-left { padding-left: var(--oerc-rail); }
+.oerc-bar-left { padding-left: 0; }
 .oerc-bar-mid {
   flex: 1;
   text-align: center;
@@ -83,7 +87,6 @@ body.oerc .oer-badge { display: none !important; }
 .oerc-light-on::before { background: #2bff4f; box-shadow: 0 0 6px #2bff4f; animation: oerc-blink 2.4s steps(1) infinite; }
 .oerc-light-off::before { background: #ff3030; box-shadow: 0 0 6px #ff3030; }
 @keyframes oerc-blink { 0%, 88% { opacity: 1; } 89%, 100% { opacity: 0.25; } }
-.oerc-mini-seal { display: none; width: 22px; height: 22px; border-radius: 50%; }
 .oerc-menu-button { display: none; }
 
 /* ---- directory rail ---- */
@@ -105,18 +108,6 @@ body.oerc .oer-badge { display: none !important; }
   letter-spacing: 1.5px;
 }
 .oerc-rail::-webkit-scrollbar { display: none; }
-.oerc-seal {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 12px;
-  color: var(--oerc-ink);
-  text-decoration: none;
-  letter-spacing: 4px;
-}
-.oerc-seal img { width: 104px; height: 104px; border-radius: 50%; filter: drop-shadow(0 0 6px rgba(255,255,255,0.12)); }
-.oerc-seal:hover img { filter: drop-shadow(0 0 9px rgba(255,255,255,0.3)); }
 .oerc-rail-title {
   margin: 0 0 6px;
   padding: 3px 6px;
@@ -151,7 +142,6 @@ body.oerc .oer-badge { display: none !important; }
 /* ---- narrower screens: rail becomes a MENU drop-down ---- */
 @media (max-width: 1000px) {
   body.oerc { padding-left: 0 !important; }
-  .oerc-bar-left { padding-left: 0; }
   .oerc-menu-button {
     display: inline-block;
     padding: 4px 8px;
@@ -163,10 +153,8 @@ body.oerc .oer-badge { display: none !important; }
     border-color: #4a4a4a #000 #000 #4a4a4a;
     cursor: pointer;
   }
-  .oerc-mini-seal { display: block; }
   .oerc-rail { display: none; width: 220px; box-shadow: 4px 0 12px rgba(0,0,0,0.7); }
   body.oerc-menu-open .oerc-rail { display: block; }
-  .oerc-seal img { width: 72px; height: 72px; }
 }
 @media (max-width: 760px) {
   .oerc-org, .oerc-hide-small { display: none; }
@@ -177,3 +165,9 @@ body.oerc .oer-badge { display: none !important; }
 @media (max-width: 480px) {
   .oerc-clock { display: none; }
 }
+
+/* Pages bring their own styles for links and lists; the frame keeps its own. */
+.oerc-rail, .oerc-rail * { text-align: left !important; text-transform: none; float: none; }
+.oerc-rail li { margin: 0; padding: 0; border: 0; background: none; }
+.oerc-rail a, .oerc-rail summary { width: auto; box-sizing: border-box; font: inherit; letter-spacing: inherit; }
+.oerc-bar *, .oerc-banner * { margin: 0; }

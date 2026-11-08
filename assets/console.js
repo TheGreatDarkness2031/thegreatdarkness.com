@@ -98,11 +98,7 @@
     var menuBtn = el("button", "oerc-menu-button", "MENU");
     menuBtn.type = "button";
     menuBtn.setAttribute("aria-expanded", "false");
-    var mini = el("img", "oerc-mini-seal");
-    mini.src = "/assets/img/oer-seal-300.png";
-    mini.alt = "";
     left.appendChild(menuBtn);
-    left.appendChild(mini);
     left.appendChild(el("span", "oerc-org", "OPERATIONAL EVENT REGISTER"));
     var mid = el("div", "oerc-bar-mid", pageName());
     var right = el("div", "oerc-bar-right");
@@ -116,15 +112,6 @@
 
     var rail = el("nav", "oerc-rail");
     rail.setAttribute("aria-label", "OER network");
-    var sealLink = el("a", "oerc-seal");
-    sealLink.href = "/profile/";
-    sealLink.title = "Operational Event Register";
-    var seal = el("img");
-    seal.src = "/assets/img/oer-seal-300.png";
-    seal.alt = "Operational Event Register seal";
-    sealLink.appendChild(seal);
-    sealLink.appendChild(el("span", "", "OER"));
-    rail.appendChild(sealLink);
     rail.appendChild(el("div", "oerc-rail-title", "DIRECTORY"));
     rail.appendChild(menuList());
     rail.appendChild(el("div", "oerc-rail-foot", "TERMINAL GDK-001"));
