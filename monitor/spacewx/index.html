@@ -16,7 +16,7 @@
     content="width=device-width, initial-scale=1.0"
 >
 
-<title>The Great Darkness - SPACE WEATHER Monitor</title>
+<title>OER // Space Weather Monitor</title>
 
 <style>
 /* Shared page for the Monitoring Grid feeds (MonitorFeeds.js).
@@ -714,7 +714,6 @@ setText("statusLabel", MONITOR_PAGE.statusLabel);
 setText("itemsTitle", MONITOR_PAGE.itemsTitle);
 setText("graphTitle", MONITOR_PAGE.metricLabel);
 setText("footer", MONITOR_PAGE.footer);
-document.title = MONITOR_PAGE.title;
 
 window.addEventListener("resize", function() {
     if (latest && latest.history) drawGraph(latest.history.points);
