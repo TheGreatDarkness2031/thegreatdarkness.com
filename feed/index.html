@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
+<script src="/assets/gsr.js"></script>
 <title>OER // Channel Viewer</title>
 <style>
   html, body { margin: 0; background: #000; }
@@ -173,6 +174,14 @@
     font: 11px "Courier New", monospace;
   }
 
+  .extra-channels { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .extra-channels .channel { min-width: 0; }
+  .extra-channels .headlines li { font-size: 12px; }
+  .chan-src { font-size: 10px; letter-spacing: 1px; color: #444; }
+  .hidden-line { margin-top: 8px; font: 11px "Courier New", monospace; }
+  .hidden-line button { margin-left: 6px; }
+  @media (max-width: 900px) { .extra-channels { grid-template-columns: 1fr; } }
+
   @media (max-width: 600px) {
     .viewer-body { padding: 6px; }
     .headlines li { padding: 6px 8px; }
@@ -225,6 +234,9 @@
       <button class="bevel-btn" id="restoreBtn" type="button">RESTORE CHANNEL</button>
     </div>
 
+    <div class="extra-channels" id="extraChannels"></div>
+    <div class="hidden-line" id="hiddenLine" style="display:none;"></div>
+
     <div class="panel">
       <div class="panel-title">CHANNEL ADDRESS</div>
       <div class="addr-row">
@@ -258,7 +270,7 @@
   var count = Number(setting("count", "10")) || 10;
   [].forEach.call(document.querySelectorAll('input[name="count"]'), function (r) {
     r.checked = Number(r.value) === count;
-    r.addEventListener("change", function () { count = Number(r.value); save("count", count); render(); });
+    r.addEventListener("change", function () { count = Number(r.value); save("count", count); render(); if (typeof renderOutside === "function") renderOutside(); });
   });
 
   function pad(n) { return (n > 9 ? "" : "0") + n; }
@@ -383,8 +395,131 @@
     }
   });
 
+  // ---- outside channels (ChannelFeeds.js on the Apps Script side) ----
+  var CHANNEL_MS = 15 * 60 * 1000;
+  var outside = [];
+  function hiddenSet() {
+    try { return JSON.parse(setting("hidden", "[]")) || []; } catch (e) { return []; }
+  }
+  function saveHidden(list) { save("hidden", JSON.stringify(list)); }
+
+  function channelBox(ch) {
+    var box = document.createElement("section");
+    box.className = "channel";
+    var head = document.createElement("div");
+    head.className = "channel-head";
+    var name = document.createElement("span");
+    name.className = "name";
+    name.textContent = ch.name;
+    var min = document.createElement("button");
+    min.className = "chan-btn"; min.type = "button"; min.title = "Minimize channel"; min.textContent = "_";
+    var x = document.createElement("button");
+    x.className = "chan-btn"; x.type = "button"; x.title = "Remove channel"; x.textContent = "X";
+    head.appendChild(name); head.appendChild(min); head.appendChild(x);
+    box.appendChild(head);
+
+    var body = document.createElement("div");
+    var list = document.createElement("ul");
+    list.className = "headlines";
+    if (!ch.ok) {
+      var li = document.createElement("li");
+      li.textContent = "CHANNEL NOT RESPONDING. RETRYING.";
+      list.appendChild(li);
+    } else if (!ch.items.length) {
+      var none = document.createElement("li");
+      none.textContent = "NO HEADLINES ON THIS CHANNEL.";
+      list.appendChild(none);
+    }
+    (ch.items || []).slice(0, Math.min(count, 8)).forEach(function (it) {
+      var li = document.createElement("li");
+      var div = document.createElement("div");
+      var a = document.createElement(it.link ? "a" : "span");
+      if (it.link) { a.href = it.link; a.target = "_blank"; a.rel = "noopener noreferrer"; }
+      a.textContent = it.title;
+      if (!it.link) a.style.fontWeight = "bold";
+      var meta = document.createElement("span");
+      meta.className = "meta";
+      var d = it.date ? new Date(it.date) : null;
+      meta.textContent = d && !isNaN(d.getTime()) ? utc(d) : "";
+      div.appendChild(a);
+      div.appendChild(meta);
+      if (it.summary) {
+        var sum = document.createElement("span");
+        sum.className = "sum";
+        sum.textContent = it.summary.length > 140 ? it.summary.slice(0, 137).replace(/\s+\S*$/, "") + "..." : it.summary;
+        div.appendChild(sum);
+      }
+      li.appendChild(div);
+      list.appendChild(li);
+    });
+    body.appendChild(list);
+    var foot = document.createElement("div");
+    foot.className = "channel-foot";
+    var src = document.createElement("span");
+    src.className = "chan-src";
+    src.textContent = "SOURCE: " + ch.name.split("//")[0].trim();
+    foot.appendChild(src);
+    if (ch.link) {
+      var more = document.createElement("a");
+      more.href = ch.link; more.target = "_blank"; more.rel = "noopener noreferrer";
+      more.style.color = "#0000ee";
+      more.textContent = "SITE \u00BB";
+      foot.appendChild(more);
+    }
+    body.appendChild(foot);
+    box.appendChild(body);
+
+    min.addEventListener("click", function () {
+      var shut = body.style.display !== "none";
+      body.style.display = shut ? "none" : "";
+      min.textContent = shut ? "\u25A1" : "_";
+    });
+    x.addEventListener("click", function () {
+      var h = hiddenSet();
+      if (h.indexOf(ch.name) === -1) h.push(ch.name);
+      saveHidden(h);
+      renderOutside();
+    });
+    return box;
+  }
+
+  function renderOutside() {
+    var wrap = el("extraChannels");
+    wrap.innerHTML = "";
+    var hidden = hiddenSet();
+    outside.forEach(function (ch) {
+      if (hidden.indexOf(ch.name) === -1) wrap.appendChild(channelBox(ch));
+    });
+    var line = el("hiddenLine");
+    var gone = outside.filter(function (ch) { return hidden.indexOf(ch.name) !== -1; });
+    line.style.display = gone.length ? "" : "none";
+    line.textContent = gone.length ? "REMOVED CHANNELS: " + gone.length : "";
+    if (gone.length) {
+      var b = document.createElement("button");
+      b.className = "bevel-btn"; b.type = "button"; b.textContent = "RESTORE ALL";
+      b.addEventListener("click", function () { saveHidden([]); renderOutside(); });
+      line.appendChild(b);
+    }
+  }
+
+  function loadOutside() {
+    if (!window.google || !google.script || !google.script.run) return;
+    google.script.run
+      .withSuccessHandler(function (data) {
+        outside = (data && data.channels) || [];
+        renderOutside();
+      })
+      .withFailureHandler(function () {
+        if (!outside.length) el("extraChannels").textContent = "";
+      })
+      .getFeedChannels();
+  }
+  window.oerShowChannels = function (data) { outside = data.channels || []; renderOutside(); };
+
   load();
+  loadOutside();
   setInterval(load, REFRESH_MS);
+  setInterval(loadOutside, CHANNEL_MS);
 })();
 </script>
 </body>
