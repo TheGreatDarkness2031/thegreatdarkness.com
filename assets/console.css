@@ -157,6 +157,16 @@ body.oerc #docReturnBottom { display: none !important; }
   .oerc-rail { display: none; width: 220px; box-shadow: 4px 0 12px rgba(0,0,0,0.7); }
   body.oerc-menu-open .oerc-rail { display: block; }
 }
+/* Phone held sideways: the drop-down is taller than the screen, so it
+   lays out in three columns instead of scrolling (2026-11-08). */
+@media (max-width: 1000px) and (max-height: 500px) {
+  .oerc-rail { width: min(680px, 100vw); padding: 8px 10px; }
+  .oerc-rail .oerc-menu { column-count: 3; column-gap: 10px; }
+  .oerc-rail .oerc-item, .oerc-rail .oerc-subitem { break-inside: avoid; }
+  .oerc-rail .oerc-item { padding: 5px 7px; margin-bottom: 3px; }
+  .oerc-rail .oerc-subitem { padding: 3px 7px; margin-bottom: 2px; }
+  .oerc-rail .oerc-rail-foot { margin-top: 6px; }
+}
 @media (max-width: 760px) {
   .oerc-org, .oerc-hide-small { display: none; }
   .oerc-bar-mid { font-size: 11px; letter-spacing: 1px; }

@@ -11,15 +11,12 @@
    loading box while a page's first data arrives (gsr.js reports calls).
    No less-than characters in this file (pages may inline it later). */
 (function () {
-  // [label, address, "NEW!" shown until this date (optional)]
+  // [label, address, "NEW!" shown until this date (optional)], or
+  // [label, [items]] for a group: closed unless the page is inside it,
+  // NEW! on the group while any item in it is new (2026-11-08).
   var MENU = [
     ["HOME", "/home/"],
     ["RADAR", "/radar/"],
-    ["EVENTS", "/events/"],
-    ["RSS CHANNEL", "/feed/", "2026-12-08"],
-    ["WATCH LOG", "/watch/"],
-    ["MAINTENANCE", "/maintenance/"],
-    ["PROFILE", "/profile/"],
     ["MONITORS", [
       ["SEISMIC", "/monitor/quake/"],
       ["TEMPERATURE", "/monitor/temp/"],
@@ -33,9 +30,18 @@
       ["AI INCIDENT", "/monitor/aiinc/"],
       ["NEAR-EARTH", "/monitor/neo/", "2026-12-08"]
     ]],
-    ["TOOLS", "/tools/"],
+    ["LOGS", [
+      ["EVENT LOG", "/events/"],
+      ["WATCH LOG", "/watch/"],
+      ["MAINTENANCE LOG", "/maintenance/"],
+      ["RSS CHANNEL", "/feed/", "2026-12-08"]
+    ]],
+    ["RESOURCES", [
+      ["TOOLS", "/tools/"],
+      ["WELLNESS", "/wellness/"]
+    ]],
+    ["PROFILE", "/profile/"],
     ["TERMINAL", "/terminal/", "2026-12-08"],
-    ["WELLNESS", "/wellness/"],
     ["ARCADE", "/arcade/"]
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
@@ -76,12 +82,15 @@
         var open = item[1].some(function (s) { return here(s[1]); });
         var d = el("details", "oerc-group");
         if (open) d.open = true;
-        d.appendChild(el("summary", "oerc-item", item[0]));
+        var summary = el("summary", "oerc-item", item[0]);
+        if (item[1].some(function (s) { return isNew(s[2]); })) summary.appendChild(el("span", "oerc-new", "NEW!"));
+        d.appendChild(summary);
         var sub = el("ul", "oerc-sub");
         item[1].forEach(function (s) {
           var sl = el("li");
           var a = el("a", "oerc-subitem" + (here(s[1]) ? " oerc-here" : ""), s[0]);
           a.href = s[1];
+          if (isNew(s[2])) a.appendChild(el("span", "oerc-new", "NEW!"));
           sl.appendChild(a);
           sub.appendChild(sl);
         });

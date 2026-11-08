@@ -980,14 +980,16 @@
       }
 
       .radar-screen {
-        /* Fits the window height: the console frame's bars above, the status line and bottom banner below. */
-        width: min(44vw, 820px, calc(100vh - 164px));
-        min-width: 380px;
+        /* Fits the window height: the console frame's bars above, the status line and bottom banner below
+           (134 px since the title line came out, 2026-11-08). Fits the width too: what's left after the
+           rail (184 px), the side panel (300 px min) and the source column (200 px) with their gaps. */
+        width: min(44vw, 820px, calc(100vh - 134px), calc((100vw - 184px) * 0.97 - 528px));
+        min-width: 360px;
       }
 
       .radar-side {
         flex: 0 1 400px;
-        min-width: 340px;
+        min-width: 300px;
       }
 
       .radar-side .radar-console {
@@ -999,7 +1001,7 @@
       }
 
       .radar-register-col {
-        flex: 0 0 220px;
+        flex: 0 0 200px;
       }
 
       .radar-register-col .source-register {
@@ -1041,10 +1043,6 @@
 <body>
 
   <section class="radar-section">
-
-    <div class="radar-title">
-      === OER RADAR CONSOLE ===
-    </div>
 
     <div class="radar-console-layout">
 

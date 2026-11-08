@@ -322,7 +322,7 @@
     // I ACCEPT. Set ACCESS_OPEN to true to let visitors into the site
     // (it then goes to ACCESS_TARGET). Until then the node refuses.
     (function () {
-      var ACCESS_OPEN = false;
+      var ACCESS_OPEN = true;  // opened 2026-11-08 for testers; pages stay noindex
       var ACCESS_TARGET = "/home/";
       var button = document.getElementById("accessButton");
       var status = document.getElementById("accessStatus");
@@ -347,6 +347,14 @@
             button.disabled = false;
           }
         }, 2000);
+      });
+
+      // Coming back with the browser's Back button: ready again.
+      window.addEventListener("pageshow", function (e) {
+        if (e.persisted) {
+          button.disabled = false;
+          say("");
+        }
       });
     })();
   </script>

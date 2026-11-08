@@ -61,6 +61,13 @@
             font-size: .9rem;
             margin-top: 30px;
           }
+          /* Short windows (a phone held sideways): fit instead of
+             scrolling by a line or two. */
+          @media (max-height: 480px) {
+            body { padding: 24px 20px; }
+            h1 { font-size: 2rem; margin: 10px 0 18px; }
+            .message { margin-top: 18px; }
+          }
         </style>
       </head>
       <body>
