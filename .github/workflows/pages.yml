@@ -1,0 +1,54 @@
+# Publishes the website and rebuilds /feed.xml from the live event feed.
+# Runs on every change, when Apps Script asks (every 30 minutes), and on
+# a timer as a backup. If the event feed can't be read, the last
+# published feed.xml is kept.
+name: Publish site
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [refresh-feed]
+  schedule:
+    - cron: "7,37 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build feed.xml
+        run: |
+          API="https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec?rss=1"
+          ok() { head -c 200 "$1" | grep -q '<rss' && grep -q '</rss>' "$1"; }
+          if curl -sSL --max-time 90 --retry 2 -o feed.new "$API" && ok feed.new; then
+            mv feed.new feed.xml
+            echo "feed.xml rebuilt: $(grep -c '<item>' feed.xml) items"
+          elif curl -sSL --max-time 30 -o feed.old "https://thegreatdarkness.com/feed.xml" && ok feed.old; then
+            mv feed.old feed.xml
+            echo "::warning::Event feed unreadable; kept the published feed.xml"
+          else
+            echo "::warning::No feed.xml available this run"
+          fi
+          rm -f feed.new feed.old
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deploy
+        uses: actions/deploy-pages@v4
