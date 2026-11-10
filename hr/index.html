@@ -156,6 +156,54 @@ dl.fields dd { margin: 0; color: #eee; }
 .wall-grid small { display: block; color: #666; font-size: 0.58rem; }
 .wall-plate { margin-top: 16px; font-family: Georgia, serif; font-size: 0.7rem; letter-spacing: 3px; color: #555; }
 
+/* phone tree */
+.tree { font-size: 0.76rem; }
+.tree-root { border: 1px solid #6c6cc0; background: #000050; color: #fff; padding: 8px 12px; margin-bottom: 16px; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+.tree-root b { letter-spacing: 2px; }
+.tree-note { color: #b9bfff; font-size: 0.66rem; letter-spacing: 0.5px; width: 100%; }
+.ext { color: var(--green); white-space: nowrap; }
+ul.tree-groups { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; }
+.tree-group { border: 1px solid #333; padding-bottom: 6px; }
+.tree-head { background: #262626; color: #ddd; padding: 4px 8px; letter-spacing: 1px; font-size: 0.72rem; }
+.tree-group ul { list-style: none; margin: 0; padding-left: 18px; }
+.tree-group > ul { padding-left: 8px; }
+.tree-group li { position: relative; }
+.tree-group ul ul li::before { content: ""; position: absolute; left: -11px; top: 0; height: 12px; width: 8px; border-left: 1px solid #555; border-bottom: 1px solid #555; }
+.tree-line { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; }
+.tree-line a { color: #eee; text-decoration: none; }
+.tree-line a:hover { color: var(--green); }
+.tree-title { color: var(--muted); font-size: 0.64rem; flex: 1; }
+
+/* bulletin board */
+.cork {
+  background: #8a6236 radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1.5px) 0 0 / 7px 7px;
+  border: 12px solid #5a3d1f; box-shadow: inset 0 0 18px rgba(0,0,0,0.55), 0 0 0 2px #000;
+  padding: 22px 18px; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 22px 18px; align-items: start;
+}
+.notice { position: relative; background: #f4f1e6; color: #1d1d1d; padding: 16px 14px 12px; font-family: "Courier New", monospace; font-size: 0.72rem; line-height: 1.4; box-shadow: 2px 3px 6px rgba(0,0,0,0.45); }
+.notice.slip { background: #fbf3a8; }
+.notice.card { background: #fff; border-top: 6px solid #000080; font-family: Georgia, serif; }
+.notice p { margin: 6px 0 0; }
+.notice-date { color: #666; font-size: 0.62rem; letter-spacing: 1px; }
+.notice-title { font-weight: bold; letter-spacing: 1px; margin-top: 2px; font-family: Arial, Helvetica, sans-serif; font-size: 0.74rem; }
+.pin { position: absolute; top: -6px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: radial-gradient(circle at 35% 35%, #ff7b6b, #a3160c); box-shadow: 1px 2px 2px rgba(0,0,0,0.5); }
+
+/* forms rack */
+.rack-head { margin: 16px 0 6px; color: #fff; font-size: 0.78rem; letter-spacing: 2px; }
+table.rack td { padding: 6px 8px; }
+.rack-code { color: #fff; white-space: nowrap; width: 80px; }
+.rack-rev { color: var(--muted); white-space: nowrap; width: 110px; }
+.rack-open { text-align: right; width: 90px; }
+.rack-open a { color: var(--green); text-decoration: none; letter-spacing: 1px; }
+.rack-open a:hover { text-decoration: underline; }
+
+/* handbook */
+.handbook { background: #f2efe4; color: #1d1d1d; padding: 22px 28px 26px; max-width: 760px; font-family: Georgia, "Times New Roman", serif; font-size: 0.86rem; line-height: 1.55; box-shadow: 4px 5px 0 #000; }
+.handbook h3 { font-family: Arial, Helvetica, sans-serif; font-size: 0.78rem; letter-spacing: 2px; margin: 18px 0 4px; border-bottom: 1px solid #b9b2a0; padding-bottom: 3px; }
+.handbook h3:first-child { margin-top: 0; }
+.handbook p { margin: 6px 0; }
+.handbook-ack { margin-top: 20px !important; font-family: "Courier New", monospace; font-size: 0.7rem; letter-spacing: 1px; color: #555; border-top: 1px dashed #999; padding-top: 10px; }
+
 @media (max-width: 700px) {
   .file { grid-template-columns: 1fr; }
   .file .portrait { width: 160px; height: 160px; }
@@ -177,12 +225,18 @@ dl.fields dd { margin: 0; color: #eee; }
       <a href="?view=directory" data-view="directory">DIRECTORY</a>
       <a href="?view=org" data-view="org">ORGANIZATION</a>
       <a href="?view=wall" data-view="wall">STAFF COMPOSITE</a>
+      <a href="?view=phone" data-view="phone">PHONE TREE</a>
+      <a href="?view=board" data-view="board">BULLETIN BOARD</a>
+      <a href="?view=forms" data-view="forms">FORMS</a>
+      <a href="?view=handbook" data-view="handbook">HANDBOOK</a>
     </nav>
     <div class="pane" id="pane"></div>
   </div>
 </div>
 
 <script src="/hr/data.js"></script>
+<script src="/hr/forms/forms.js"></script>
+<script src="/hr/office.js"></script>
 <script>
 (function () {
   var HR = window.HR || { people: [], badges: [] };
@@ -256,9 +310,10 @@ dl.fields dd { margin: 0; color: #eee; }
     for (var y = THIS_YEAR; y >= first; y--) out.push(y);
     return out;
   }
-  function yearSelect(current, onChange) {
+  function yearSelect(current, onChange, min) {
     var s = el("select");
     years().forEach(function (y) {
+      if (min && y < min) return;
       var o = el("option", null, String(y));
       o.value = y;
       if (y === current) o.selected = true;
@@ -568,6 +623,7 @@ dl.fields dd { margin: 0; color: #eee; }
     if (view === "file") renderFile(q.id);
     else if (view === "org") renderOrg(year);
     else if (view === "wall") renderWall(year);
+    else if (window.HR_VIEWS && HR_VIEWS[view]) HR_VIEWS[view](pane, { el: el, go: go, yearSelect: yearSelect, onStaff: onStaff, shown: shown, people: HR.people, year: year });
     else renderDirectory();
     document.title = "OER // Personnel Office";
   }
