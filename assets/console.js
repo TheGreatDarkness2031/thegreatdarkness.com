@@ -38,7 +38,8 @@
     ]],
     ["RESOURCES", [
       ["TOOLS", "/tools/"],
-      ["WELLNESS", "/wellness/"]
+      ["WELLNESS", "/wellness/"],
+      ["PERSONNEL", "/hr/", "2026-12-09"]
     ]],
     ["PROFILE", "/profile/"],
     ["TERMINAL", "/terminal/", "2026-12-08"],

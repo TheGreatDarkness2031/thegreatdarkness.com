@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+
+<meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="OER Personnel Office: staff directory, organization charts and annual staff composites.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Personnel Office">
+<meta property="og:description" content="OER Personnel Office: staff directory, organization charts and annual staff composites.">
+<meta property="og:url" content="https://thegreatdarkness.com/hr/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OER // Personnel Office</title>
+
+<style>
+:root {
+  --outer-gray: #404040;
+  --dark-gray: #1a1a1a;
+  --title-blue: #000080;
+  --title-blue-dark: #00004f;
+  --body-gray: #c4c4c4;
+  --muted: #8a8a8a;
+  --line: #4a4a4a;
+  --green: #7fd18b;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
+body { padding: 24px 12px 32px; }
+
+.hr-shell {
+  width: 100%; max-width: 1080px; margin: 0 auto; padding: 5px;
+  background: var(--outer-gray);
+  border-top: 2px solid #bdbdbd; border-left: 2px solid #bdbdbd;
+  border-right: 2px solid #111; border-bottom: 2px solid #111;
+  box-shadow: 6px 6px 0 #000, 0 0 22px rgba(255,255,255,0.05);
+}
+.hr-window { background: var(--dark-gray); border: 2px inset #8d8d8d; }
+.title-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 29px; padding: 5px 8px;
+  background: linear-gradient(to right, var(--title-blue), var(--title-blue-dark));
+  color: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; font-weight: bold; letter-spacing: 1px;
+}
+.title-bar small { color: #d2d8ff; font-size: 0.61rem; font-weight: normal; letter-spacing: 0.8px; white-space: nowrap; }
+.tabs {
+  display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 8px 0;
+  background: #c0c0c0; border-bottom: 2px solid #808080;
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.7rem; letter-spacing: 0.5px;
+}
+.tabs a {
+  display: block; padding: 5px 12px 4px; color: #111; text-decoration: none;
+  background: #b4b4b4; border: 1px solid #808080; border-bottom: none;
+  border-top-color: #eee; border-left-color: #eee;
+}
+.tabs a.on { background: #d4d4d4; font-weight: bold; position: relative; top: 2px; }
+.pane { padding: 16px 18px 22px; min-height: 420px; }
+.pane h2 { margin: 0 0 4px; color: #fff; font-size: 1rem; letter-spacing: 2px; }
+.note { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; margin: 0 0 14px; }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 12px; font-size: 0.75rem; }
+.controls label { color: var(--muted); letter-spacing: 1px; }
+select, input[type=text] {
+  background: #000; color: #e8e8e8; border: 1px solid #666; padding: 4px 6px;
+  font: inherit; font-size: 0.78rem; letter-spacing: 0.5px;
+}
+.count { color: var(--muted); font-size: 0.72rem; margin-left: auto; }
+
+/* directory */
+table.dir { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+table.dir th {
+  text-align: left; color: #fff; font-weight: bold; letter-spacing: 1px; padding: 6px 8px;
+  border-bottom: 1px solid var(--line); cursor: pointer; white-space: nowrap; user-select: none;
+}
+table.dir th.sorted::after { content: " \25BE"; color: var(--green); }
+table.dir th.sorted.up::after { content: " \25B4"; }
+table.dir td { padding: 4px 8px; border-bottom: 1px solid #262626; vertical-align: middle; }
+table.dir tr.row { cursor: pointer; }
+table.dir tr.row:hover td { background: #000060; color: #fff; }
+.thumb { width: 34px; height: 34px; object-fit: cover; display: block; border: 1px solid #555; background: #222; }
+.nophoto {
+  display: flex; align-items: center; justify-content: center; text-align: center;
+  background: #1f1f1f; border: 1px solid #444; color: #555; font-size: 0.5rem; letter-spacing: 0.5px; line-height: 1.2;
+}
+.thumb.nophoto { font-size: 0.42rem; }
+.status-active { color: var(--green); }
+.status-former { color: var(--muted); }
+
+/* file */
+.file { display: grid; grid-template-columns: 220px 1fr; gap: 22px; }
+.file .portrait { width: 220px; height: 220px; object-fit: cover; border: 2px solid #777; display: block; }
+.file .portrait.nophoto { font-size: 0.7rem; }
+dl.fields { margin: 0; display: grid; grid-template-columns: 170px 1fr; gap: 6px 14px; font-size: 0.8rem; }
+dl.fields dt { color: var(--muted); letter-spacing: 1px; }
+dl.fields dd { margin: 0; color: #eee; }
+.section { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 12px; }
+.section h3 { margin: 0 0 12px; color: #fff; font-size: 0.82rem; letter-spacing: 2px; }
+.badges { display: flex; flex-wrap: wrap; gap: 18px; }
+.badge { width: 180px; font-size: 0.68rem; color: var(--muted); letter-spacing: 0.5px; }
+.badge img { width: 180px; height: 285px; display: block; margin-bottom: 6px; filter: drop-shadow(3px 4px 0 #000); }
+.badge .card-missing { width: 180px; height: 285px; border-radius: 10px; margin-bottom: 6px; font-size: 0.65rem; }
+.badge b { color: #ddd; font-weight: normal; }
+.photos { display: flex; flex-wrap: wrap; gap: 14px; }
+.photos figure { margin: 0; text-align: center; font-size: 0.7rem; color: var(--muted); }
+.photos img { width: 110px; height: 110px; object-fit: cover; border: 1px solid #666; display: block; margin-bottom: 4px; }
+.back { display: inline-block; margin-bottom: 14px; color: var(--green); font-size: 0.75rem; letter-spacing: 1px; text-decoration: none; }
+.back:hover { text-decoration: underline; }
+
+/* org chart */
+.org { font-size: 0.78rem; }
+.org-top { text-align: center; margin-bottom: 18px; }
+.box {
+  display: inline-block; border: 1px solid #777; background: #000; padding: 6px 12px; color: #fff; letter-spacing: 1px;
+}
+.org-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+.org-col > .box { display: block; text-align: center; margin-bottom: 10px; background: #000050; border-color: #6c6cc0; }
+.unit { border: 1px solid #333; margin-bottom: 10px; }
+.unit-head { background: #262626; color: #ddd; padding: 4px 8px; letter-spacing: 1px; font-size: 0.72rem; }
+.unit ul { list-style: none; margin: 0; padding: 4px 8px 6px; }
+.unit li { padding: 2px 0; display: flex; justify-content: space-between; gap: 10px; }
+.unit li a { color: #eee; text-decoration: none; }
+.unit li a:hover { color: var(--green); }
+.unit li span { color: var(--muted); font-size: 0.68rem; text-align: right; }
+.vacant { color: #555; font-style: italic; }
+
+/* wall composite */
+.wall {
+  background: linear-gradient(#3a2a1a, #2a1d10); padding: 18px; border: 10px solid #5a3d1f;
+  box-shadow: inset 0 0 0 2px #1d130a, 0 0 0 2px #000; color: #e9dcc3;
+}
+.wall-mat { background: #e9e4d6; color: #222; padding: 18px 16px 22px; text-align: center; }
+.wall-mat h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 1.15rem; letter-spacing: 3px; }
+.wall-mat .sub { font-family: Georgia, serif; font-size: 0.78rem; letter-spacing: 2px; margin: 4px 0 14px; color: #555; }
+.wall-group { margin-top: 14px; }
+.wall-group h4 { margin: 0 0 8px; font-family: Georgia, serif; font-size: 0.8rem; letter-spacing: 2px; color: #444; border-bottom: 1px solid #b9b2a0; padding-bottom: 4px; }
+.wall-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(92px, 1fr)); gap: 12px 10px; }
+.wall-grid a { color: #222; text-decoration: none; font-family: Georgia, serif; font-size: 0.66rem; line-height: 1.25; }
+.wall-grid img, .wall-grid .nophoto { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: center 30%; display: block; border: 1px solid #8d8778; margin-bottom: 4px; background: #cfc9b8; }
+.wall-grid .nophoto { display: flex; padding: 6px; background: #d9d4c4; border-color: #aaa392; color: #8d8778; }
+.wall-grid small { display: block; color: #666; font-size: 0.58rem; }
+.wall-plate { margin-top: 16px; font-family: Georgia, serif; font-size: 0.7rem; letter-spacing: 3px; color: #555; }
+
+@media (max-width: 700px) {
+  .file { grid-template-columns: 1fr; }
+  .file .portrait { width: 160px; height: 160px; }
+  dl.fields { grid-template-columns: 120px 1fr; }
+  table.dir .wide { display: none; }
+  .pane { padding: 12px 10px 18px; }
+}
+</style>
+</head>
+
+<body>
+<div class="hr-shell">
+  <div class="hr-window">
+    <div class="title-bar">
+      <span>PERSONNEL OFFICE // OPERATIONAL EVENT REGISTER</span>
+      <small id="records">PERSONNEL RECORDS</small>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="?view=directory" data-view="directory">DIRECTORY</a>
+      <a href="?view=org" data-view="org">ORGANIZATION</a>
+      <a href="?view=wall" data-view="wall">STAFF COMPOSITE</a>
+    </nav>
+    <div class="pane" id="pane"></div>
+  </div>
+</div>
+
+<script src="/hr/data.js"></script>
+<script>
+(function () {
+  var HR = window.HR || { people: [], badges: [] };
+  var pane = document.getElementById("pane");
+  var byId = {};
+  HR.people.forEach(function (p) { byId[p.id] = p; });
+  var MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+  var GEN = {
+    "NX-1": "NEXUS CONTRACT BADGE",
+    "OER-1": "OER-1 // LAMINATED ID",
+    "OER-2": "OER-2 // MAGNETIC STRIPE",
+    "OER-3": "OER-3 // PROXIMITY CARD",
+    "OER-4": "OER-4 // SMART CARD",
+    "OER-5": "OER-5 // SMART CARD"
+  };
+  var DEPT = { WATCH: "WATCH OPERATIONS", ENG: "ENGINEERING", NX: "NEXUS DEVELOPMENT (CONTRACT)" };
+  var TITLE_ORDER = ["Watch Lead", "Watch COMM", "Watch Correlation", "Watch Monitoring", "Watch Relief"];
+  var THIS_YEAR = new Date().getUTCFullYear();
+
+  document.getElementById("records").textContent = HR.people.length + " RECORDS ON FILE";
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+  function date(s) {
+    if (!s) return "";
+    var p = s.split("-");
+    return p[2] + " " + MONTHS[+p[1] - 1] + " " + p[0];
+  }
+  function onStaff(p, day) { return p.hire && p.hire <= day && (!p.sep || p.sep >= day); }
+  function active(p) { return !p.sep; }
+  function shown(p) { return (p.hon ? p.hon + " " : "") + p.name + (p.known ? " (" + p.known + ")" : ""); }
+  function photoYear(p, year) {
+    var best = null;
+    p.photos.forEach(function (y) { if (y <= year && (best === null || y > best)) best = y; });
+    return best;
+  }
+  function latestPhoto(p) { return p.photos.length ? p.photos[p.photos.length - 1] : null; }
+  function photoSrc(p, y) { return "/hr/img/p/" + p.id + "_" + y + ".jpg"; }
+  function photo(p, y, cls, missingText) {
+    if (y === null || y === undefined) {
+      var d = el("div", cls + " nophoto", missingText || "PHOTO NOT ON FILE");
+      return d;
+    }
+    var img = el("img", cls);
+    img.src = photoSrc(p, y);
+    img.alt = p.name + ", " + y;
+    img.loading = "lazy";
+    return img;
+  }
+  function link(view, extra) {
+    return "?view=" + view + (extra ? "&" + extra : "");
+  }
+  function params() {
+    var q = {};
+    location.search.replace(/^\?/, "").split("&").forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf("=");
+      q[decodeURIComponent(i < 0 ? kv : kv.slice(0, i))] = decodeURIComponent(i < 0 ? "" : kv.slice(i + 1).replace(/\+/g, " "));
+    });
+    return q;
+  }
+  function go(url) { history.pushState(null, "", url); render(); window.scrollTo(0, 0); }
+  function years() {
+    var first = 9999;
+    HR.people.forEach(function (p) { if (p.hire) first = Math.min(first, +p.hire.slice(0, 4)); });
+    var out = [];
+    for (var y = THIS_YEAR; y >= first; y--) out.push(y);
+    return out;
+  }
+  function yearSelect(current, onChange) {
+    var s = el("select");
+    years().forEach(function (y) {
+      var o = el("option", null, String(y));
+      o.value = y;
+      if (y === current) o.selected = true;
+      s.appendChild(o);
+    });
+    s.onchange = function () { onChange(+s.value); };
+    return s;
+  }
+  function crewOf(p) { return p.dept === "WATCH" ? p.unit.split(" / ")[0] : ""; }
+  function titleRank(p) { var i = TITLE_ORDER.indexOf(p.title); return i < 0 ? (/Technical Lead/.test(p.title) ? -1 : 50) : i; }
+
+  document.getElementById("tabs").addEventListener("click", function (e) {
+    var a = e.target.closest("a");
+    if (!a) return;
+    e.preventDefault();
+    go(a.getAttribute("href"));
+  });
+  pane.addEventListener("click", function (e) {
+    var a = e.target.closest("a[data-go]");
+    if (a) { e.preventDefault(); go(a.getAttribute("href")); return; }
+    var tr = e.target.closest("tr[data-id]");
+    if (tr) go(link("file", "id=" + encodeURIComponent(tr.getAttribute("data-id"))));
+  });
+  window.addEventListener("popstate", render);
+
+  // ---------------- DIRECTORY ----------------
+  var dirState = { dept: "ALL", status: "ACTIVE", q: "", sort: "name", up: true };
+
+  function renderDirectory() {
+    pane.appendChild(el("h2", null, "PERSONNEL DIRECTORY"));
+    pane.appendChild(el("p", "note", "SELECT A RECORD TO OPEN THE PERSONNEL FILE. CONTACT DETAILS ARE HELD BY THE PERSONNEL OFFICE."));
+
+    var c = el("div", "controls");
+    function sel(label, key, options) {
+      c.appendChild(el("label", null, label));
+      var s = el("select");
+      options.forEach(function (o) {
+        var opt = el("option", null, o[1]);
+        opt.value = o[0];
+        if (dirState[key] === o[0]) opt.selected = true;
+        s.appendChild(opt);
+      });
+      s.onchange = function () { dirState[key] = s.value; draw(); };
+      c.appendChild(s);
+    }
+    sel("DEPARTMENT", "dept", [["ALL", "ALL"], ["WATCH", "WATCH OPERATIONS"], ["ENG", "ENGINEERING"], ["NX", "NEXUS (CONTRACT)"]]);
+    sel("STATUS", "status", [["ACTIVE", "ACTIVE"], ["FORMER", "FORMER"], ["ALL", "ALL"]]);
+    c.appendChild(el("label", null, "SEARCH"));
+    var q = el("input");
+    q.type = "text";
+    q.value = dirState.q;
+    q.placeholder = "NAME OR NUMBER";
+    q.oninput = function () { dirState.q = q.value; draw(); };
+    c.appendChild(q);
+    var count = el("span", "count");
+    c.appendChild(count);
+    pane.appendChild(c);
+
+    var table = el("table", "dir");
+    var head = el("tr");
+    var cols = [["", null], ["name", "NAME"], ["id", "EMPLOYEE NO."], ["title", "POSITION"], ["unit", "UNIT", "wide"], ["hire", "HIRED", "wide"], ["sep", "STATUS"]];
+    cols.forEach(function (col) {
+      var th = el("th", col[2] || "", col[1] || "");
+      if (col[1]) {
+        th.onclick = function () {
+          if (dirState.sort === col[0]) dirState.up = !dirState.up; else { dirState.sort = col[0]; dirState.up = true; }
+          draw();
+        };
+        th.setAttribute("data-col", col[0]);
+      }
+      head.appendChild(th);
+    });
+    var thead = el("thead");
+    thead.appendChild(head);
+    table.appendChild(thead);
+    var body = el("tbody");
+    table.appendChild(body);
+    pane.appendChild(table);
+
+    function sortKey(p) {
+      if (dirState.sort === "name") { var parts = p.name.split(" "); return parts[parts.length - 1] + " " + p.name; }
+      if (dirState.sort === "sep") return (p.sep || "9999") + p.name;
+      return (p[dirState.sort] || "") + " " + p.name;
+    }
+    function draw() {
+      var needle = dirState.q.trim().toLowerCase();
+      var list = HR.people.filter(function (p) {
+        if (dirState.dept !== "ALL" && p.dept !== dirState.dept) return false;
+        if (dirState.status === "ACTIVE" && !active(p)) return false;
+        if (dirState.status === "FORMER" && active(p)) return false;
+        if (needle && (p.name + " " + p.known + " " + p.id).toLowerCase().indexOf(needle) < 0) return false;
+        return true;
+      });
+      list.sort(function (a, b) { var x = sortKey(a), y = sortKey(b); return (x < y ? -1 : x > y ? 1 : 0) * (dirState.up ? 1 : -1); });
+      Array.prototype.forEach.call(head.children, function (th) {
+        th.classList.toggle("sorted", th.getAttribute("data-col") === dirState.sort);
+        th.classList.toggle("up", th.getAttribute("data-col") === dirState.sort && !dirState.up);
+      });
+      body.textContent = "";
+      list.forEach(function (p) {
+        var tr = el("tr", "row");
+        tr.setAttribute("data-id", p.id);
+        var td = el("td");
+        td.appendChild(photo(p, latestPhoto(p), "thumb", "NO PHOTO"));
+        tr.appendChild(td);
+        tr.appendChild(el("td", null, shown(p)));
+        tr.appendChild(el("td", null, p.id));
+        tr.appendChild(el("td", null, p.title.toUpperCase()));
+        tr.appendChild(el("td", "wide", (p.dept === "NX" ? "NEXUS // " : "") + p.unit.toUpperCase()));
+        tr.appendChild(el("td", "wide", date(p.hire)));
+        tr.appendChild(el("td", active(p) ? "status-active" : "status-former", active(p) ? "ACTIVE" : "SEPARATED " + date(p.sep)));
+        body.appendChild(tr);
+      });
+      count.textContent = list.length + " OF " + HR.people.length + " RECORDS";
+    }
+    draw();
+  }
+
+  // ---------------- PERSONNEL FILE ----------------
+  function renderFile(id) {
+    var p = byId[id];
+    var back = el("a", "back", "<< RETURN TO DIRECTORY");
+    back.href = link("directory");
+    back.setAttribute("data-go", "");
+    pane.appendChild(back);
+    if (!p) {
+      pane.appendChild(el("h2", null, "RECORD NOT FOUND"));
+      pane.appendChild(el("p", "note", "NO PERSONNEL FILE MATCHES " + String(id || "").toUpperCase() + "."));
+      return;
+    }
+    pane.appendChild(el("h2", null, "PERSONNEL FILE // " + p.id));
+    pane.appendChild(el("p", "note", "OPERATIONAL EVENT REGISTER // PERSONNEL OFFICE // RECORD COPY"));
+
+    var file = el("div", "file");
+    file.appendChild(photo(p, latestPhoto(p), "portrait"));
+    var dl = el("dl", "fields");
+    function row(k, v) { if (!v) return; dl.appendChild(el("dt", null, k)); dl.appendChild(el("dd", null, v)); }
+    row("NAME", (p.hon ? p.hon + " " : "") + p.name.toUpperCase());
+    row("KNOWN AS", p.known ? p.known.toUpperCase() : "");
+    row("EMPLOYEE NO.", p.id);
+    row("EMPLOYER", p.emp === "NEXUS" ? "NEXUS (CONTRACT) // CONTRACT REF ON FILE" : "OPERATIONAL EVENT REGISTER");
+    row("DEPARTMENT", DEPT[p.dept]);
+    row(p.dept === "WATCH" ? "CREW / WATCH" : "UNIT", p.unit.toUpperCase());
+    row("POSITION", p.title.toUpperCase());
+    row(p.dept === "NX" ? "CONTRACT START" : "DATE OF HIRE", date(p.hire));
+    row("STATUS", active(p) ? "ACTIVE" : "SEPARATED " + date(p.sep));
+    row("CONTACT", "ON FILE");
+    file.appendChild(dl);
+    pane.appendChild(file);
+
+    var mine = HR.badges.filter(function (b) { return b.emp === p.id; }).sort(function (a, b) { return a.issue < b.issue ? -1 : 1; });
+    var sec = el("div", "section");
+    sec.appendChild(el("h3", null, "IDENTIFICATION BADGES ISSUED (" + mine.length + ")"));
+    var row2 = el("div", "badges");
+    mine.forEach(function (b) {
+      var box = el("div", "badge");
+      if (b.img) {
+        var img = el("img");
+        img.src = "/hr/img/b/" + b.id + ".png";
+        img.alt = "Badge " + b.id;
+        img.loading = "lazy";
+        box.appendChild(img);
+      } else {
+        box.appendChild(el("div", "card-missing nophoto", "BADGE IMAGE NOT ON FILE"));
+      }
+      var cap = el("div");
+      cap.appendChild(el("b", null, b.id));
+      cap.appendChild(document.createElement("br"));
+      cap.appendChild(document.createTextNode(GEN[b.gen] || b.gen));
+      cap.appendChild(document.createElement("br"));
+      cap.appendChild(document.createTextNode("ISSUED " + date(b.issue) + (b.expire ? " // EXP " + date(b.expire) : "")));
+      if (b.reason) {
+        cap.appendChild(document.createElement("br"));
+        cap.appendChild(document.createTextNode(b.reason.toUpperCase()));
+      }
+      box.appendChild(cap);
+      row2.appendChild(box);
+    });
+    if (!mine.length) row2.appendChild(el("p", "note", "NO BADGE RECORDS."));
+    sec.appendChild(row2);
+    pane.appendChild(sec);
+
+    var sec2 = el("div", "section");
+    sec2.appendChild(el("h3", null, "PHOTOGRAPHS ON FILE"));
+    var ph = el("div", "photos");
+    if (!p.photos.length) ph.appendChild(el("p", "note", "NO PHOTOGRAPHS ON FILE."));
+    p.photos.forEach(function (y) {
+      var f = el("figure");
+      f.appendChild(photo(p, y, ""));
+      f.appendChild(el("figcaption", null, String(y)));
+      ph.appendChild(f);
+    });
+    sec2.appendChild(ph);
+    pane.appendChild(sec2);
+  }
+
+  // ---------------- ORGANIZATION ----------------
+  function renderOrg(year) {
+    var day = year + "-10-01";
+    pane.appendChild(el("h2", null, "ORGANIZATION // 1 OCTOBER " + year));
+    var c = el("div", "controls");
+    c.appendChild(el("label", null, "YEAR"));
+    c.appendChild(yearSelect(year, function (y) { go(link("org", "year=" + y)); }));
+    var staff = HR.people.filter(function (p) { return onStaff(p, day); });
+    c.appendChild(el("span", "count", staff.length + " ON STAFF"));
+    pane.appendChild(c);
+
+    var org = el("div", "org");
+    var top = el("div", "org-top");
+    top.appendChild(el("span", "box", "OPERATIONAL EVENT REGISTER"));
+    org.appendChild(top);
+    var cols = el("div", "org-cols");
+
+    function unitBox(head, people) {
+      var u = el("div", "unit");
+      u.appendChild(el("div", "unit-head", head + " (" + people.length + ")"));
+      var ul = el("ul");
+      if (!people.length) ul.appendChild(el("li", "vacant", "NO STAFF ASSIGNED"));
+      people.sort(function (a, b) { return titleRank(a) - titleRank(b) || (a.name < b.name ? -1 : 1); }).forEach(function (p) {
+        var li = el("li");
+        var a = el("a", null, shown(p));
+        a.href = link("file", "id=" + encodeURIComponent(p.id));
+        a.setAttribute("data-go", "");
+        li.appendChild(a);
+        li.appendChild(el("span", null, p.title.toUpperCase()));
+        ul.appendChild(li);
+      });
+      u.appendChild(ul);
+      return u;
+    }
+    function column(title, list, groupFn) {
+      var col = el("div", "org-col");
+      col.appendChild(el("span", "box", title + " (" + list.length + ")"));
+      var groups = {};
+      var order = [];
+      list.forEach(function (p) { var g = groupFn(p); if (!groups[g]) { groups[g] = []; order.push(g); } groups[g].push(p); });
+      order.sort().forEach(function (g) { col.appendChild(unitBox(g, groups[g])); });
+      return col;
+    }
+    var watch = staff.filter(function (p) { return p.dept === "WATCH"; });
+    var eng = staff.filter(function (p) { return p.dept === "ENG"; });
+    var nx = staff.filter(function (p) { return p.dept === "NX"; });
+    if (watch.length) cols.appendChild(column("WATCH OPERATIONS", watch, function (p) {
+      var crew = crewOf(p).toUpperCase(), shift = p.unit.split(" / ")[1];
+      return crew + " // " + (shift ? shift.toUpperCase() : "CREW RELIEF");
+    }));
+    if (eng.length) cols.appendChild(column("ENGINEERING", eng, function (p) { return p.unit.toUpperCase(); }));
+    if (nx.length) cols.appendChild(column("NEXUS DEVELOPMENT (CONTRACT)", nx, function (p) { return p.unit.toUpperCase(); }));
+    if (!staff.length) cols.appendChild(el("p", "note", "NO STAFF ON RECORD FOR THIS DATE."));
+    org.appendChild(cols);
+    pane.appendChild(org);
+  }
+
+  // ---------------- STAFF COMPOSITE ----------------
+  function renderWall(year) {
+    var day = year + "-10-01";
+    pane.appendChild(el("h2", null, "ANNUAL STAFF COMPOSITE"));
+    pane.appendChild(el("p", "note", "STAFF ON RECORD 1 OCTOBER OF EACH YEAR. PHOTOGRAPH: MOST RECENT BADGE PHOTOGRAPH ON FILE AT THAT DATE."));
+    var c = el("div", "controls");
+    c.appendChild(el("label", null, "YEAR"));
+    c.appendChild(yearSelect(year, function (y) { go(link("wall", "year=" + y)); }));
+    pane.appendChild(c);
+
+    var staff = HR.people.filter(function (p) { return onStaff(p, day); });
+    var wall = el("div", "wall");
+    var mat = el("div", "wall-mat");
+    mat.appendChild(el("h3", null, "OPERATIONAL EVENT REGISTER"));
+    mat.appendChild(el("div", "sub", "STAFF // " + year));
+    function group(title, list) {
+      if (!list.length) return;
+      var g = el("div", "wall-group");
+      g.appendChild(el("h4", null, title));
+      var grid = el("div", "wall-grid");
+      list.sort(function (a, b) {
+        var x = a.name.split(" ").pop() + a.name, y = b.name.split(" ").pop() + b.name;
+        return x < y ? -1 : 1;
+      }).forEach(function (p) {
+        var a = el("a");
+        a.href = link("file", "id=" + encodeURIComponent(p.id));
+        a.setAttribute("data-go", "");
+        a.appendChild(photo(p, photoYear(p, year), "", "PHOTO NOT ON FILE"));
+        a.appendChild(document.createTextNode(shown(p)));
+        a.appendChild(el("small", null, p.title));
+        grid.appendChild(a);
+      });
+      g.appendChild(grid);
+      mat.appendChild(g);
+    }
+    group("WATCH OPERATIONS", staff.filter(function (p) { return p.dept === "WATCH"; }));
+    group("ENGINEERING", staff.filter(function (p) { return p.dept === "ENG"; }));
+    group("NEXUS DEVELOPMENT (CONTRACT)", staff.filter(function (p) { return p.dept === "NX"; }));
+    if (!staff.length) mat.appendChild(el("p", null, "NO STAFF ON RECORD."));
+    mat.appendChild(el("div", "wall-plate", "1 OCTOBER " + year));
+    wall.appendChild(mat);
+    pane.appendChild(wall);
+  }
+
+  function render() {
+    var q = params();
+    var view = q.id ? "file" : (q.view || "directory");
+    var year = Math.max(1990, Math.min(THIS_YEAR, parseInt(q.year, 10) || 1998));
+    pane.textContent = "";
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
+      var v = a.getAttribute("data-view");
+      a.classList.toggle("on", v === view || (view === "file" && v === "directory"));
+    });
+    if (view === "file") renderFile(q.id);
+    else if (view === "org") renderOrg(year);
+    else if (view === "wall") renderWall(year);
+    else renderDirectory();
+    document.title = "OER // Personnel Office";
+  }
+  render();
+})();
+</script>
+</body>
+</html>
