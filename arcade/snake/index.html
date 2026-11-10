@@ -2107,6 +2107,8 @@
 
       score = 0;
 
+      lives = 3;
+
 
       currentSpeed =
         startingSpeed;
@@ -2198,7 +2200,7 @@
 
       ) {
 
-        endGame();
+        loseLife();
 
         return;
 
@@ -2225,7 +2227,7 @@
 
         ) {
 
-          endGame();
+          loseLife();
 
           return;
 
@@ -2464,7 +2466,43 @@
     function updateScore() {
 
       scoreDisplay.textContent =
-        "SCORE: " + score;
+        "SCORE: " + score + "   LIVES: " + lives;
+
+    }
+
+
+    /* Three lives (owner, 2026-11-10): a crash puts the snake back at the
+       start, at its starting length, keeping score and speed; the third
+       crash ends the game. */
+
+    var lives = 3;
+
+    function loseLife() {
+
+      lives--;
+
+      updateScore();
+
+      if (lives <= 0) {
+
+        endGame();
+
+        return;
+
+      }
+
+      snake = [
+        { x: 10, y: 10 },
+        { x: 9, y: 10 },
+        { x: 8, y: 10 },
+        { x: 7, y: 10 }
+      ];
+
+      direction = { x: 1, y: 0 };
+
+      nextDirection = { x: 1, y: 0 };
+
+      placeFood();
 
     }
 

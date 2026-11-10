@@ -1780,10 +1780,34 @@
     }
 
 
+    // Three lives (owner, 2026-11-10). A shot clears the enemy fire and
+    // re-centers the ship; invaders reaching the ship restart the level.
+    // The third hit ends the game.
+    var lives = 3;
+
+    function loseLife(restartLevel) {
+
+      lives--;
+
+      if (lives <= 0) {
+        endGame(false);
+        return;
+      }
+
+      enemyBullets = [];
+      player.x = 225;
+
+      if (restartLevel) {
+        setupLevel(level);
+      }
+    }
+
+
     function resetGame() {
 
       score = 0;
       level = 1;
+      lives = 3;
 
       player.x = 225;
 
@@ -2043,7 +2067,7 @@
           b.y + b.height > player.y
         ) {
 
-          endGame(false);
+          loseLife(false);
           return;
         }
 
@@ -2058,7 +2082,7 @@
 
         if (a.y + a.height >= player.y) {
 
-          endGame(false);
+          loseLife(true);
           return;
         }
 
@@ -2282,6 +2306,9 @@
 
       ctx.textAlign = "left";
       ctx.fillText("SCORE " + score, 12, 24);
+
+      ctx.textAlign = "center";
+      ctx.fillText("LIVES " + lives, BASE_WIDTH / 2, 24);
 
       ctx.textAlign = "right";
       ctx.fillText("LEVEL " + level, BASE_WIDTH - 12, 24);

@@ -1285,7 +1285,7 @@
 
 
     <div id="score">
-      DISTANCE: 0
+      DISTANCE: 0   LIVES: 3
     </div>
 
 
@@ -2262,9 +2262,11 @@ function resetGameState() {
   alien.jumping = false;
 
 
+  lives = 3;
+
   document.getElementById("score")
     .textContent =
-      "DISTANCE: 0";
+      "DISTANCE: 0   LIVES: 3";
 
 
   document.getElementById("gameOverScore")
@@ -2659,6 +2661,38 @@ function collision(a, b) {
 }
 
 
+/* Three lives (owner, 2026-11-10): a hit clears the obstacles on screen
+   and costs a life; the third hit ends the run. */
+
+var lives = 3;
+
+function loseLife() {
+
+  lives--;
+
+  if (lives <= 0) {
+
+    endGame();
+
+    return;
+
+  }
+
+  obstacles = [];
+
+  flyingObjects = [];
+
+  obstacleTimer = 0;
+
+  flyingTimer = 0;
+
+  document.getElementById("score")
+    .textContent =
+      "DISTANCE: " + score + "   LIVES: " + lives;
+
+}
+
+
 /* ============================================================
    CHECK COLLISIONS
    ============================================================ */
@@ -2678,7 +2712,7 @@ function checkCollisions() {
       )
     ) {
 
-      endGame();
+      loseLife();
 
       return;
 
@@ -2700,7 +2734,7 @@ function checkCollisions() {
       )
     ) {
 
-      endGame();
+      loseLife();
 
       return;
 
@@ -3212,7 +3246,7 @@ function update() {
     document.getElementById("score")
       .textContent =
         "DISTANCE: " +
-        score;
+        score + "   LIVES: " + lives;
 
   }
 

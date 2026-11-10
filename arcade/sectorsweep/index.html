@@ -1007,6 +1007,7 @@
         <span>MINES <b id="hudMines">0</b></span>
         <span id="hudLevel">EASY</span>
         <span>TIME <b id="hudTime">0:00</b></span>
+        <span>LIVES <b id="hudLives">3</b></span>
       </div>
 
       <canvas id="gameCanvas" width="432" height="432"></canvas>
@@ -1894,6 +1895,8 @@
       startTime = 0;
       endTime = 0;
       explodedAt = -1;
+      lives = 3;
+      hitMines = {};
       score = 0;
       pendingHighScore = false;
       setFlagMode(false);
@@ -1987,13 +1990,35 @@
       }
 
       if (mines[i]) {
-        explodedAt = i;
-        lose();
+        hitMine(i);
         return;
       }
 
       openArea(i);
       checkWin();
+    }
+
+
+    // Three lives (owner, 2026-11-10): a mine that is dug is marked (red,
+    // flagged) and costs a life; the third mine ends the game.
+    var lives = 3;
+    var hitMines = {};
+
+    function hitMine(i) {
+      lives--;
+      if (lives <= 0) {
+        explodedAt = i;
+        lose();
+        return true;
+      }
+      hitMines[i] = true;
+      if (!flagged[i]) {
+        flagged[i] = true;
+        flagCount++;
+      }
+      updateHud();
+      draw();
+      return false;
     }
 
 
@@ -2043,9 +2068,10 @@
         const j = around[k];
         if (!opened[j] && !flagged[j]) {
           if (mines[j]) {
-            explodedAt = j;
-            lose();
-            return;
+            if (hitMine(j)) {
+              return;
+            }
+            continue;
           }
           openArea(j);
         }
@@ -2057,7 +2083,7 @@
 
     function toggleFlag(i) {
 
-      if (state === "won" || state === "lost" || opened[i]) {
+      if (state === "won" || state === "lost" || opened[i] || hitMines[i]) {
         return;
       }
 
@@ -2168,6 +2194,7 @@
     function updateHud() {
       document.getElementById("hudMines").textContent = level.mines - flagCount;
       document.getElementById("hudTime").textContent = formatTime(elapsedSeconds());
+      document.getElementById("hudLives").textContent = lives;
     }
 
 
@@ -2188,6 +2215,10 @@
           drawOpen(i, x, y);
         } else {
           drawClosed(x, y);
+          if (hitMines[i]) {
+            ctx.fillStyle = "#661111";
+            ctx.fillRect(x + 1, y + 1, cell - 2, cell - 2);
+          }
           if (flagged[i]) {
             drawFlag(x, y);
             if (state === "lost" && !mines[i]) {

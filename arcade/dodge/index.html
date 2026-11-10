@@ -1148,6 +1148,10 @@
         HIGH: 0
       </span>
 
+      <span id="lives">
+        LIVES: 3
+      </span>
+
     </div>
 
 
@@ -2095,6 +2099,33 @@ function updateStats() {
   ).textContent =
     "HIGH: " + highScore;
 
+  var livesEl = document.getElementById("lives");
+  if (livesEl) livesEl.textContent = "LIVES: " + lives;
+
+}
+
+// Three lives (owner, 2026-11-10): a hit clears the falling objects and
+// costs a life; the third hit ends the game.
+var lives = 3;
+
+function loseLife() {
+
+  lives--;
+
+  updateStats();
+
+  if (lives <= 0) {
+
+    endGame();
+
+    return;
+
+  }
+
+  objects = [];
+
+  spawnTimer = 0;
+
 }
 
 
@@ -2112,6 +2143,9 @@ function resetGameState() {
 
   score =
     0;
+
+  lives =
+    3;
 
   objects =
     [];
@@ -2338,7 +2372,7 @@ function updateObjects() {
       )
     ) {
 
-      endGame();
+      loseLife();
 
       return;
 
