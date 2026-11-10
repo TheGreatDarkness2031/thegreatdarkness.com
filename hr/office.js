@@ -240,56 +240,34 @@
   }
 
   // ---------------- HANDBOOK ----------------
-  var HANDBOOK = [
-    ["1. WATCH SCHEDULE", [
-      "The watch floor is staffed 24 hours a day, every day of the year, by two crews (Red and Blue). Each crew works Day Watch (07:00-19:00) and Night Watch (19:00-07:00) on the posted rotation.",
-      "Arrive 15 minutes before your shift. No seat is left until it is relieved. If your relief has not arrived, you hold over and notify the Watch Lead; holdover is recorded on Form HR-05 and authorized on Form HR-11.",
-      "Crew relief staff cover leave and absences across both watches of their crew."
-    ]],
-    ["2. SHIFT TURNOVER", [
-      "Turnover is held at the seat, not in the break room. The outgoing watch briefs open items, log entries in progress and anything unusual. The incoming Watch Lead confirms turnover in the log before the outgoing Watch Lead leaves the floor."
-    ]],
-    ["3. THE LOG", [
-      "Every entry is made at the time of the event, in local time, with the seat that made it. Entries are never erased or overwritten; corrections are made by a new entry that refers to the one it corrects.",
-      "Write what was seen and what was done. Keep opinions out of the log."
-    ]],
-    ["4. IDENTIFICATION BADGES", [
-      "Wear your badge at all times inside the facility, above the waist and facing out. Badges are not lent, shared or left in vehicles.",
-      "Report a lost badge to the on-duty Watch Lead at once (Form HR-03). A badge is deactivated the moment it is reported lost."
-    ]],
-    ["5. VISITORS", [
-      "Visitors sign in and out at the watch floor desk and are logged by the Watch Lead. Each visitor is issued a numbered guest badge: green-bordered (GC) badges for cleared visitors, red-bordered (GN) badges for visitors who are not cleared.",
-      "A visitor with a GN badge is escorted at all times by a named member of staff, including in the break room and restrooms. Consoles are turned away or cleared before a GN visitor enters the floor."
-    ]],
-    ["6. LEAVE", [
-      "Scheduled leave is requested on Form HR-01 at least 14 days in advance and approved against seat coverage. Sick leave is reported to the on-duty Watch Lead before the start of your shift.",
-      "Shift exchanges between qualified staff of the same position are made on Form HR-02. No one works more than two consecutive shifts."
-    ]],
-    ["7. EMERGENCY CALL-OUT", [
-      "Every employee holds a place on the call-out tree. When called, call the people under your name, then report back. Keep your emergency contact form (HR-04) current; home numbers are held only in the sealed contact file."
-    ]],
-    ["8. CONDUCT ON THE FLOOR", [
-      "No food at the consoles. Drinks with lids only. Personal radios, televisions and games stay off the floor.",
-      "The thermostat is set for the equipment."
-    ]],
-    ["9. CONFIDENTIALITY", [
-      "What is seen on the floor stays on the floor. Log contents, console displays and call-out lists are not discussed outside the facility or copied for personal use."
-    ]],
-    ["10. LEAVING OER", [
-      "Give at least two weeks' notice to your Watch Lead or Technical Lead. Return your badge, keys and manuals on your last day. An exit interview (Form HR-06) is offered and is optional."
-    ]]
-  ];
+  var HANDBOOK_SECTIONS = ["About the Operational Event Register", "The Watch Schedule", "Shift Turnover", "The Watch Log",
+    "Identification Badges and Access", "Visitors", "Attendance, Leave and Holidays", "Pay and Timekeeping",
+    "Emergency Call-Out", "Safety and the Facility", "Conduct", "Confidentiality", "Training and Performance Review", "Leaving OER"];
 
   function handbook(pane, h) {
+    var url = "/tools/document/?doc=HR-HB";
     pane.appendChild(h.el("h2", null, "EMPLOYEE HANDBOOK"));
-    pane.appendChild(h.el("p", "note", "OPERATIONAL EVENT REGISTER // EFFECTIVE 15 APRIL 1998. KEEP THIS HANDBOOK AT YOUR SEAT."));
-    var doc = h.el("div", "handbook");
-    HANDBOOK.forEach(function (s) {
-      doc.appendChild(h.el("h3", null, s[0]));
-      s[1].forEach(function (t) { doc.appendChild(h.el("p", null, t)); });
-    });
-    doc.appendChild(h.el("p", "handbook-ack", "I HAVE RECEIVED AND READ THIS HANDBOOK. SIGNED ACKNOWLEDGMENT IS FILED WITH FORM HR-07."));
-    pane.appendChild(doc);
+    pane.appendChild(h.el("p", "note", "FORM HR-HB // REV. 07/98. ONE COPY IS ISSUED TO EACH EMPLOYEE. KEEP IT AT YOUR SEAT OR IN YOUR LOCKER."));
+    var wrap = h.el("div", "hb-wrap");
+    var book = h.el("a", "hb-book");
+    book.href = url;
+    var seal = document.createElement("img");
+    seal.src = "/assets/img/oer-seal-300.png"; seal.alt = "";
+    book.appendChild(seal);
+    book.appendChild(h.el("span", "hb-org", "OPERATIONAL EVENT REGISTER"));
+    book.appendChild(h.el("span", "hb-title", "Employee Handbook"));
+    book.appendChild(h.el("span", "hb-eff", "PERSONNEL OFFICE // EFFECTIVE 15 APRIL 1998"));
+    wrap.appendChild(book);
+    var toc = h.el("div", "hb-toc");
+    toc.appendChild(h.el("h3", null, "CONTENTS"));
+    var ol = document.createElement("ol");
+    HANDBOOK_SECTIONS.concat(["Acknowledgment of Receipt"]).forEach(function (t) { ol.appendChild(h.el("li", null, t)); });
+    toc.appendChild(ol);
+    var open = h.el("a", "hb-open", "[ OPEN HANDBOOK ]");
+    open.href = url;
+    toc.appendChild(open);
+    wrap.appendChild(toc);
+    pane.appendChild(wrap);
   }
 
   window.HR_VIEWS = { phone: phoneTree, board: board, forms: forms, handbook: handbook };

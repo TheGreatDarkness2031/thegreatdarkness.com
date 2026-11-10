@@ -179,148 +179,154 @@
   "file": "/docs/WL_CHK.pdf",
   "bytes": 152570
  },
+ "HR-HB": {
+  "name": "HR-HB Employee Handbook",
+  "category": "HANDBOOK",
+  "file": "/hr/forms/HR-HB.pdf",
+  "bytes": 327300
+ },
  "HR-01": {
   "name": "HR-01 Leave Request",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-01.pdf",
-  "bytes": 60504
+  "bytes": 89353
  },
  "HR-01F": {
   "name": "HR-01F Leave Request (filed)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-01F.pdf",
-  "bytes": 109755
+  "bytes": 138569
  },
  "HR-02": {
   "name": "HR-02 Shift Exchange Request",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-02.pdf",
-  "bytes": 60235
+  "bytes": 89082
  },
  "HR-03": {
   "name": "HR-03 Badge Replacement Request (Lost / Damaged)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-03.pdf",
-  "bytes": 66026
+  "bytes": 94877
  },
  "HR-04": {
   "name": "HR-04 Emergency Contact Update",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-04.pdf",
-  "bytes": 61960
+  "bytes": 90801
  },
  "HR-05": {
   "name": "HR-05 Weekly Time Sheet",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-05.pdf",
-  "bytes": 74320
+  "bytes": 103163
  },
  "HR-06": {
   "name": "HR-06 Exit Interview Questionnaire",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-06.pdf",
-  "bytes": 58562
+  "bytes": 87406
  },
  "HR-07": {
   "name": "HR-07 New Hire Orientation Checklist",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-07.pdf",
-  "bytes": 73156
+  "bytes": 101992
  },
  "HR-08": {
   "name": "HR-08 Performance Review (Watch Floor)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-08.pdf",
-  "bytes": 72935
+  "bytes": 101777
  },
  "HR-09": {
   "name": "HR-09 Change of Address",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-09.pdf",
-  "bytes": 62132
+  "bytes": 90973
  },
  "HR-10": {
   "name": "HR-10 Training Completion Record",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-10.pdf",
-  "bytes": 54747
+  "bytes": 83586
  },
  "HR-11": {
   "name": "HR-11 Overtime Authorization",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-11.pdf",
-  "bytes": 57382
+  "bytes": 86226
  },
  "HR-12": {
   "name": "HR-12 Personnel Action Notice",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-12.pdf",
-  "bytes": 57853
+  "bytes": 86693
  },
  "HR-13": {
   "name": "HR-13 Badge Photograph Appointment (2001 re-issue)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-13.pdf",
-  "bytes": 79832
+  "bytes": 108675
  },
  "HR-90": {
   "name": "HR-90 Memorandum: Report Cover Sheets (Revised)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-90.pdf",
-  "bytes": 53666
+  "bytes": 82523
  },
  "HR-91": {
   "name": "HR-91 Office Supply Reassignment Request (Stapler)",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-91.pdf",
-  "bytes": 77285
+  "bytes": 106130
  },
  "HR-92": {
   "name": "HR-92 Shared Refrigerator Clean-Out Notice",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-92.pdf",
-  "bytes": 53513
+  "bytes": 82364
  },
  "HR-93": {
   "name": "HR-93 Thermostat Adjustment Request",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-93.pdf",
-  "bytes": 69650
+  "bytes": 98464
  },
  "HR-94": {
   "name": "HR-94 Reply-All Incident Report",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-94.pdf",
-  "bytes": 56853
+  "bytes": 85699
  },
  "HR-95": {
   "name": "HR-95 Birthday Cake Allocation Sign-Up",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-95.pdf",
-  "bytes": 67545
+  "bytes": 96386
  },
  "HR-96": {
   "name": "HR-96 Request for Authorization to Request a Form",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-96.pdf",
-  "bytes": 68512
+  "bytes": 97365
  },
  "HR-97": {
   "name": "HR-97 Coffee Pot Incident Report",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-97.pdf",
-  "bytes": 64819
+  "bytes": 93667
  },
  "HR-98": {
   "name": "HR-98 Parking Space Dispute Resolution",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-98.pdf",
-  "bytes": 66547
+  "bytes": 95391
  },
  "HR-99": {
   "name": "HR-99 Unclaimed Lunch Container Notice",
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-99.pdf",
-  "bytes": 58859
+  "bytes": 87717
  }
 }

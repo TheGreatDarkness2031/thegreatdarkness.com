@@ -198,12 +198,19 @@ table.rack td { padding: 6px 8px; }
 .rack-open a:hover { text-decoration: underline; }
 
 /* handbook */
-.handbook { background: #f2efe4; color: #1d1d1d; padding: 22px 28px 26px; max-width: 760px; font-family: Georgia, "Times New Roman", serif; font-size: 0.86rem; line-height: 1.55; box-shadow: 4px 5px 0 #000; }
-.handbook h3 { font-family: Arial, Helvetica, sans-serif; font-size: 0.78rem; letter-spacing: 2px; margin: 18px 0 4px; border-bottom: 1px solid #b9b2a0; padding-bottom: 3px; }
-.handbook h3:first-child { margin-top: 0; }
-.handbook p { margin: 6px 0; }
-.handbook-ack { margin-top: 20px !important; font-family: "Courier New", monospace; font-size: 0.7rem; letter-spacing: 1px; color: #555; border-top: 1px dashed #999; padding-top: 10px; }
-
+.hb-wrap { display: flex; gap: 34px; align-items: flex-start; flex-wrap: wrap; }
+.hb-book { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; width: 250px; height: 324px; box-sizing: border-box; padding: 20px; background: #10204a; color: #e9e4d6; text-decoration: none; text-align: center; border-left: 8px solid #0a1531; box-shadow: 5px 6px 0 #000; transition: transform 0.15s; }
+.hb-book:hover { transform: translate(-2px, -2px); box-shadow: 7px 8px 0 #000; }
+.hb-book img { width: 120px; height: 120px; border-radius: 50%; box-shadow: 0 0 0 3px #c9b98f; }
+.hb-org { font: 0.6rem Arial, sans-serif; letter-spacing: 3px; margin-top: 8px; }
+.hb-title { font: 1.45rem Georgia, "Times New Roman", serif; }
+.hb-eff { font: 0.5rem Arial, sans-serif; letter-spacing: 2px; color: #c9b98f; border-top: 1px solid #c9b98f; padding-top: 6px; }
+.hb-toc { background: #f2efe4; color: #1d1d1d; padding: 18px 26px 20px; width: 360px; max-width: 100%; box-sizing: border-box; font-family: Georgia, "Times New Roman", serif; font-size: 0.84rem; box-shadow: 4px 5px 0 #000; }
+.hb-toc h3 { font: bold 0.75rem Arial, sans-serif; letter-spacing: 3px; margin: 0 0 8px; border-bottom: 2px solid #111; padding-bottom: 5px; }
+.hb-toc ol { margin: 0 0 14px; padding-left: 24px; line-height: 1.75; }
+.hb-toc li:last-child { list-style: none; margin-left: -24px; }
+.hb-open { font: bold 0.75rem "Courier New", monospace; color: #10204a; text-decoration: none; letter-spacing: 1px; }
+.hb-open:hover { text-decoration: underline; }
 @media (max-width: 700px) {
   .file { grid-template-columns: 1fr; }
   .file .portrait { width: 160px; height: 160px; }
