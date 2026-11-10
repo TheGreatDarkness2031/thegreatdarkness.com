@@ -46,6 +46,34 @@ jobs:
           fi
           rm -f feed.new feed.old
 
+      # Static copies of the Watch and Maintenance logs (2026-11-09): the
+      # pages read these instead of waiting for Apps Script (assets/logs-local.js).
+      # A file that can't be rebuilt keeps its published copy.
+      - name: Build log data files
+        run: |
+          BASE="https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec"
+          LIVE="https://thegreatdarkness.com/data"
+          valid() { node -e 'const d=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(d&&d.ok===true?0:1)' "$1" 2>/dev/null; }
+          save() {  # save <query> <file>
+            if curl -sSL --max-time 170 --retry 2 -o "$2.new" "$BASE?$1" && valid "$2.new"; then
+              mv "$2.new" "$2"; echo "rebuilt $2 ($(wc -c < "$2") bytes)"
+            elif curl -sSL --max-time 30 -o "$2.old" "$LIVE/${2#data/}" && valid "$2.old"; then
+              mv "$2.old" "$2"; echo "::warning::kept the published $2"
+            else
+              echo "::warning::no $2 this run"
+            fi
+            rm -f "$2.new" "$2.old"
+          }
+          mkdir -p data/watch
+          save "logexport=watchindex" data/watch/index.json
+          save "logexport=maintenance" data/maintenance.json
+          if [ -f data/watch/index.json ]; then
+            for s in $(node -e 'JSON.parse(require("fs").readFileSync("data/watch/index.json","utf8")).years.forEach(y=>console.log(y.sheetName))'); do
+              case "$s" in *[!A-Za-z0-9_]*) echo "::warning::skipped sheet name $s"; continue;; esac
+              save "logexport=watch&sheet=$s" "data/watch/$s.json"
+            done
+          fi
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

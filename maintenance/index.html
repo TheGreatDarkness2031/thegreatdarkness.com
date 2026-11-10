@@ -25,6 +25,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/logs-local.js"></script>
 <title>NEXUS // Maintenance Log</title>
   <base target="_top">
 
@@ -1142,11 +1143,28 @@
     }
 
 
+    // Static copy first (/data/maintenance.json, assets/logs-local.js):
+    // every page, filter and search is instant after the first load.
+    // If the copy is missing, ask the web app (2026-11-09).
+    var maintenanceLocalOff_ = !window.oerLocalLogs;
+
     function loadMaintenanceLogData_() {
 
       setMaintenanceLogLoading_(
         true
       );
+
+      if (!maintenanceLocalOff_) {
+        window.oerLocalLogs.maintenance(maintenanceState).then(function(data) {
+          if (data) {
+            renderMaintenanceLogData_(data);
+          } else {
+            maintenanceLocalOff_ = true;
+            loadMaintenanceLogData_();
+          }
+        });
+        return;
+      }
 
       google.script.run
         .withSuccessHandler(

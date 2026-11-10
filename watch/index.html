@@ -24,6 +24,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/logs-local.js"></script>
 
   <base target="_top">
 
@@ -1241,9 +1242,29 @@
         .getWatchLogPage(request);
     }
 
+    // Static copy first (/data/watch/, assets/logs-local.js): the whole
+    // year arrives once and every page, filter and search after that is
+    // instant. If the copy is missing, ask the web app (2026-11-09).
+    var watchLogLocalOff_ = !window.oerLocalLogs;
+
     function loadWatchLogPage_() {
 
       if (watchLogState.loading) {
+        return;
+      }
+
+      if (!watchLogLocalOff_) {
+        setWatchLogLoading_(true);
+        var localRequest = watchLogRequest_(watchLogState.page);
+        window.oerLocalLogs.watchLog(localRequest).then(function(data) {
+          setWatchLogLoading_(false);
+          if (data) {
+            renderWatchLogData_(data);
+          } else {
+            watchLogLocalOff_ = true;
+            loadWatchLogPage_();
+          }
+        });
         return;
       }
 
