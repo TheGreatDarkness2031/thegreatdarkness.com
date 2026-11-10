@@ -63,7 +63,7 @@
       if (!groups[g]) { groups[g] = []; order.push(g); }
       groups[g].push(p);
     });
-    var groupRank = function (g) { return /^RED/.test(g) ? 0 : /^WHITE/.test(g) ? 1 : /^ENG/.test(g) ? 2 : 3; };
+    var groupRank = function (g) { return /^RED/.test(g) ? 0 : /^BLUE/.test(g) ? 1 : /^ENG/.test(g) ? 2 : 3; };
     order.sort(function (a, b) { return groupRank(a) - groupRank(b) || (a < b ? -1 : 1); });
 
     var box = h.el("div", "tree");
@@ -229,9 +229,7 @@
         tr.appendChild(h.el("td", "wide rack-rev", "REV. " + f.rev));
         var td = h.el("td", "rack-open");
         var a = h.el("a", null, "[ OPEN ]");
-        a.href = "/hr/forms/" + encodeURIComponent(f.code) + ".pdf";
-        a.target = "_blank";
-        a.rel = "noopener";
+        a.href = "/tools/document/?doc=" + encodeURIComponent(f.code);
         td.appendChild(a);
         tr.appendChild(td);
         t.appendChild(tr);
@@ -244,7 +242,7 @@
   // ---------------- HANDBOOK ----------------
   var HANDBOOK = [
     ["1. WATCH SCHEDULE", [
-      "The watch floor is staffed 24 hours a day, every day of the year, by two crews (Red and White). Each crew works Day Watch (07:00-19:00) and Night Watch (19:00-07:00) on the posted rotation.",
+      "The watch floor is staffed 24 hours a day, every day of the year, by two crews (Red and Blue). Each crew works Day Watch (07:00-19:00) and Night Watch (19:00-07:00) on the posted rotation.",
       "Arrive 15 minutes before your shift. No seat is left until it is relieved. If your relief has not arrived, you hold over and notify the Watch Lead; holdover is recorded on Form HR-05 and authorized on Form HR-11.",
       "Crew relief staff cover leave and absences across both watches of their crew."
     ]],

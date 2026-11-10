@@ -711,16 +711,19 @@
       document.getElementById("docCount").textContent =
         String(category || "").toUpperCase() + " " + (at + 1) + " OF " + keys.length;
       document.getElementById("docNav").hidden = false;
-      // Wellness documents return to the Wellness page.
-      if (category === "WELLNESS") {
-        var back = document.getElementById("docReturn");
-        back.href = "/wellness/";
-        back.textContent = "[ RETURN TO WELLNESS ]";
-        var back2 = document.getElementById("docReturnBottom");
-        if (back2) {
-          back2.href = "/wellness/";
-          back2.textContent = "[ RETURN TO WELLNESS ]";
-        }
+      // Wellness documents return to the Wellness page, Personnel Office
+      // forms to the forms rack on /hr/.
+      var RETURNS = {
+        WELLNESS: ["/wellness/", "[ RETURN TO WELLNESS ]"],
+        PERSONNEL: ["/hr/?view=forms", "[ RETURN TO FORMS RACK ]"]
+      };
+      if (RETURNS[category]) {
+        ["docReturn", "docReturnBottom"].forEach(function(id) {
+          var back = document.getElementById(id);
+          if (!back) return;
+          back.href = RETURNS[category][0];
+          back.textContent = RETURNS[category][1];
+        });
       }
     }
 
