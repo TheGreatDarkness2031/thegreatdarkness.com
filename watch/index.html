@@ -1195,9 +1195,66 @@
     }
 
 
+    // The next page is fetched quietly after each page is shown, so
+    // NEXT is instant (2026-11-09).
+    var watchLogPrefetch_ = { key: "", data: null };
+
+    function watchLogRequest_(page) {
+      return {
+        year: watchLogState.year,
+        date: watchLogState.date,
+        role: watchLogState.role,
+        entryType: watchLogState.entryType,
+        sort: watchLogState.sort,
+        search: watchLogState.search,
+        page: page,
+        pageSize: watchLogState.pageSize
+      };
+    }
+
+    function prefetchWatchLogNext_() {
+
+      if (!watchLogData || !watchLogData.success || !watchLogData.hasNext) {
+        return;
+      }
+
+      var request = watchLogRequest_(Number(watchLogState.page || 1) + 1);
+      var key = JSON.stringify(request);
+
+      if (watchLogPrefetch_.key === key) {
+        return;
+      }
+
+      watchLogPrefetch_ = { key: key, data: null };
+
+      google.script.run
+        .withSuccessHandler(function(data) {
+          if (watchLogPrefetch_.key === key && data && data.success) {
+            watchLogPrefetch_.data = data;
+          }
+        })
+        .withFailureHandler(function() {
+          if (watchLogPrefetch_.key === key) {
+            watchLogPrefetch_ = { key: "", data: null };
+          }
+        })
+        .getWatchLogPage(request);
+    }
+
     function loadWatchLogPage_() {
 
       if (watchLogState.loading) {
+        return;
+      }
+
+      var request = watchLogRequest_(watchLogState.page);
+      var key = JSON.stringify(request);
+
+      if (watchLogPrefetch_.key === key && watchLogPrefetch_.data) {
+        var ready = watchLogPrefetch_.data;
+        watchLogPrefetch_ = { key: "", data: null };
+        renderWatchLogData_(ready);
+        prefetchWatchLogNext_();
         return;
       }
 
@@ -1208,6 +1265,7 @@
           function(data) {
 
             renderWatchLogData_(data);
+            prefetchWatchLogNext_();
           }
         )
         .withFailureHandler(
@@ -1216,33 +1274,7 @@
             renderWatchLogError_(error);
           }
         )
-        .getWatchLogPage({
-
-          year:
-            watchLogState.year,
-
-          date:
-            watchLogState.date,
-
-          role:
-            watchLogState.role,
-
-          entryType:
-            watchLogState.entryType,
-
-          sort:
-            watchLogState.sort,
-
-          search:
-            watchLogState.search,
-
-          page:
-            watchLogState.page,
-
-          pageSize:
-            watchLogState.pageSize
-
-        });
+        .getWatchLogPage(request);
     }
 
 
