@@ -549,7 +549,7 @@
 
     <div class="title-bar">
 
-      NEXUS MAINTENANCE LOG v1.3
+      NEXUS ENGINEERING RECORDS v1.3
 
       <button
         class="title-bar-close"
@@ -2201,6 +2201,7 @@ function exitMaintenanceLog() {
       var url = new URL(location.href);
       if (name === "register") url.searchParams.set("view", "register"); else url.searchParams.delete("view");
       history.replaceState(null, "", url.pathname + url.search);
+      if (window.oerRefreshMenu) window.oerRefreshMenu();
       if (name === "register") load();
     }
 

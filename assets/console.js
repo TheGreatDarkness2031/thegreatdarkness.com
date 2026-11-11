@@ -30,10 +30,11 @@
       ["AI INCIDENT", "/monitor/aiinc/"],
       ["NEAR-EARTH", "/monitor/neo/", "2026-12-08"]
     ]],
-    ["LOGS", [
+    ["RECORDS", [
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
       ["MAINTENANCE LOG", "/maintenance/"],
+      ["DOCUMENT REGISTER", "/maintenance/?view=register", "2026-12-11"],
       ["RSS CHANNEL", "/feed/", "2026-12-08"]
     ]],
     ["RESOURCES", [
@@ -63,8 +64,30 @@
     if (p.indexOf("/tools/document/") === 0 && /[?&]doc=WL_/i.test(location.search)) {
       return href === "/wellness/";
     }
+    // An entry with ?view=... lights only on that view; the plain entry
+    // for the same page lights on every other view.
+    var q = href.indexOf("?");
+    if (q >= 0) {
+      return p === href.slice(0, q) && location.search.indexOf(href.slice(q + 1)) >= 0;
+    }
+    var shadowed = MENU.some(function (item) {
+      return (Array.isArray(item[1]) ? item[1] : [item]).some(function (s) {
+        var k = String(s[1]).indexOf("?");
+        return k >= 0 && String(s[1]).slice(0, k) === href && location.search.indexOf(String(s[1]).slice(k + 1)) >= 0;
+      });
+    });
+    if (shadowed) return false;
     return p === href || (href !== "/home/" && p.indexOf(href) === 0);
   }
+
+  // A page that changes its own address (e.g. the Maintenance tabs)
+  // calls this so the directory marks the right entry.
+  window.oerRefreshMenu = function () {
+    var links = document.querySelectorAll("a.oerc-item, a.oerc-subitem");
+    for (var i = 0; i < links.length; i++) {
+      links[i].classList.toggle("oerc-here", here(links[i].getAttribute("href")));
+    }
+  };
 
   function isNew(until) {
     return !!until && Date.parse(until + "T00:00:00Z") > Date.now();
