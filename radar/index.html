@@ -1090,6 +1090,16 @@
         max-height: none;
       }
 
+      /* Too little room for a useful list (short windows): hide it and
+         let PLAYBACK take the column again, as before 2026-11-11. */
+      .radar-side.no-contact-list .radar-contact-panel {
+        display: none;
+      }
+
+      .radar-side.no-contact-list .radar-playback {
+        flex: 1 1 auto;
+      }
+
       .radar-register-col {
         flex: 0 0 200px;
       }
@@ -2415,6 +2425,21 @@
 
       list.scrollTop = scroll;
     }
+
+    /* Shows the list only when at least ~2 rows fit (checked on resize). */
+    function radarFitContactList_() {
+      const side = document.querySelector(".radar-side");
+      const list = document.getElementById("radarContactList");
+      if (!side || !list) return;
+      side.classList.remove("no-contact-list");
+      if (70 > list.clientHeight && window.innerWidth >= 1100) {
+        side.classList.add("no-contact-list");
+      }
+    }
+
+    window.addEventListener("resize", radarFitContactList_);
+    window.addEventListener("load", radarFitContactList_);
+    setTimeout(radarFitContactList_, 0);
 
     function clearRadarContacts_() {
       Object.keys(radarDrawn_).forEach(
