@@ -896,6 +896,88 @@
       font-weight: bold;
     }
 
+    /* Contact list (2026-11-11). */
+    .radar-contact-panel {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .contact-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      max-height: 260px;
+      overflow-y: auto;
+      margin: 4px 0 2px;
+      background: #0a0a0a;
+      border: 2px inset #777777;
+    }
+
+    .contact-list-count { color: #00ff00; }
+
+    .contact-row {
+      display: grid;
+      grid-template-columns: 12px 1fr auto;
+      align-items: center;
+      gap: 2px 8px;
+      padding: 5px 8px;
+      border-bottom: 1px solid #222222;
+      font-size: 0.7rem;
+      line-height: 1.3;
+      cursor: pointer;
+    }
+
+    .contact-row:hover,
+    .contact-row:focus {
+      background: #1a2a1a;
+      outline: none;
+    }
+
+    .contact-row .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      box-shadow: 0 0 5px currentColor;
+    }
+
+    .contact-row .what {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      color: #dddddd;
+    }
+
+    .contact-row .what b { color: #ffffff; letter-spacing: 1px; }
+
+    .contact-row .lvl { font-weight: bold; letter-spacing: 1px; }
+    .contact-row .lvl.NOMINAL { color: #00cc00; }
+    .contact-row .lvl.WATCH { color: #ffd84d; }
+    .contact-row .lvl.ELEVATED { color: #ff9a2e; }
+    .contact-row .lvl.CRITICAL { color: #ff4040; }
+
+    .contact-row .sub {
+      grid-column: 2 / 4;
+      color: #888888;
+      font-size: 0.62rem;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .contact-list-empty {
+      padding: 12px 8px;
+      color: #666666;
+      font-size: 0.7rem;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    /* The blip of the row under the pointer. */
+    .list-hot {
+      filter: drop-shadow(0 0 6px #ffffff) brightness(1.6);
+      z-index: 5;
+    }
+
     .mode-live { color: #00ff00; }
     .mode-loading { color: #aaaaaa; }
     .mode-overview { color: #ff9900; }
@@ -997,7 +1079,15 @@
       }
 
       .radar-side .radar-playback {
-        flex: 1 1 auto;
+        flex: 0 0 auto;
+      }
+
+      .radar-side .radar-contact-panel {
+        flex: 1 1 0;
+      }
+
+      .radar-side .contact-list {
+        max-height: none;
       }
 
       .radar-register-col {
@@ -1278,6 +1368,22 @@
               </select>
             </div>
 
+          </div>
+
+        </div>
+
+
+        <!-- Contact list: one row per contact on the scope (live or
+             playback). Fills whatever height the column has left. -->
+        <div class="radar-console radar-contact-panel">
+
+          <div class="source-register-header">
+            <span>=== CONTACTS ===</span>
+            <span id="radarListCount" class="contact-list-count">00</span>
+          </div>
+
+          <div id="radarContactList" class="contact-list" role="list">
+            <div class="contact-list-empty">NO CONTACTS</div>
           </div>
 
         </div>
@@ -2179,7 +2285,135 @@
         }
       );
 
+      if (typeof renderRadarContactList_ === "function") {
+        renderRadarContactList_(data.contacts || []);
+      }
+
       return grouped;
+    }
+
+    /* ---------------------------------------------------------
+       CONTACT LIST (standalone Radar): the same contacts as the
+       scope, worst first, newest first within a level. A row lights
+       its blip; a click opens the same detail card as the blip.
+       --------------------------------------------------------- */
+    const RADAR_LEVEL_RANK_ = { CRITICAL: 4, ELEVATED: 3, WATCH: 2, NOMINAL: 1 };
+    let radarListSignature_ = "";
+
+    function radarContactLine_(contact) {
+      let d = {};
+      try { d = JSON.parse(contact.eventData || "{}") || {}; } catch (e) { d = {}; }
+      const rows = Array.isArray(d.rows) ? d.rows : [];
+      const first = d.label || (rows[0] && rows[0][1]) || contact.eventType || "";
+      const more = rows
+        .filter(function(r) { return r && String(r[1]) !== String(first); })
+        .slice(0, 2)
+        .map(function(r) { return String(r[1]); })
+        .join(" // ");
+      return { what: String(first).toUpperCase(), sub: more.toUpperCase() };
+    }
+
+    function radarAgeText_(contact) {
+      const born = Number(contact.sourceEventAt || contact.birthAt);
+      const s = Math.max(0, (Date.now() - born) / 1000);
+      if (!Number.isFinite(s)) return "";
+      if (60 > s) return "NOW";
+      if (3600 > s) return Math.floor(s / 60) + " MIN AGO";
+      if (86400 > s) return Math.floor(s / 3600) + " H AGO";
+      return Math.floor(s / 86400) + " D AGO";
+    }
+
+    function radarBlipFor_(id) {
+      const key = Object.keys(radarDrawn_).filter(function(k) {
+        return k.slice(3).split(",").indexOf(id) >= 0;
+      })[0];
+      return key ? radarDrawn_[key] : null;
+    }
+
+    function renderRadarContactList_(contacts) {
+      const list = document.getElementById("radarContactList");
+      const count = document.getElementById("radarListCount");
+      if (!list) return;
+
+      const shown = contacts
+        .filter(function(c) { return !c.isBackground; })
+        .slice()
+        .sort(function(a, b) {
+          const r = (RADAR_LEVEL_RANK_[b.sourceStatus] || 0) - (RADAR_LEVEL_RANK_[a.sourceStatus] || 0);
+          return r || Number(b.sourceEventAt || b.birthAt) - Number(a.sourceEventAt || a.birthAt);
+        });
+
+      if (count) count.textContent = String(shown.length).padStart(2, "0");
+
+      const signature = shown.map(function(c) {
+        return c.id + ":" + c.sourceStatus + ":" + radarAgeText_(c);
+      }).join("|");
+      if (signature === radarListSignature_) return;
+      radarListSignature_ = signature;
+
+      const scroll = list.scrollTop;
+      list.innerHTML = "";
+
+      if (!shown.length) {
+        const empty = document.createElement("div");
+        empty.className = "contact-list-empty";
+        empty.textContent = "NO CONTACTS";
+        list.appendChild(empty);
+        return;
+      }
+
+      shown.forEach(function(c) {
+        const line = radarContactLine_(c);
+        const row = document.createElement("div");
+        row.className = "contact-row";
+        row.setAttribute("role", "listitem");
+        row.tabIndex = 0;
+
+        const dot = document.createElement("span");
+        dot.className = "dot";
+        dot.style.background = c.sourceColor || "#00ff00";
+        dot.style.color = c.sourceColor || "#00ff00";
+
+        const what = document.createElement("span");
+        what.className = "what";
+        const label = document.createElement("b");
+        label.textContent = String(c.sourceLabel || c.source || "CONTACT").toUpperCase();
+        what.appendChild(label);
+        if (line.what) what.appendChild(document.createTextNode("  " + line.what));
+
+        const lvl = document.createElement("span");
+        const status = String(c.sourceStatus || "").toUpperCase();
+        lvl.className = "lvl " + status;
+        lvl.textContent = status || "--";
+
+        const sub = document.createElement("span");
+        sub.className = "sub";
+        sub.textContent = [radarAgeText_(c), line.sub].filter(Boolean).join(" // ");
+
+        row.appendChild(dot);
+        row.appendChild(what);
+        row.appendChild(lvl);
+        row.appendChild(sub);
+        row.title = (label.textContent + " " + line.what + " " + line.sub).trim();
+
+        const hot = function(on) {
+          const blip = radarBlipFor_(c.id);
+          if (blip) blip.classList.toggle("list-hot", on);
+        };
+        row.addEventListener("mouseenter", function() { hot(true); });
+        row.addEventListener("mouseleave", function() { hot(false); });
+        row.addEventListener("focus", function() { hot(true); });
+        row.addEventListener("blur", function() { hot(false); });
+        const open = function(event) { openRadarDetail_([c], event); };
+        row.addEventListener("click", open);
+        row.addEventListener("keydown", function(event) {
+          if (event.key === "Enter" || event.key === " ") { event.preventDefault(); open(event); }
+        });
+
+        list.appendChild(row);
+      });
+
+      list.scrollTop = scroll;
     }
 
     function clearRadarContacts_() {
