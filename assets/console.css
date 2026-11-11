@@ -134,8 +134,13 @@ body.oerc #docReturnBottom { display: none !important; }
 .oerc-here { background: var(--oerc-navy) !important; color: #fff !important; border-color: #3a3ac0 #000 #000 #3a3ac0; }
 .oerc-group summary { list-style: none; }
 .oerc-group summary::-webkit-details-marker { display: none; }
-.oerc-group summary::after { content: " +"; color: var(--oerc-dim); }
-.oerc-group[open] summary::after { content: " -"; }
+/* One line per entry (2026-11-11): label left, NEW! and + / - at the right edge. */
+.oerc-item, .oerc-subitem { display: flex; align-items: center; white-space: nowrap; }
+.oerc-item > .oerc-new, .oerc-subitem > .oerc-new { margin-left: auto; }
+.oerc-right { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; }
+.oerc-right .oerc-new { margin-left: 0; }
+.oerc-sign::after { content: "+"; color: var(--oerc-dim); }
+.oerc-group[open] .oerc-sign::after { content: "-"; }
 .oerc-sub { margin: 0 0 6px 10px; }
 .oerc-subitem { padding: 4px 7px; margin-bottom: 3px; font-size: 10px; background: #151515; }
 .oerc-rail-foot { margin-top: 12px; color: #555; font-size: 9px; letter-spacing: 2px; text-align: center; }

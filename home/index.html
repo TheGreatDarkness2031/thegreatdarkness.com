@@ -98,7 +98,7 @@
 
     .oer-header {
       width: 95%;
-      max-width: 760px;
+      max-width: 800px;
       margin: 0 auto 16px;
       padding: 4px;
       background: #111111;
@@ -332,7 +332,7 @@
 
     .system-status {
       width: 95%;
-      max-width: 760px;
+      max-width: 800px;
       margin: 0 auto 20px;
       padding: 5px;
       background: #111111;
@@ -1849,13 +1849,10 @@
     }
 
     @media (max-width: 700px) {
+      /* Phones: same full line as the boxes above and below (2026-11-11). */
       .main-nav {
-        grid-template-columns: repeat(2, 180px);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 8px;
-      }
-
-      .system-status {
-        max-width: 368px;
       }
 
       .merch-box {
@@ -1886,18 +1883,11 @@
     }
 
     @media (max-width: 420px) {
-      .main-nav {
-        grid-template-columns: 1fr;
-        max-width: 210px;
-      }
 
       .resource-nav {
         grid-template-columns: 1fr;
       }
 
-      .system-status {
-        max-width: 210px;
-      }
 
       .oer-header-inner {
         padding-right: 7px;
@@ -1971,6 +1961,9 @@
   .xml-button:hover, .xml-button:focus { background: #ff7f2a; }
 
   /* OER FACILITY DIRECTORY (2026-11-11): the doors to the rooms behind the homepage. */
+  /* Lines up with the 1998 page (800 px); only the countdown box sits at 760. */
+  .facility-directory { width: 95%; max-width: 800px; }
+  .oer-site-notice { width: 95% !important; max-width: 800px !important; box-sizing: border-box; }
   .facility-directory { border-color: #666666; box-shadow: 5px 5px 0 #2a2a2a, 0 0 0 1px #111111; }
   .facility-directory::before, .facility-directory::after { border-color: #999999 !important; }
   .facility-directory .late-addendum-inner { border-color: #222222; }
@@ -2095,13 +2088,42 @@
       </div>
     </section>
 
+    <section class="system-status">
+      <div class="system-status-inner">
+
+        SYSTEM STATUS:
+        <span class="status-online">ONLINE</span>
+
+        <span class="status-separator">|</span>
+
+        PUBLIC LOG:
+        <span class="status-online">ACTIVE</span>
+
+        <span class="status-separator">|</span>
+
+        RADAR:
+        <span class="status-online">ACTIVE</span>
+
+        <span class="status-separator">|</span>
+
+        COUNTDOWN:
+        <span class="status-online">RUNNING</span>
+
+        <span class="status-separator">|</span>
+
+        ARCHIVE:
+        <span class="status-offline">OFFLINE</span>
+
+      </div>
+    </section>
+
     <section class="late-addendum facility-directory">
       <div class="late-addendum-inner">
         <div class="retained-resources-title">=== OER FACILITY DIRECTORY ===</div>
         <div class="resource-nav door-nav">
           <a href="/floor/" class="resource-box door"><span>WATCH FLOOR</span><small>RADAR // MONITORS // EVENT FEED</small></a>
           <a href="/schedule/" class="resource-box door"><span>WATCH SCHEDULE</span><small>CREWS // ROSTER // ROTATION</small></a>
-          <a href="/maintenance/?view=projects" class="resource-box door"><span>ENGINEERING</span><small>PROJECTS // RECORDS // DRAWINGS</small></a>
+          <a href="/maintenance/?view=projects" class="resource-box door"><span>ENGINEERING</span><small>PROJECTS // MAINTENANCE LOG // DOCUMENTS</small></a>
           <a href="/hr/" class="resource-box door"><span>PERSONNEL OFFICE</span><small>DIRECTORY // FORMS // HANDBOOK</small></a>
         </div>
       </div>
@@ -2354,7 +2376,7 @@
 
     <!-- NEXUS terminal: its own screen at /terminal/ (moved 2026-11-08). -->
     <style>
-      .oer-term-link { width: 96%; max-width: 760px; margin: 0 auto 24px; text-align: center; }
+      .oer-term-link { width: 95%; max-width: 800px; margin: 0 auto 24px; text-align: center; }
       .oer-term-link a {
         display: block;
         padding: 14px 12px;

@@ -67,6 +67,7 @@ jobs:
           mkdir -p data/watch
           save "logexport=watchindex" data/watch/index.json
           save "logexport=maintenance" data/maintenance.json
+          save "logexport=schedule" data/schedule.json
           if [ -f data/watch/index.json ]; then
             for s in $(node -e 'JSON.parse(require("fs").readFileSync("data/watch/index.json","utf8")).years.forEach(y=>console.log(y.sheetName))'); do
               case "$s" in *[!A-Za-z0-9_]*) echo "::warning::skipped sheet name $s"; continue;; esac

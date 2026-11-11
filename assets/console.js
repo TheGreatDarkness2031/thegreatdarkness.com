@@ -17,8 +17,14 @@
   var MENU = [
     ["HOME", "/home/"],
     ["WATCH FLOOR", "/floor/", "2026-12-11"],
-    ["RADAR", "/radar/"],
     ["SCHEDULE", "/schedule/", "2026-12-11"],
+    ["ENGINEERING", [
+      ["PROJECTS", "/maintenance/?view=projects", "2026-12-11"],
+      ["MAINTENANCE LOG", "/maintenance/"],
+      ["DOCUMENTS", "/maintenance/?view=register", "2026-12-11"]
+    ]],
+    ["PERSONNEL", "/hr/", "2026-12-09"],
+    ["RADAR", "/radar/"],
     ["MONITORS", [
       ["SEISMIC", "/monitor/quake/"],
       ["TEMPERATURE", "/monitor/temp/"],
@@ -35,15 +41,11 @@
     ["RECORDS", [
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
-      ["MAINTENANCE LOG", "/maintenance/"],
-      ["DOCUMENT REGISTER", "/maintenance/?view=register", "2026-12-11"],
-      ["ENGINEERING PROJECTS", "/maintenance/?view=projects", "2026-12-11"],
       ["RSS CHANNEL", "/feed/", "2026-12-08"]
     ]],
     ["RESOURCES", [
       ["TOOLS", "/tools/"],
-      ["WELLNESS", "/wellness/"],
-      ["PERSONNEL", "/hr/", "2026-12-09"]
+      ["WELLNESS", "/wellness/"]
     ]],
     ["PROFILE", "/profile/"],
     ["TERMINAL", "/terminal/", "2026-12-08"],
@@ -110,7 +112,10 @@
         var d = el("details", "oerc-group");
         if (open) d.open = true;
         var summary = el("summary", "oerc-item", item[0]);
-        if (item[1].some(function (s) { return isNew(s[2]); })) summary.appendChild(el("span", "oerc-new", "NEW!"));
+        var right = el("span", "oerc-right");
+        if (item[1].some(function (s) { return isNew(s[2]); })) right.appendChild(el("span", "oerc-new", "NEW!"));
+        right.appendChild(el("span", "oerc-sign"));
+        summary.appendChild(right);
         d.appendChild(summary);
         var sub = el("ul", "oerc-sub");
         item[1].forEach(function (s) {

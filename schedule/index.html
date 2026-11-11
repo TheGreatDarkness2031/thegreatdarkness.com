@@ -112,6 +112,21 @@ table.cal td.red { background: #1d0f0f; }
 table.cal td.blue { background: #0f1424; }
 table.cal td.today { outline: 2px solid var(--green); outline-offset: -2px; }
 .legend { margin-top: 12px; font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; line-height: 1.7; }
+.cal-pick { display: flex; gap: 6px; align-items: center; }
+.cal-pick select { background: #000; color: #fff; border: 1px solid #555; font: inherit; font-size: 0.75rem; letter-spacing: 1px; padding: 3px 4px; }
+.rot-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+table.cal td.pickable { cursor: pointer; }
+table.cal td.pickable:hover { outline: 1px solid #777; outline-offset: -1px; }
+table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offset: -2px; }
+.day-box { border: 2px inset #6a6a6a; background: #000; padding: 12px 12px 14px; min-height: 260px; }
+.day-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-size: 0.8rem; letter-spacing: 2px; margin-bottom: 6px; }
+.day-head b { color: #fff; }
+.day-box .note { margin-bottom: 10px; }
+.day-bill td { vertical-align: top; }
+.day-bill .since { display: block; margin: 2px 0 0; font-size: 0.62rem; }
+.log-link { display: inline-block; margin-top: 12px; color: var(--green); text-decoration: none; font-size: 0.74rem; letter-spacing: 1px; }
+.log-link:hover { text-decoration: underline; }
+@media (max-width: 900px) { .rot-wrap { grid-template-columns: 1fr; } }
 
 @media (max-width: 720px) {
   .now { grid-template-columns: 1fr; }
@@ -299,49 +314,207 @@ table.cal td.today { outline: 2px solid var(--green); outline-offset: -2px; }
     pane.appendChild(el("p", "legend", "HIGHLIGHTED: THE WATCH ON THE FLOOR NOW. NAMES OPEN THE PERSONNEL FILE."));
   }
 
+  // ---- seat history (Watch_Assignments + Watch_Leave) ----
+  // /data/schedule.json is rebuilt by the publish workflow (?logexport=schedule);
+  // /schedule/seats.json is the copy kept in the repo for when it is missing.
+  var seatData = null, seatWait = [], watchYears = null;
+  function getSeats(cb) {
+    if (seatData && watchYears) return cb(seatData);
+    seatWait.push(cb);
+    if (seatWait.length > 1) return;
+    function get(url) {
+      return fetch(url, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (d) { if (!d || d.ok !== true || !d.assignments) throw new Error("bad"); return d; });
+    }
+    var seats = get("/data/schedule.json").catch(function () { return get("/schedule/seats.json"); })
+      .then(function (d) { seatData = d; }, function () { seatData = { assignments: [], leave: [] }; });
+    var years = fetch("/data/watch/index.json", { cache: "no-cache" }).then(function (r) { return r.json(); })
+      .then(function (d) { watchYears = {}; (d.years || []).forEach(function (y) { watchYears[y.year] = y; }); })
+      .catch(function () { watchYears = {}; });
+    Promise.all([seats, years]).then(function () { var w = seatWait; seatWait = []; w.forEach(function (f) { f(seatData); }); });
+  }
+  function seatHolder(seat, ymd) {
+    var hit = null;
+    seatData.assignments.forEach(function (a) {
+      if (a[0] === seat && a[2] <= ymd && (!a[3] || a[3] >= ymd)) hit = a[1];
+    });
+    return hit;
+  }
+  function onLeave(name, ymd) {
+    return seatData.leave.filter(function (l) { return l[0] === name && l[1] <= ymd && l[2] >= ymd; })[0] || null;
+  }
+  function personLink(name) {
+    var p = (HR.people || []).filter(function (x) { return x.name === name; })[0];
+    if (!p) return el("span", null, name);
+    var a = el("a", null, name);
+    a.href = "/hr/?id=" + encodeURIComponent(p.id);
+    return a;
+  }
+
+  // One day's watch bill: who held each seat, who was on leave and who covered
+  // (crew Floater first, or the other watch's holdover, as in Watch_Leave).
+  function renderDay(box, y, m, d) {
+    var ymd = y + "-" + pad(m + 1) + "-" + pad(d);
+    var crew = crewOn(y, m, d);
+    var c = central(Date.now());
+    var todayYmd = c.y + "-" + pad(c.m + 1) + "-" + pad(c.d);
+    box.textContent = "";
+    var head = el("div", "day-head");
+    head.appendChild(el("b", null, DAYS[new Date(Date.UTC(y, m, d)).getUTCDay()] + " " + pad(d) + " " + MONTHS[m] + " " + y));
+    head.appendChild(el("span", "crew-" + crew.toLowerCase(), crew.toUpperCase() + " CREW ON WATCH"));
+    box.appendChild(head);
+    if (ymd < "1998-04-15") { box.appendChild(el("p", "note", "BEFORE WATCH OPERATIONS BEGAN. NO WATCH BILL ON FILE.")); return; }
+    var future = ymd > todayYmd;
+    box.appendChild(el("p", "note", future ? "SCHEDULED. STANDING SEAT ASSIGNMENTS AS OF TODAY; LEAVE NOT YET POSTED."
+      : "WATCH BILL AS STOOD. DAY WATCH 07:00 - 19:00, NIGHT WATCH 19:00 - 07:00 THE NEXT MORNING."));
+    var wait = el("p", "note", "RETRIEVING WATCH BILL...");
+    box.appendChild(wait);
+    getSeats(function () {
+      if (wait.parentNode !== box) return;   // another day was picked meanwhile
+      box.removeChild(wait);
+      var floater = seatHolder(crew + " Floater", ymd);
+      var floaterBusy = false;
+      var t = el("table", "bill day-bill");
+      var hr = el("tr");
+      ["POSITION", "DAY WATCH 07:00", "NIGHT WATCH 19:00"].forEach(function (h) { hr.appendChild(el("th", null, h)); });
+      t.appendChild(hr);
+      ["Lead", "Monitoring", "Correlation", "COMM"].forEach(function (role) {
+        var tr = el("tr");
+        tr.appendChild(el("td", "seat", role.toUpperCase()));
+        ["Day", "Night"].forEach(function (watch) {
+          var td = el("td");
+          var name = seatHolder(crew + " " + watch + " " + role, ymd);
+          var lv = name && !future ? onLeave(name, ymd) : null;
+          if (name && !lv) {
+            td.appendChild(personLink(name));
+          } else {
+            var cover = null, why = name ? lv[3].toUpperCase() : "SEAT VACANT";
+            var how = lv ? lv[5] : "crew relief";
+            if (/holdover/i.test(how)) {
+              cover = seatHolder(crew + " " + (watch === "Day" ? "Night" : "Day") + " " + role, ymd);
+              how = (watch === "Day" ? "NIGHT" : "DAY") + " WATCH HOLDOVER";
+            } else if (floater && !floaterBusy && (future || !onLeave(floater, ymd))) {
+              cover = floater; floaterBusy = true; how = "CREW RELIEF";
+            }
+            if (cover) td.appendChild(personLink(cover));
+            else td.appendChild(el("span", "vacant", "COVERED BY ROTATION"));
+            td.appendChild(el("div", "since", (name ? name.toUpperCase() + " // " : "") + why + (cover ? " // " + how : "")));
+          }
+          tr.appendChild(td);
+        });
+        t.appendChild(tr);
+      });
+      var tr = el("tr");
+      tr.appendChild(el("td", "seat", "RELIEF"));
+      var td = el("td");
+      td.colSpan = 2;
+      if (!floater) {
+        td.appendChild(el("span", "vacant", "VACANT"));
+      } else {
+        var flv = future ? null : onLeave(floater, ymd);
+        td.appendChild(personLink(floater));
+        td.appendChild(el("span", "since", flv ? "ON " + flv[3].toUpperCase() : floaterBusy ? "COVERING A SEAT" : "ON CALL, BOTH WATCHES"));
+      }
+      tr.appendChild(td);
+      t.appendChild(tr);
+      box.appendChild(t);
+      if (!future && watchYears && watchYears[String(y)]) {
+        var a = el("a", "log-link", "[ OPEN THE WATCH LOG FOR THIS DAY ]");
+        a.href = "/watch/?year=" + y + "&date=" + ymd;
+        box.appendChild(a);
+      }
+    });
+  }
+
   function renderRotation(q) {
     var c = central(Date.now());
     var ym = /^(\d{4})-(\d{2})$/.exec(q.month || "");
     var y = ym ? +ym[1] : c.y, m = ym ? +ym[2] - 1 : c.m;
     if (y < 1998 || (y === 1998 && m < 5)) { y = 1998; m = 5; }
     if (y > 2031 || (y === 2031 && m > 6)) { y = 2031; m = 6; }
-    function link(dy, dm, label) {
-      var d = new Date(Date.UTC(y, m + dm, 1));
+    var pick = /^(\d{4})-(\d{2})-(\d{2})$/.exec(q.day || "");
+    var selDay = pick && +pick[1] === y && +pick[2] - 1 === m ? +pick[3] : (y === c.y && m === c.m ? c.d : 1);
+    function monthHref(yy, mm, dd) {
+      var dt = new Date(Date.UTC(yy, mm, 1));
+      var key = dt.getUTCFullYear() + "-" + pad(dt.getUTCMonth() + 1);
+      return "?view=rotation&month=" + key + (dd ? "&day=" + key + "-" + pad(dd) : "");
+    }
+    function link(dm, label) {
       var a = el("a", null, label);
-      a.href = "?view=rotation&month=" + d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1);
+      a.href = monthHref(y, m + dm);
       a.addEventListener("click", function (e) { e.preventDefault(); go(a.getAttribute("href")); });
       return a;
     }
     pane.appendChild(el("h2", null, "ROTATION"));
-    pane.appendChild(el("p", "note", "EACH CREW HOLDS THE FLOOR FROM 07:00 FOR 24 HOURS: DAY WATCH TO 19:00, THEN ITS NIGHT WATCH. TEN-DAY CYCLE SINCE JUNE 1998."));
+    pane.appendChild(el("p", "note", "EACH CREW HOLDS THE FLOOR FROM 07:00 FOR 24 HOURS: DAY WATCH TO 19:00, THEN ITS NIGHT WATCH. TEN-DAY CYCLE SINCE JUNE 1998. SELECT A DAY FOR ITS WATCH BILL."));
     var head = el("div", "cal-head");
-    head.appendChild(link(0, -1, "<< PREVIOUS"));
-    head.appendChild(el("b", null, MONTHS[m] + " " + y));
-    head.appendChild(link(0, 1, "NEXT >>"));
+    head.appendChild(link(-1, "<< PREV"));
+    var mid = el("div", "cal-pick");
+    var ms = el("select"), ys = el("select");
+    ms.setAttribute("aria-label", "Month");
+    ys.setAttribute("aria-label", "Year");
+    MONTHS.forEach(function (n, i) { var o = el("option", null, n); o.value = i; ms.appendChild(o); });
+    for (var yy = 1998; yy <= 2031; yy++) { var o = el("option", null, String(yy)); o.value = yy; ys.appendChild(o); }
+    ms.value = m;
+    ys.value = y;
+    function jump() { go(monthHref(+ys.value, +ms.value)); }
+    ms.addEventListener("change", jump);
+    ys.addEventListener("change", jump);
+    var now = el("a", null, "TODAY");
+    now.href = "?view=rotation";
+    now.addEventListener("click", function (e) { e.preventDefault(); go("?view=rotation"); });
+    mid.appendChild(ms);
+    mid.appendChild(ys);
+    mid.appendChild(now);
+    head.appendChild(mid);
+    head.appendChild(link(1, "NEXT >>"));
     pane.appendChild(head);
+
+    var wrap = el("div", "rot-wrap");
     var t = el("table", "cal");
     var hr = el("tr");
     DAYS.forEach(function (d) { hr.appendChild(el("th", null, d)); });
     t.appendChild(hr);
     var first = new Date(Date.UTC(y, m, 1)).getUTCDay();
     var days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    if (selDay > days) selDay = days;
+    var box = el("div", "day-box");
     var tr = el("tr");
     for (var i = 0; i < first; i++) tr.appendChild(el("td", "empty"));
     for (var d = 1; d <= days; d++) {
-      var crew = crewOn(y, m, d);
-      var td = el("td", crew.toLowerCase());
-      if (y === c.y && m === c.m && d === c.d) td.className += " today";
-      td.appendChild(el("span", "d", String(d)));
-      td.appendChild(el("span", "c crew-" + crew.toLowerCase(), crew.toUpperCase()));
-      tr.appendChild(td);
+      (function (d) {
+        var crew = crewOn(y, m, d);
+        var td = el("td", crew.toLowerCase() + " pickable");
+        if (y === c.y && m === c.m && d === c.d) td.className += " today";
+        if (d === selDay) td.className += " sel";
+        td.tabIndex = 0;
+        td.setAttribute("role", "button");
+        td.appendChild(el("span", "d", String(d)));
+        td.appendChild(el("span", "c crew-" + crew.toLowerCase(), crew.toUpperCase()));
+        function choose() {
+          Array.prototype.forEach.call(t.querySelectorAll("td.sel"), function (x) { x.classList.remove("sel"); });
+          td.classList.add("sel");
+          history.replaceState(null, "", monthHref(y, m, d));
+          renderDay(box, y, m, d);
+          if (window.innerWidth <= 900) box.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+        td.addEventListener("click", choose);
+        td.addEventListener("keydown", function (e) { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(); } });
+        tr.appendChild(td);
+      })(d);
       if ((first + d) % 7 === 0) { t.appendChild(tr); tr = el("tr"); }
     }
     if (tr.children.length) {
       while (tr.children.length < 7) tr.appendChild(el("td", "empty"));
       t.appendChild(tr);
     }
-    pane.appendChild(t);
-    pane.appendChild(el("p", "legend", "OUTLINED: TODAY. BEFORE 07:00 THE FLOOR IS STILL HELD BY THE PREVIOUS DAY'S NIGHT WATCH."));
+    var left = el("div", "rot-cal");
+    left.appendChild(t);
+    left.appendChild(el("p", "legend", "OUTLINED GREEN: TODAY. WHITE: SELECTED DAY. BEFORE 07:00 THE FLOOR IS STILL HELD BY THE PREVIOUS DAY'S NIGHT WATCH."));
+    wrap.appendChild(left);
+    wrap.appendChild(box);
+    pane.appendChild(wrap);
+    renderDay(box, y, m, selDay);
   }
 
   function params() {
