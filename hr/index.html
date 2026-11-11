@@ -41,25 +41,35 @@
 }
 * { box-sizing: border-box; }
 html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
-body { padding: 24px 12px 32px; }
+body { padding: 10px 12px 12px; }
 
 /* Personnel Office (2026-11-11): a room on the 1998 page, not an app window.
    Door plate, bracket links like the homepage, and the homepage's own box. */
 .office { width: 95%; max-width: 1000px; margin: 0 auto; }
-.door { text-align: center; margin: 4px 0 16px; }
+.door { text-align: center; margin: 0 0 8px; }
 .door-plate {
-  display: inline-block; padding: 12px 34px 11px; background: linear-gradient(#2c2c2c, #151515);
+  display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
   border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
 }
 .door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
-.door-name { color: #ececec; font-size: 1.35rem; font-weight: bold; letter-spacing: 6px; margin: 5px 0 4px; }
+.door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
 .door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
-.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 2.1; margin: 0 0 16px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 1.9; margin: 0 0 8px; }
 .office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
 .office-nav a:hover { text-decoration: underline; }
 .office-nav a.on { color: #000; background: var(--green); }
 .desk { padding: 4px; background: #050505; border: 2px solid #888888; }
-.pane { padding: 14px 18px 22px; min-height: 420px; border: 1px inset #888888; }
+.pane { padding: 12px 18px 18px; min-height: 420px; border: 1px inset #888888; }
+/* Computers: the office fits the window (owner, 2026-11-11). Plate and links
+   stay put; the room's contents scroll inside the box. Frame bars = 88 px. */
+@media (min-width: 901px) and (min-height: 480px) {
+  .office { height: calc(100vh - 88px - 22px); display: flex; flex-direction: column; }
+  .desk { flex: 1; min-height: 0; display: flex; }
+  .pane { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+  .pane::-webkit-scrollbar { width: 10px; }
+  .pane::-webkit-scrollbar-track { background: #0a0a0a; }
+  .pane::-webkit-scrollbar-thumb { background: #444; border: 1px solid #777; }
+}
 .pane h2 {
   margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
   color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
@@ -308,7 +318,7 @@ table.rack td { padding: 6px 8px; }
     });
     return q;
   }
-  function go(url) { history.pushState(null, "", url); render(); window.scrollTo(0, 0); }
+  function go(url) { history.pushState(null, "", url); render(); window.scrollTo(0, 0); pane.scrollTop = 0; }
   function years() {
     var first = 9999;
     HR.people.forEach(function (p) { if (p.hire) first = Math.min(first, +p.hire.slice(0, 4)); });

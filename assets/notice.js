@@ -8,7 +8,7 @@
   var FULL = "INDEPENDENT CREATIVE PROJECT. NOT AN OFFICIAL ALERT OR EMERGENCY SERVICE. " +
     "DO NOT USE FOR SAFETY DECISIONS. FOR OFFICIAL ALERTS, CONTACT YOUR LOCAL AUTHORITIES " +
     "OR THE NATIONAL WEATHER SERVICE.";
-  var FIT = ["/radar/", "/terminal/", "/schedule/"];
+  var FIT = ["/radar/", "/terminal/", "/schedule/", "/hr/"];
 
   function link(href, text) {
     var a = document.createElement("a");
