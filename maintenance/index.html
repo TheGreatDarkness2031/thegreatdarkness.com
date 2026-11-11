@@ -540,47 +540,84 @@
     .filter-table td.button-cell { width: 48%; padding: 4px 1%; }
     .filter-table td.button-cell button { width: 100%; }
   }
+
+    /* ===== Engineering room look (2026-11-11) ===== */
+    body { padding: 10px 12px 12px; color: #d8d8d8; font-family: "Courier New", Courier, monospace; }
+    .nexus-window.office { width: 95%; max-width: 1060px; padding: 0; background: none; border: 0; }
+    .door { text-align: center; margin: 0 0 8px; }
+    .door-plate {
+      display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+      border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+    }
+    .door-room { color: #9a9a9a; font-size: 11px; letter-spacing: 4px; }
+    .door-name { color: #ececec; font-size: 20px; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+    .door-hours { color: #8a8a8a; font-size: 10px; letter-spacing: 2px; }
+    .office-bar { position: relative; text-align: center; margin: 0 0 8px; min-height: 22px; }
+    .office-nav.view-tabs { display: inline-block; margin: 0; padding: 0; }
+    .office-nav .view-tab, .office-nav .view-tab.active {
+      background: none; border: 0; margin: 0 2px; padding: 1px 2px; min-width: 0; min-height: 0;
+      color: #7fd18b; font-family: "Courier New", Courier, monospace; font-size: 13px; letter-spacing: 1px; cursor: pointer;
+    }
+    .office-nav .view-tab::before { content: "[ "; }
+    .office-nav .view-tab::after { content: " ]"; }
+    .office-nav .view-tab:hover { text-decoration: underline; }
+    .office-nav .view-tab.active { color: #000; background: #7fd18b; }
+    .office-switch { position: absolute; right: 0; top: 0; }
+    .window-content.desk { padding: 12px 14px 14px; background: #050505; border: 2px solid #888888; box-shadow: inset 0 0 0 4px #050505, inset 0 0 0 5px #444; }
+    .view-pane { border-top: 0; padding-top: 0; }
+
+    /* the gray Windows panels and buttons, in the room's colors */
+    .bevel-outset, .filter-panel { background: #0d0d0d; border: 1px solid #555; color: #d8d8d8; }
+    .bevel-inset { border: 1px solid #444; }
+    .filter-title, .filter-label, .archive-heading, .archive-heading-muted { color: #bdbdbd; }
+    button {
+      background: #1b1b1b; color: #e6e6e6; border: 1px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000;
+      font-family: "Courier New", Courier, monospace; letter-spacing: 1px;
+    }
+    button:hover { background: #262626; }
+    button:active { border: 1px solid #8a8a8a; background: #0a0a0a; }
+    input, select { background: #000; color: #fff; border: 1px solid #555; font-family: "Courier New", Courier, monospace; }
+    body.oer-day .record-list, body.oer-day .record-view-body { box-shadow: 0 0 0 1px #555; }
+    /* DAY: the record sheets stay paper (black on white); the controls stay dark. */
+    body.oer-day .desk table { color: #000; }
+    body.oer-day .desk .filter-table { color: #bdbdbd; }
+
+    /* Computers: the room fits the window (frame bars 88 px); its contents
+       scroll inside the box. */
+    @media (min-width: 901px) and (min-height: 480px) {
+      .nexus-window.office { height: calc(100vh - 88px - 22px); display: flex; flex-direction: column; }
+      .window-content.desk { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+    }
+    @media (max-width: 720px) {
+      .office-switch { position: static; display: block; margin-top: 6px; }
+      .door-plate { padding: 7px 14px 6px; }
+      .door-hours { letter-spacing: 1px; }
+    }
 </style>
 </head>
 
 <body>
 
-  <div class="nexus-window">
+  <div class="nexus-window office">
 
-    <div class="title-bar">
-
-      NEXUS ENGINEERING RECORDS v1.3
-
-      <button
-        class="title-bar-close"
-        type="button"
-        onclick="exitMaintenanceLog()"
-        title="Close Maintenance Log"
-      >
-        X
-      </button>
-
-      <span class="title-bar-right">
-        ARCHIVE ACCESS ACTIVE
-      </span>
-
+    <div class="door">
+      <div class="door-plate">
+        <div class="door-room">BUILDING 2 // NEXUS ENGINEERING RECORDS</div>
+        <div class="door-name">ENGINEERING</div>
+        <div class="door-hours">SYSTEM DEVELOPMENT / OPERATIONS ARCHIVE // NEXUS ORIGIN THROUGH CURRENT OPERATIONS</div>
+      </div>
     </div>
 
-    <div class="window-content">
-
-      <div class="archive-heading">
-        <span data-oer-daynight="maintenance" data-default="day"></span>
-        SYSTEM DEVELOPMENT / OPERATIONS ARCHIVE<br>
-        <span class="archive-heading-muted">
-          RECORD INDEX: NEXUS ORIGIN THROUGH CURRENT OPERATIONS
-        </span>
-      </div>
-
-      <div class="view-tabs" role="tablist">
+    <div class="office-bar">
+      <div class="view-tabs office-nav" role="tablist">
         <button type="button" class="view-tab" data-view="projects" role="tab">PROJECTS</button>
         <button type="button" class="view-tab active" data-view="records" role="tab">MAINTENANCE LOG</button>
         <button type="button" class="view-tab" data-view="register" role="tab">DOCUMENT REGISTER</button>
       </div>
+      <span class="office-switch"><span data-oer-daynight="maintenance" data-default="day"></span></span>
+    </div>
+
+    <div class="window-content desk">
 
       <div id="recordsPane" class="view-pane">
 

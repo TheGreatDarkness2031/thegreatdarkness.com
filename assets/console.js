@@ -53,7 +53,7 @@
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
   // Screens sized to fit the window exactly: no footer below them.
-  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/"];
+  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/", "/maintenance/"];
   var framed = !window.OER_NO_FRAME;
 
   function el(tag, cls, text) {
