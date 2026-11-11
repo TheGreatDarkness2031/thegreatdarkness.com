@@ -46,35 +46,30 @@
 html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
 body { padding: 24px 12px 32px; }
 
-.hr-shell {
-  width: 100%; max-width: 1080px; margin: 0 auto; padding: 5px;
-  background: var(--outer-gray);
-  border-top: 2px solid #bdbdbd; border-left: 2px solid #bdbdbd;
-  border-right: 2px solid #111; border-bottom: 2px solid #111;
-  box-shadow: 6px 6px 0 #000, 0 0 22px rgba(255,255,255,0.05);
+/* Watch Schedule (2026-11-11): posted on the floor like the Personnel
+   Office: a plate, bracket links like the homepage, the homepage's box. */
+.office { width: 95%; max-width: 1000px; margin: 0 auto; }
+.door { text-align: center; margin: 4px 0 16px; }
+.door-plate {
+  display: inline-block; padding: 12px 34px 11px; background: linear-gradient(#2c2c2c, #151515);
+  border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
 }
-.hr-window { background: var(--dark-gray); border: 2px inset #8d8d8d; }
-.title-bar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  min-height: 29px; padding: 5px 8px;
-  background: linear-gradient(to right, var(--title-blue), var(--title-blue-dark));
-  color: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; font-weight: bold; letter-spacing: 1px;
+.door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+.door-name { color: #ececec; font-size: 1.35rem; font-weight: bold; letter-spacing: 6px; margin: 5px 0 4px; }
+.door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 2.1; margin: 0 0 16px; }
+.office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+.office-nav a:hover { text-decoration: underline; }
+.office-nav a.on { color: #000; background: var(--green); }
+.desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+.pane { padding: 14px 18px 22px; min-height: 420px; border: 1px inset #888888; }
+.pane h2 {
+  margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
+  color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
 }
-.title-bar small { color: #d2d8ff; font-size: 0.61rem; font-weight: normal; letter-spacing: 0.8px; white-space: nowrap; }
-.tabs {
-  display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 8px 0;
-  background: #c0c0c0; border-bottom: 2px solid #808080;
-  font-family: Arial, Helvetica, sans-serif; font-size: 0.7rem; letter-spacing: 0.5px;
-}
-.tabs a {
-  display: block; padding: 5px 12px 4px; color: #111; text-decoration: none;
-  background: #b4b4b4; border: 1px solid #808080; border-bottom: none;
-  border-top-color: #eee; border-left-color: #eee;
-}
-.tabs a.on { background: #d4d4d4; font-weight: bold; position: relative; top: 2px; }
-.pane { padding: 16px 18px 22px; min-height: 420px; }
-.pane h2 { margin: 0 0 4px; color: #fff; font-size: 1rem; letter-spacing: 2px; }
-.note { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; margin: 0 0 14px; }
+.pane h2::before { content: "=== "; }
+.pane h2::after { content: " ==="; }
+.note { color: var(--muted); font-size: 0.7rem; letter-spacing: 1px; margin: 0 0 14px; text-align: center; }
 
 .crew-red { color: var(--red-crew); }
 .crew-blue { color: var(--blue-crew); }
@@ -126,11 +121,21 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
 .day-bill .since { display: block; margin: 2px 0 0; font-size: 0.62rem; }
 .log-link { display: inline-block; margin-top: 12px; color: var(--green); text-decoration: none; font-size: 0.74rem; letter-spacing: 1px; }
 .log-link:hover { text-decoration: underline; }
-@media (max-width: 900px) { .rot-wrap { grid-template-columns: 1fr; } }
+@media (max-width: 900px) { .rot-wrap { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 520px) {
+  table.bill { table-layout: fixed; }
+  table.bill th, table.bill td { white-space: normal; overflow-wrap: anywhere; padding: 5px 3px; font-size: 0.66rem; }
+  table.bill th:first-child, table.bill td.seat { width: 30%; font-size: 0.56rem; letter-spacing: 0; overflow-wrap: normal; }
+  .cal-head { flex-wrap: wrap; row-gap: 8px; }
+  .cal-pick { order: 3; width: 100%; justify-content: center; }
+  .day-box { padding: 10px 6px 12px; }
+}
 
 @media (max-width: 720px) {
   .now { grid-template-columns: 1fr; }
   .pane { padding: 12px 10px 18px; }
+  .door-plate { padding: 10px 16px 9px; }
+  .door-name { font-size: 1.05rem; letter-spacing: 4px; }
   table.bill { font-size: 0.72rem; }
   table.bill td, table.bill th { padding: 5px 4px; }
   table.cal td { height: 46px; padding: 3px; }
@@ -140,19 +145,20 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
 </head>
 
 <body>
-<div class="hr-shell">
-  <div class="hr-window">
-    <div class="title-bar">
-      <span>WATCH SCHEDULE // OPERATIONAL EVENT REGISTER</span>
-      <small>FACILITY TIME: CENTRAL</small>
+<div class="office">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">POSTED // WATCH FLOOR</div>
+      <div class="door-name">WATCH SCHEDULE</div>
+      <div class="door-hours">RED CREW // BLUE CREW // FACILITY TIME: CENTRAL</div>
     </div>
-    <nav class="tabs" id="tabs">
-      <a href="?view=now" data-view="now">ON THE FLOOR</a>
-      <a href="?view=bill" data-view="bill">WATCH BILL</a>
-      <a href="?view=rotation" data-view="rotation">ROTATION</a>
-    </nav>
-    <div class="pane" id="pane"></div>
   </div>
+  <nav class="office-nav" id="tabs">
+    <a href="?view=now" data-view="now">[ ON THE FLOOR ]</a>
+    <a href="?view=bill" data-view="bill">[ WATCH BILL ]</a>
+    <a href="?view=rotation" data-view="rotation">[ ROTATION ]</a>
+  </nav>
+  <div class="desk"><div class="pane" id="pane"></div></div>
 </div>
 
 <script src="/hr/data.js"></script>
