@@ -378,7 +378,16 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
     getSeats(function () {
       if (wait.parentNode !== box) return;   // another day was picked meanwhile
       box.removeChild(wait);
+      // Cover rule (same as the watch log's Name formula, 2026-11-11): the
+      // crew Floater takes the first empty seat of the day (Day Lead ... Night
+      // COMM); any other empty seat is overtime from the other crew's holder
+      // of that seat; a 24-hour holdover only when neither is possible.
       var floater = seatHolder(crew + " Floater", ymd);
+      var out = function (n) { return !n || (!future && !!onLeave(n, ymd)); };
+      var floaterFree = floater && !out(floater);
+      var SEATS = ["Day Lead", "Day Monitoring", "Day Correlation", "Day COMM", "Night Lead", "Night Monitoring", "Night Correlation", "Night COMM"];
+      var firstGap = SEATS.filter(function (s) { return out(seatHolder(crew + " " + s, ymd)); })[0];
+      var otherCrew = crew === "Red" ? "Blue" : "Red";
       var floaterBusy = false;
       var t = el("table", "bill day-bill");
       var hr = el("tr");
@@ -394,14 +403,12 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
           if (name && !lv) {
             td.appendChild(personLink(name));
           } else {
-            var cover = null, why = name ? lv[3].toUpperCase() : "SEAT VACANT";
-            var how = lv ? lv[5] : "crew relief";
-            if (/holdover/i.test(how)) {
-              cover = seatHolder(crew + " " + (watch === "Day" ? "Night" : "Day") + " " + role, ymd);
-              how = (watch === "Day" ? "NIGHT" : "DAY") + " WATCH HOLDOVER";
-            } else if (floater && !floaterBusy && (future || !onLeave(floater, ymd))) {
-              cover = floater; floaterBusy = true; how = "CREW RELIEF";
-            }
+            var cover = null, how = "", why = name ? lv[3].toUpperCase() : "SEAT VACANT";
+            var ot = seatHolder(otherCrew + " " + watch + " " + role, ymd);
+            var ho = seatHolder(crew + " " + (watch === "Day" ? "Night" : "Day") + " " + role, ymd);
+            if (floaterFree && firstGap === watch + " " + role) { cover = floater; floaterBusy = true; how = "CREW RELIEF"; }
+            else if (!out(ot)) { cover = ot; how = otherCrew.toUpperCase() + " CREW OVERTIME"; }
+            else if (!out(ho)) { cover = ho; how = (watch === "Day" ? "NIGHT" : "DAY") + " WATCH HOLDOVER"; }
             if (cover) td.appendChild(personLink(cover));
             else td.appendChild(el("span", "vacant", "COVERED BY ROTATION"));
             td.appendChild(el("div", "since", (name ? name.toUpperCase() + " // " : "") + why + (cover ? " // " + how : "")));
