@@ -339,6 +339,17 @@ canvas {
     text-align: center;
 }
 
+.data-credit {
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #bbbbbb;
+}
+
+.data-credit a {
+    color: inherit;
+}
+
 .close-controls {
     margin-top: 18px;
     padding-bottom: 10px;
@@ -530,6 +541,12 @@ canvas {
 
     <div class="footer">
         TEMPERATURE DEVIATION MONITOR // FIXED UTC-5 REPORTING
+    </div>
+
+    <div class="footer data-credit">
+        WEATHER DATA BY <a href="https://open-meteo.com/">OPEN-METEO.COM</a>
+        (<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>).
+        DEVIATIONS ARE THIS SITE'S OWN CALCULATION. <a href="/sources/">[ ALL SOURCES ]</a>
     </div>
 
 
@@ -2113,5 +2130,6 @@ initializeTempView();
 
 </script>
 
+<script src="/assets/notice.js" defer></script>
 </body>
 </html>

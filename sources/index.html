@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Data Sources">
+<meta property="og:description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:url" content="https://thegreatdarkness.com/sources/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<title>OER // Data Sources</title>
+<style>
+  body {
+    margin: 0;
+    padding: 18px 10px 30px;
+    background: #000000;
+    color: #bbbbbb;
+    font-family: "Courier New", Courier, monospace;
+  }
+  .notice {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 5px;
+    background: #0a0a0a;
+    border: 2px outset #888888;
+    box-shadow: 4px 4px 0 #1a1a1a;
+  }
+  .notice-inner { padding: 16px 20px 14px; border: 1px inset #777777; }
+  .label { color: #777777; font-size: 0.62rem; letter-spacing: 2px; text-align: center; }
+  h1 {
+    margin: 8px 0 4px;
+    color: #ffffff;
+    font: bold clamp(1.2rem, 4vw, 1.7rem) Arial, Helvetica, sans-serif;
+    letter-spacing: 2px;
+    text-align: center;
+  }
+  .sub { color: #888888; font-size: 0.66rem; letter-spacing: 2px; text-align: center; }
+  hr { margin: 14px 0; border: 0; border-top: 1px dashed #555555; }
+  .short {
+    padding: 10px 12px;
+    border: 1px solid #00aa00;
+    background: #000800;
+    color: #00dd00;
+    font-size: 0.82rem;
+    line-height: 1.55;
+  }
+  .short b { color: #00ff00; letter-spacing: 1px; }
+  h2 {
+    margin: 20px 0 6px;
+    color: #ffffff;
+    font-size: 0.86rem;
+    letter-spacing: 2px;
+  }
+  p, li { font-size: 0.82rem; line-height: 1.6; }
+  p { margin: 0 0 8px; }
+  ul { margin: 0 0 8px; padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  b { color: #dddddd; }
+  a { color: #00cc00; }
+  a:hover, a:focus { color: #00ff00; }
+  code { color: #dddddd; }
+  .src { margin: 0 0 12px; padding: 10px 12px; border: 1px solid #333333; background: #050505; }
+  .src h3 { margin: 0 0 4px; color: #ffffff; font-size: 0.84rem; letter-spacing: 1px; }
+  .src .use { color: #9a9a9a; }
+  .credit { margin-top: 6px; padding-left: 10px; border-left: 2px solid #00aa00; color: #dddddd; }
+  .credit i { font-style: normal; color: #00dd00; }
+  .foot {
+    display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px;
+    margin-top: 16px; color: #555555; font-size: 0.6rem; letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+
+<section class="notice" aria-label="Data sources">
+  <div class="notice-inner">
+
+    <div class="label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
+    <h1>DATA SOURCES</h1>
+    <div class="sub">PUBLIC ACCESS TERMINAL // REVISED 11 NOV 2026</div>
+
+    <hr>
+
+    <div class="short">
+      <b>NOT AN OFFICIAL ALERT SERVICE.</b> The Great Darkness is an independent creative project.
+      It combines real, public data with an original fictional story. The data below may be delayed,
+      incomplete or wrong, and the status levels on this site (NOMINAL, WATCH, ELEVATED, CRITICAL) are
+      its own, not official ratings. Do not use this site for safety decisions. For official alerts,
+      contact your local authorities or the <a href="https://www.weather.gov/">National Weather Service</a>.
+    </div>
+
+    <p style="margin-top:12px">Every live reading on this site comes from one of the public sources below. This site is not affiliated with or endorsed by any of them.</p>
+
+    <h2>LIVE DATA</h2>
+    <div class="src">
+      <h3><a href="https://earthquake.usgs.gov/">U.S. GEOLOGICAL SURVEY // EARTHQUAKE HAZARDS PROGRAM</a></h3>
+      <div class="use">Earthquakes: Seismic monitor, Radar, Event Log, RSS Channel.</div>
+      <div class="credit"><i>CREDIT:</i> Earthquake data courtesy of the U.S. Geological Survey.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://volcanoes.usgs.gov/">U.S. GEOLOGICAL SURVEY // VOLCANO HAZARDS PROGRAM</a></h3>
+      <div class="use">Volcano alert levels: Volcanic monitor, Radar.</div>
+      <div class="credit"><i>CREDIT:</i> Volcano alert data courtesy of the U.S. Geological Survey.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://www.eia.gov/electricity/gridmonitor/">U.S. ENERGY INFORMATION ADMINISTRATION</a></h3>
+      <div class="use">Hourly electricity demand and forecasts: Power Grid monitor, Radar, Event Log.</div>
+      <div class="credit"><i>CREDIT:</i> Source: U.S. Energy Information Administration, Hourly Electric Grid Monitor (retrieved hourly; each reading shows its own date and time).</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://open-meteo.com/">OPEN-METEO</a></h3>
+      <div class="use">Hourly temperatures for monitored cities: Temperature monitor, Radar.</div>
+      <div class="credit"><i>CREDIT:</i> Weather data by <a href="https://open-meteo.com/">Open-Meteo.com</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. This site compares the readings with its own baselines; the deviations shown are its own calculation.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://www.swpc.noaa.gov/">NOAA SPACE WEATHER PREDICTION CENTER</a></h3>
+      <div class="use">Space weather scales, Kp index and alerts: Space Weather monitor, Radar outline, RSS Channel.</div>
+      <div class="credit"><i>CREDIT:</i> Space weather data: NOAA Space Weather Prediction Center.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://www.weather.gov/">NATIONAL WEATHER SERVICE</a></h3>
+      <div class="use">Active warnings: Severe Weather monitor, RSS Channel.</div>
+      <div class="credit"><i>CREDIT:</i> Warning data: National Weather Service (api.weather.gov). Shown for reference only; the levels on this site are its own, not official NWS products.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://data-nifc.opendata.arcgis.com/">NATIONAL INTERAGENCY FIRE CENTER // WFIGS</a></h3>
+      <div class="use">Current wildfire incidents: Wildfire monitor, Radar.</div>
+      <div class="credit"><i>CREDIT:</i> Wildfire incident data: National Interagency Fire Center (WFIGS).</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://ioda.inetintel.cc.gatech.edu/">IODA // GEORGIA TECH INTERNET INTELLIGENCE LAB</a></h3>
+      <div class="use">U.S. internet outage alerts: Network monitor, Radar.</div>
+      <div class="credit"><i>CREDIT:</i> Internet outage data: IODA, Georgia Tech Internet Intelligence Lab.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://www.navcen.uscg.gov/">U.S. COAST GUARD NAVIGATION CENTER</a></h3>
+      <div class="use">GPS satellite health (almanac): GPS / NAV monitor.</div>
+      <div class="credit"><i>CREDIT:</i> GPS almanac data: U.S. Coast Guard Navigation Center.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://cneos.jpl.nasa.gov/">NASA/JPL CENTER FOR NEAR EARTH OBJECT STUDIES</a></h3>
+      <div class="use">Upcoming close approaches: Near-Earth monitor, Radar outline.</div>
+      <div class="credit"><i>CREDIT:</i> Close-approach data: NASA/JPL-Caltech CNEOS (SBDB Close-Approach Data API).</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://status.openai.com/">AI PROVIDER STATUS PAGES</a></h3>
+      <div class="use">Public service status of OpenAI, Anthropic, Mistral and Cohere: AI Incidents monitor.</div>
+      <div class="credit"><i>CREDIT:</i> Status data from each provider's public status page: <a href="https://status.openai.com/">OpenAI</a>, <a href="https://status.anthropic.com/">Anthropic</a>, <a href="https://status.mistral.ai/">Mistral</a>, <a href="https://status.cohere.com/">Cohere</a>.</div>
+    </div>
+    <div class="src">
+      <h3><a href="https://www.nasa.gov/">NASA // NIST</a></h3>
+      <div class="use">News releases (NASA) and Cybersecurity Insights (NIST): RSS Channel.</div>
+      <div class="credit"><i>CREDIT:</i> Headlines link to the original articles at nasa.gov and nist.gov.</div>
+    </div>
+
+    <h2>NOT DATA SOURCES</h2>
+    <p>The Radar and every map-like display are drawn by the page itself: no map tiles, web fonts or embedded media are loaded from anyone else.
+      The site is hosted on GitHub Pages, its live data is gathered by Google Apps Script and kept in Google Sheets,
+      and the support and merchandise links go to Ko-fi and Printful. See the <a href="/privacy/">Data Handling Notice</a> for what those services see.</p>
+
+    <h2>CHANGES</h2>
+    <p>When a source is added or removed, this list and the revision date at the top change too.</p>
+
+    <div class="foot">
+      <span>OER/PAN // DATA SOURCES</span>
+      <span><a href="/home/">[ RETURN TO HOME ]</a></span>
+    </div>
+
+  </div>
+</section>
+
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>
