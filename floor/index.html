@@ -1993,23 +1993,36 @@
   #floorPane { padding: 12px 14px 14px; border: 1px inset #888888; }
   .floor-room { display: none; }
   .floor-room.on { display: block; }
+  .floor-room.on + .floor-room.on { margin-top: 18px; }
   /* Each room fills the box: the old homepage widths and margins are dropped. */
   #floorPane .floor-room { width: 100%; max-width: none; margin: 0; box-sizing: border-box; border: 0; box-shadow: none; padding: 0; background: none; }
 
-  /* RADAR room on computers: the scope on the left, sized to the window
-     height; console, scan status and source list beside it. */
+  /* WATCH WALL on computers: the Radar (scope + console) on the left, the
+     Monitoring Grid and Event Feed stacked on the right, all on screen at
+     once; a long panel scrolls inside itself. */
   @media (min-width: 901px) {
     #floorPane .radar-section.on {
-      display: grid; grid-template-columns: auto minmax(300px, 1fr); column-gap: 18px; align-items: start;
+      display: grid; grid-template-columns: auto minmax(230px, 290px); column-gap: 14px; align-items: start;
       grid-template-areas: "title title" "screen console" "screen status" "screen register";
       grid-template-rows: auto auto auto 1fr;
     }
-    #floorPane .radar-section > .radar-title { grid-area: title; margin-bottom: 10px; }
+    #floorPane .radar-section > .radar-title { grid-area: title; margin-bottom: 8px; }
     #floorPane .radar-console-layout { display: contents; }
-    #floorPane .radar-screen { grid-area: screen; width: min(calc(100vh - 300px), 540px); min-width: 320px; margin: 0; }
+    #floorPane .radar-screen { grid-area: screen; width: min(calc(100vh - 300px), 34vw, 560px); min-width: 260px; margin: 0; }
     #floorPane .radar-console { grid-area: console; width: 100%; margin: 0; }
-    #floorPane .radar-section > .radar-status { grid-area: status; margin: 10px 0 0; }
-    #floorPane .radar-section > .home-register { grid-area: register; margin: 10px 0 0; max-width: none; }
+    #floorPane .radar-section > .radar-status { grid-area: status; margin: 8px 0 0; }
+    #floorPane .radar-section > .home-register { grid-area: register; margin: 8px 0 0; max-width: none; }
+  }
+
+  /* Wide enough for the whole wall side by side (narrower screens stack
+     the panels and the box scrolls). */
+  @media (min-width: 1200px) {
+    #floorPane.wall { display: grid; grid-template-columns: auto minmax(340px, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "radar grid" "radar feed"; gap: 12px 16px; }
+    .office { max-width: 1640px; }
+    #floorPane.wall > .radar-section { grid-area: radar; }
+    #floorPane.wall > .oer-monitor-section { grid-area: grid; }
+    #floorPane.wall > .event-feed-preview { grid-area: feed; }
+    #floorPane.wall > .floor-room { min-height: 0; }
   }
 
   /* Computers: the floor fits the window (frame bars 88 px); a room taller
@@ -2021,6 +2034,10 @@
     #floorPane::-webkit-scrollbar { width: 10px; }
     #floorPane::-webkit-scrollbar-track { background: #0a0a0a; }
     #floorPane::-webkit-scrollbar-thumb { background: #444; border: 1px solid #777; }
+  }
+  @media (min-width: 1200px) and (min-height: 480px) {
+    #floorPane.wall { overflow: hidden; }
+    #floorPane.wall > .radar-section, #floorPane.wall > .oer-monitor-section, #floorPane.wall > .event-feed-preview { overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
   }
 </style>
 </head>
@@ -2038,10 +2055,8 @@
       </div>
     </div>
     <nav class="office-nav" id="floorNav">
-      <a href="?view=radar" data-view="radar">[ RADAR ]</a>
-      <a href="?view=feed" data-view="feed">[ EVENT FEED ]</a>
-      <a href="?view=grid" data-view="grid">[ MONITORING GRID ]</a>
-      <a href="?view=network" data-view="network">[ NETWORK ]</a>
+      <a href="?view=watch" data-view="watch">[ WATCH WALL ]</a>
+      <a href="?view=network" data-view="network">[ NETWORK REFERENCE ]</a>
     </nav>
     <div class="desk"><div class="pane" id="floorPane">
 
@@ -5696,16 +5711,22 @@
       });
     })();
 
-    // Watch Floor rooms (2026-11-11): ?view=radar|feed|grid|network.
+    // Watch Floor (2026-11-11): ?view=watch shows the Radar, Event Feed and
+    // Monitoring Grid together (owner: a floor is monitored, not paged
+    // through); ?view=network is the reference list. Old radar/feed/grid
+    // links open the wall.
     (function floorRooms() {
       var nav = document.getElementById("floorNav");
       var pane = document.getElementById("floorPane");
       function show(view) {
         var rooms = document.querySelectorAll(".floor-room");
-        var found = false;
-        Array.prototype.forEach.call(rooms, function (r) { if (r.getAttribute("data-room") === view) found = true; });
-        if (!found) view = "radar";
-        Array.prototype.forEach.call(rooms, function (r) { r.classList.toggle("on", r.getAttribute("data-room") === view); });
+        if (view !== "network") view = "watch";
+        var wall = view === "watch";
+        pane.classList.toggle("wall", wall);
+        Array.prototype.forEach.call(rooms, function (r) {
+          var k = r.getAttribute("data-room");
+          r.classList.toggle("on", wall ? k !== "network" : k === "network");
+        });
         Array.prototype.forEach.call(nav.querySelectorAll("a"), function (a) { a.classList.toggle("on", a.getAttribute("data-view") === view); });
         pane.scrollTop = 0;
       }
@@ -5716,8 +5737,8 @@
         history.pushState(null, "", a.getAttribute("href"));
         show(a.getAttribute("data-view"));
       });
-      window.addEventListener("popstate", function () { show(new URLSearchParams(location.search).get("view") || "radar"); });
-      show(new URLSearchParams(location.search).get("view") || "radar");
+      window.addEventListener("popstate", function () { show(new URLSearchParams(location.search).get("view") || "watch"); });
+      show(new URLSearchParams(location.search).get("view") || "watch");
     })();
   </script>
 
