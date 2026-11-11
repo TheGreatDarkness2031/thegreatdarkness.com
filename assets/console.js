@@ -230,6 +230,15 @@
     try { sessionStorage.setItem(CONNECT_KEY, "1"); } catch (e) {}
   }
 
+  // Parts of a page that have arrived (window.oerReady), for the
+  // connecting screen. Safe to call on any page, any number of times.
+  var readyParts = {};
+  var connectPartReady = null;
+  window.oerReady = function (part) {
+    readyParts[part] = true;
+    if (connectPartReady) connectPartReady(part);
+  };
+
   function connectScreen() {
     if (!connecting) return;
     var LINES = [
@@ -240,9 +249,18 @@
       "ATDT *** *** ****",
       "DIALING NODE GDK-001...",
       "CONNECT 28800/ARQ/V34/LAPM/V42BIS",
-      "NEGOTIATING SESSION... GUEST",
-      "SESSION OPEN."
+      "NEGOTIATING SESSION... GUEST"
     ];
+    // A page can keep this screen up until its data has arrived:
+    // window.OER_CONNECT_WAIT = [[part, label], ...] before this file,
+    // then window.oerReady(part) as each part arrives. Each shows as
+    // "RECEIVING <label>... OK"; after CONNECT_MAX_MS whatever is still
+    // missing shows DEFERRED and the page opens anyway.
+    var CONNECT_MAX_MS = 12000;
+    var wait = Array.isArray(window.OER_CONNECT_WAIT) ? window.OER_CONNECT_WAIT : [];
+    var waitDone = {};
+    wait.forEach(function (w) { if (readyParts[w[0]]) waitDone[w[0]] = true; });
+    connectPartReady = function (part) { waitDone[part] = true; };
     var shade = el("div", "oer-connect");
     var box = el("div", "oer-connect-box");
     var skip = el("div", "oer-connect-skip", "[ CLICK OR PRESS ANY KEY TO SKIP ]");
@@ -258,10 +276,31 @@
       if (shade.parentNode) shade.parentNode.removeChild(shade);
       document.removeEventListener("keydown", finish);
     }
+    function line(t) { box.insertBefore(document.createTextNode(t + "\n"), skip); }
+    var startedAt = Date.now(), shown = {};
     function next() {
-      if (i === LINES.length) { timer = setTimeout(finish, 350); return; }
-      box.insertBefore(document.createTextNode(LINES[i++] + "\n"), skip);
-      timer = setTimeout(next, i === 6 ? 520 : 170);
+      if (done) return;
+      if (i < LINES.length) {
+        line(LINES[i++]);
+        timer = setTimeout(next, i === 6 ? 520 : 170);
+        return;
+      }
+      // Waiting for the page's data: one part per step, in arrival order.
+      var arrived = wait.filter(function (w) { return waitDone[w[0]] && !shown[w[0]]; })[0];
+      if (arrived) {
+        shown[arrived[0]] = true;
+        line("RECEIVING " + arrived[1] + "... OK");
+        timer = setTimeout(next, 220);
+        return;
+      }
+      var missing = wait.filter(function (w) { return !shown[w[0]]; });
+      if (missing.length && Date.now() - startedAt < CONNECT_MAX_MS) {
+        timer = setTimeout(next, 120);
+        return;
+      }
+      missing.forEach(function (w) { line("RECEIVING " + w[1] + "... DEFERRED"); });
+      line("SESSION OPEN.");
+      timer = setTimeout(finish, 450);
     }
     shade.addEventListener("click", finish);
     document.addEventListener("keydown", finish);
