@@ -413,6 +413,57 @@
       margin-left: 5px;
     }
 
+    /* View tabs: MAINTENANCE RECORDS / DOCUMENT REGISTER. */
+    .view-tabs {
+      display: flex;
+      gap: 2px;
+      margin-bottom: -2px;
+      padding-left: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .view-tab {
+      min-width: 0;
+      padding: 3px 12px 2px;
+      border-bottom: 2px solid #404040;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 11px;
+    }
+
+    .view-tab.active {
+      padding-bottom: 4px;
+      border-bottom-color: #c0c0c0;
+      margin-top: -2px;
+    }
+
+    .view-pane {
+      padding-top: 6px;
+      border-top: 2px solid #ffffff;
+    }
+
+    .register-table td.reg-no { width: 86px; }
+    .register-table td.reg-rev { width: 34px; text-align: center; }
+    .register-table td.reg-date { width: 78px; }
+    .register-table td.reg-file { width: 64px; text-align: center; }
+    .register-table tr.superseded td { color: #777777; text-decoration: line-through; }
+    .register-table tr.superseded td.reg-file { text-decoration: none; }
+    .register-table tr.current td.reg-rev { font-weight: bold; }
+    .register-table tr.doc-start td { border-top: 1px solid #808080; }
+    @media (max-width: 600px) {
+      .register-table .reg-file { display: none; }
+      .register-table th.reg-no, .register-table td.reg-no { width: 70px !important; }
+    }
+    .reg-history { width: 100%; border-collapse: collapse; }
+    .reg-history td { padding: 3px 4px; vertical-align: top; border-bottom: 1px dotted #c0c0c0; }
+    .reg-history tr.superseded td { color: #777777; }
+    .reg-history tr.superseded .reg-change { text-decoration: line-through; }
+    .reg-status { white-space: nowrap; font-weight: bold; }
+    body.oer-night .register-table tr.superseded td,
+    body.oer-night .reg-history tr.superseded td { color: #666666; }
+    body.oer-night .register-table tr.doc-start td { border-top-color: #444444; }
+    body.oer-night .reg-history td { border-bottom-color: #2a2a2a; }
+
     /* NIGHT display (switch in the heading): records on a black screen. */
     body.oer-night .record-list,
     body.oer-night .record-view-body { background: #000000; color: #cccccc; }
@@ -524,6 +575,13 @@
           RECORD INDEX: NEXUS ORIGIN THROUGH CURRENT OPERATIONS
         </span>
       </div>
+
+      <div class="view-tabs" role="tablist">
+        <button type="button" class="view-tab active" data-view="records" role="tab">MAINTENANCE RECORDS</button>
+        <button type="button" class="view-tab" data-view="register" role="tab">DOCUMENT REGISTER</button>
+      </div>
+
+      <div id="recordsPane" class="view-pane">
 
       <div class="filter-panel bevel-outset">
 
@@ -773,10 +831,69 @@
 
       </div>
 
+      </div>
+
+      <div id="registerPane" class="view-pane" hidden>
+
+        <div class="filter-panel bevel-outset">
+          <div class="filter-title">
+            DOCUMENT REGISTER CONTROLS
+          </div>
+          <table class="filter-table">
+            <tr>
+              <td class="filter-label">SEARCH:</td>
+              <td colspan="3">
+                <input id="regSearch" type="text" autocomplete="off" placeholder="Search number, title, change...">
+              </td>
+              <td class="button-cell">
+                <button id="regClear" type="button">CLEAR</button>
+              </td>
+            </tr>
+            <tr>
+              <td class="filter-label">SERIES:</td>
+              <td>
+                <select id="regSeries"><option value="">ALL</option></select>
+              </td>
+              <td class="filter-label">SHOW:</td>
+              <td>
+                <select id="regShow">
+                  <option value="all">ALL REVISIONS</option>
+                  <option value="current">CURRENT ONLY</option>
+                </select>
+              </td>
+              <td class="button-cell"></td>
+            </tr>
+          </table>
+        </div>
+
+        <div id="regStatus" class="status-line bevel-inset">
+          RETRIEVING DOCUMENT REGISTER...
+        </div>
+
+        <div class="bevel-inset">
+          <div class="index-title">
+            CONTROLLED DOCUMENT REGISTER
+          </div>
+          <div id="regList" class="record-list register-list">
+            <div class="record-empty">RETRIEVING DOCUMENT REGISTER...</div>
+          </div>
+        </div>
+
+        <div class="record-view bevel-inset">
+          <div id="regViewTitle" class="record-view-title">DOCUMENT VIEW</div>
+          <div id="regViewBody" class="record-view-body">
+            <div class="record-placeholder">
+              SELECT A DOCUMENT FROM THE REGISTER TO DISPLAY ITS REVISION HISTORY.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
       <div class="footer">
         NEXUS MAINTENANCE ARCHIVE //
         ORIGINAL RECORD TEXT PRESERVED WHERE AVAILABLE //
-        DISPLAY MODE: INDEX VIEW
+        DISPLAY MODE: <span id="displayMode">INDEX VIEW</span>
       </div>
 
     </div>
@@ -2047,6 +2164,156 @@ function exitMaintenanceLog() {
 }
 
 
+  </script>
+
+  <script>
+  // DOCUMENT REGISTER view (2026-11-11): reads /maintenance/register.json.
+  // Each revision: [rev, date, change, docKey?]. A docKey opens the PDF in
+  // /tools/document/; without one the revision is on paper only.
+  (function () {
+    var tabs = document.querySelectorAll(".view-tab");
+    var panes = { records: document.getElementById("recordsPane"), register: document.getElementById("registerPane") };
+    var modeLabel = document.getElementById("displayMode");
+    var el = {
+      search: document.getElementById("regSearch"),
+      series: document.getElementById("regSeries"),
+      show: document.getElementById("regShow"),
+      clear: document.getElementById("regClear"),
+      status: document.getElementById("regStatus"),
+      list: document.getElementById("regList"),
+      title: document.getElementById("regViewTitle"),
+      body: document.getElementById("regViewBody")
+    };
+    var docs = null, loading = false, selected = "";
+
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) {
+        return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+      });
+    }
+
+    function showView(name) {
+      Object.keys(panes).forEach(function (k) { panes[k].hidden = k !== name; });
+      for (var i = 0; i < tabs.length; i++) {
+        tabs[i].classList.toggle("active", tabs[i].getAttribute("data-view") === name);
+      }
+      modeLabel.textContent = name === "register" ? "REGISTER VIEW" : "INDEX VIEW";
+      var url = new URL(location.href);
+      if (name === "register") url.searchParams.set("view", "register"); else url.searchParams.delete("view");
+      history.replaceState(null, "", url.pathname + url.search);
+      if (name === "register") load();
+    }
+
+    function load() {
+      if (docs || loading) return;
+      loading = true;
+      fetch("/maintenance/register.json", { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (data) {
+          docs = data.documents || [];
+          var seen = {};
+          docs.forEach(function (d) {
+            if (!seen[d.series]) {
+              seen[d.series] = 1;
+              var o = document.createElement("option");
+              o.value = d.series; o.textContent = d.series;
+              el.series.appendChild(o);
+            }
+          });
+          render();
+        })
+        .catch(function () {
+          loading = false;
+          el.status.classList.add("error");
+          el.status.textContent = "DOCUMENT REGISTER UNAVAILABLE. RETRY LATER.";
+          el.list.innerHTML = '<div class="record-empty">REGISTER NOT RETRIEVED.</div>';
+        });
+    }
+
+    function fileCell(rev) {
+      return rev[3]
+        ? '<a href="/tools/document/?doc=' + encodeURIComponent(rev[3]) + '">[ VIEW ]</a>'
+        : "PAPER";
+    }
+
+    function render() {
+      var q = el.search.value.trim().toLowerCase();
+      var series = el.series.value, currentOnly = el.show.value === "current";
+      var rows = [], docCount = 0, revCount = 0;
+      docs.forEach(function (d) {
+        if (series && d.series !== series) return;
+        var last = d.revs.length - 1, first = true;
+        // Newest revision first within each document.
+        d.revs.map(function (r, i) { return [r, i]; }).reverse().forEach(function (pair) {
+          var r = pair[0], i = pair[1];
+          if (currentOnly && i !== last) return;
+          var hay = (d.no + " " + d.title + " " + r[0] + " " + r[1] + " " + r[2]).toLowerCase();
+          if (q && hay.indexOf(q) === -1) return;
+          if (first) docCount++;
+          revCount++;
+          rows.push('<tr data-no="' + esc(d.no) + '" class="' + (i === last ? "current" : "superseded") +
+            (first ? " doc-start" : "") + (d.no === selected ? " selected" : "") + '">' +
+            '<td class="reg-no record-id">' + esc(d.no) + '</td>' +
+            '<td class="reg-rev">' + esc(r[0]) + '</td>' +
+            '<td class="reg-date">' + esc(r[1]) + '</td>' +
+            '<td title="' + esc(d.title + ": " + r[2]) + '">' + esc(d.title) + '</td>' +
+            '<td class="reg-file">' + fileCell(r) + '</td></tr>');
+          first = false;
+        });
+      });
+      el.status.classList.remove("error");
+      el.status.textContent = docCount + " DOCUMENT(S), " + revCount + " REVISION(S) LISTED. SUPERSEDED REVISIONS RETAINED.";
+      el.list.innerHTML = rows.length
+        ? '<table class="record-table register-table"><thead><tr><th class="reg-no" style="width:86px">DOC NO</th>' +
+          '<th style="width:34px">REV</th><th style="width:78px">DATE</th><th>TITLE</th><th class="reg-file" style="width:64px">FILE</th></tr></thead><tbody>' +
+          rows.join("") + '</tbody></table>'
+        : '<div class="record-empty">NO DOCUMENTS MATCH THE CURRENT CONTROLS.</div>';
+    }
+
+    function showDoc(no) {
+      var d = docs.filter(function (x) { return x.no === no; })[0];
+      if (!d) return;
+      selected = no;
+      var trs = el.list.querySelectorAll("tbody tr");
+      for (var i = 0; i < trs.length; i++) trs[i].classList.toggle("selected", trs[i].getAttribute("data-no") === no);
+      var last = d.revs.length - 1;
+      el.title.textContent = d.no + " // " + d.title;
+      el.body.innerHTML =
+        '<table class="record-view-meta">' +
+        '<tr><td class="record-view-label">DOCUMENT:</td><td>' + esc(d.no) + '</td></tr>' +
+        '<tr><td class="record-view-label">SERIES:</td><td>' + esc(d.series) + '</td></tr>' +
+        '<tr><td class="record-view-label">CURRENT REV:</td><td>' + esc(d.revs[last][0]) + ' (' + esc(d.revs[last][1]) + ')</td></tr>' +
+        '</table><div class="record-entry-divider"></div>' +
+        '<table class="reg-history">' +
+        d.revs.slice().reverse().map(function (r, j) {
+          var cur = j === 0;
+          return '<tr class="' + (cur ? "current" : "superseded") + '">' +
+            '<td class="record-view-label">REV ' + esc(r[0]) + '</td>' +
+            '<td style="white-space:nowrap">' + esc(r[1]) + '</td>' +
+            '<td class="reg-change">' + esc(r[2]) + '</td>' +
+            '<td class="reg-status">' + (cur ? "CURRENT" : "SUPERSEDED") + '</td>' +
+            '<td class="reg-status">' + fileCell(r) + '</td></tr>';
+        }).join("") + '</table>';
+    }
+
+    for (var i = 0; i < tabs.length; i++) {
+      tabs[i].addEventListener("click", function () { showView(this.getAttribute("data-view")); });
+    }
+    el.search.addEventListener("input", function () { if (docs) render(); });
+    el.series.addEventListener("change", function () { if (docs) render(); });
+    el.show.addEventListener("change", function () { if (docs) render(); });
+    el.clear.addEventListener("click", function () {
+      el.search.value = ""; el.series.value = ""; el.show.value = "all";
+      if (docs) render();
+    });
+    el.list.addEventListener("click", function (e) {
+      if (e.target.closest("a")) return;
+      var tr = e.target.closest("tr[data-no]");
+      if (tr) showDoc(tr.getAttribute("data-no"));
+    });
+
+    if (new URLSearchParams(location.search).get("view") === "register") showView("register");
+  })();
   </script>
 
 </body>
