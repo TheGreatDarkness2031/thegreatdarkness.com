@@ -138,6 +138,7 @@ body.oerc #docReturnBottom { display: none !important; }
 .oerc-item, .oerc-subitem { display: flex; align-items: center; white-space: nowrap; }
 .oerc-item > .oerc-new, .oerc-subitem > .oerc-new { margin-left: auto; }
 .oerc-right { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; }
+.oerc-item, .oerc-subitem { gap: 6px; }
 .oerc-right .oerc-new { margin-left: 0; }
 .oerc-sign::after { content: "+"; color: var(--oerc-dim); }
 .oerc-group[open] .oerc-sign::after { content: "-"; }

@@ -43,35 +43,30 @@
 html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
 body { padding: 24px 12px 32px; }
 
-.hr-shell {
-  width: 100%; max-width: 1080px; margin: 0 auto; padding: 5px;
-  background: var(--outer-gray);
-  border-top: 2px solid #bdbdbd; border-left: 2px solid #bdbdbd;
-  border-right: 2px solid #111; border-bottom: 2px solid #111;
-  box-shadow: 6px 6px 0 #000, 0 0 22px rgba(255,255,255,0.05);
+/* Personnel Office (2026-11-11): a room on the 1998 page, not an app window.
+   Door plate, bracket links like the homepage, and the homepage's own box. */
+.office { width: 95%; max-width: 1000px; margin: 0 auto; }
+.door { text-align: center; margin: 4px 0 16px; }
+.door-plate {
+  display: inline-block; padding: 12px 34px 11px; background: linear-gradient(#2c2c2c, #151515);
+  border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
 }
-.hr-window { background: var(--dark-gray); border: 2px inset #8d8d8d; }
-.title-bar {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  min-height: 29px; padding: 5px 8px;
-  background: linear-gradient(to right, var(--title-blue), var(--title-blue-dark));
-  color: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; font-weight: bold; letter-spacing: 1px;
+.door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+.door-name { color: #ececec; font-size: 1.35rem; font-weight: bold; letter-spacing: 6px; margin: 5px 0 4px; }
+.door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 2.1; margin: 0 0 16px; }
+.office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+.office-nav a:hover { text-decoration: underline; }
+.office-nav a.on { color: #000; background: var(--green); }
+.desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+.pane { padding: 14px 18px 22px; min-height: 420px; border: 1px inset #888888; }
+.pane h2 {
+  margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
+  color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
 }
-.title-bar small { color: #d2d8ff; font-size: 0.61rem; font-weight: normal; letter-spacing: 0.8px; white-space: nowrap; }
-.tabs {
-  display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 8px 0;
-  background: #c0c0c0; border-bottom: 2px solid #808080;
-  font-family: Arial, Helvetica, sans-serif; font-size: 0.7rem; letter-spacing: 0.5px;
-}
-.tabs a {
-  display: block; padding: 5px 12px 4px; color: #111; text-decoration: none;
-  background: #b4b4b4; border: 1px solid #808080; border-bottom: none;
-  border-top-color: #eee; border-left-color: #eee;
-}
-.tabs a.on { background: #d4d4d4; font-weight: bold; position: relative; top: 2px; }
-.pane { padding: 16px 18px 22px; min-height: 420px; }
-.pane h2 { margin: 0 0 4px; color: #fff; font-size: 1rem; letter-spacing: 2px; }
-.note { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; margin: 0 0 14px; }
+.pane h2::before { content: "=== "; }
+.pane h2::after { content: " ==="; }
+.note { color: var(--muted); font-size: 0.7rem; letter-spacing: 1px; margin: 0 0 14px; text-align: center; }
 
 /* controls */
 .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 0 0 12px; font-size: 0.75rem; }
@@ -216,29 +211,33 @@ table.rack td { padding: 6px 8px; }
   .file .portrait { width: 160px; height: 160px; }
   dl.fields { grid-template-columns: 120px 1fr; }
   table.dir .wide { display: none; }
+  table.dir td, table.dir th { padding-left: 5px; padding-right: 5px; }
   .pane { padding: 12px 10px 18px; }
+  .door-plate { padding: 10px 16px 9px; }
+  .door-name { font-size: 1.05rem; letter-spacing: 4px; }
 }
 </style>
 </head>
 
 <body>
-<div class="hr-shell">
-  <div class="hr-window">
-    <div class="title-bar">
-      <span>PERSONNEL OFFICE // OPERATIONAL EVENT REGISTER</span>
-      <small id="records">PERSONNEL RECORDS</small>
+<div class="office">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">ROOM 112</div>
+      <div class="door-name">PERSONNEL OFFICE</div>
+      <div class="door-hours">OFFICE HOURS 0800 - 1630 // MON - FRI // <span id="records">PERSONNEL RECORDS</span></div>
     </div>
-    <nav class="tabs" id="tabs">
-      <a href="?view=directory" data-view="directory">DIRECTORY</a>
-      <a href="?view=org" data-view="org">ORGANIZATION</a>
-      <a href="?view=wall" data-view="wall">STAFF COMPOSITE</a>
-      <a href="?view=phone" data-view="phone">PHONE TREE</a>
-      <a href="?view=board" data-view="board">BULLETIN BOARD</a>
-      <a href="?view=forms" data-view="forms">FORMS</a>
-      <a href="?view=handbook" data-view="handbook">HANDBOOK</a>
-    </nav>
-    <div class="pane" id="pane"></div>
   </div>
+  <nav class="office-nav" id="tabs">
+    <a href="?view=directory" data-view="directory">[ DIRECTORY ]</a>
+    <a href="?view=org" data-view="org">[ ORGANIZATION ]</a>
+    <a href="?view=wall" data-view="wall">[ PHOTO WALL ]</a>
+    <a href="?view=phone" data-view="phone">[ PHONE TREE ]</a>
+    <a href="?view=board" data-view="board">[ BULLETIN BOARD ]</a>
+    <a href="?view=forms" data-view="forms">[ FORMS ]</a>
+    <a href="?view=handbook" data-view="handbook">[ HANDBOOK ]</a>
+  </nav>
+  <div class="desk"><div class="pane" id="pane"></div></div>
 </div>
 
 <script src="/hr/data.js"></script>
@@ -381,7 +380,7 @@ table.rack td { padding: 6px 8px; }
 
     var table = el("table", "dir");
     var head = el("tr");
-    var cols = [["", null], ["name", "NAME"], ["id", "EMPLOYEE NO."], ["title", "POSITION"], ["unit", "UNIT", "wide"], ["hire", "HIRED", "wide"], ["sep", "STATUS"]];
+    var cols = [["", null], ["name", "NAME"], ["id", "EMPLOYEE NO.", "wide"], ["title", "POSITION"], ["unit", "UNIT", "wide"], ["hire", "HIRED", "wide"], ["sep", "STATUS"]];
     cols.forEach(function (col) {
       var th = el("th", col[2] || "", col[1] || "");
       if (col[1]) {
@@ -427,7 +426,7 @@ table.rack td { padding: 6px 8px; }
         td.appendChild(photo(p, latestPhoto(p), "thumb", "NO PHOTO"));
         tr.appendChild(td);
         tr.appendChild(el("td", null, shown(p)));
-        tr.appendChild(el("td", null, p.id));
+        tr.appendChild(el("td", "wide", p.id));
         tr.appendChild(el("td", null, p.title.toUpperCase()));
         tr.appendChild(el("td", "wide", (p.dept === "NX" ? "NEXUS // " : "") + p.unit.toUpperCase()));
         tr.appendChild(el("td", "wide", date(p.hire)));
