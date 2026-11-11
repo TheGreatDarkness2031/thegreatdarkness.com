@@ -1972,7 +1972,56 @@
 
   /* WATCH FLOOR (2026-11-11): the homepage's live panels, in the console frame. */
   body { padding-top: 0 !important; }
-  .floor-shell { padding-top: 14px; }
+  .floor-shell { padding-top: 10px; }
+
+  /* Rooms: plate, bracket links and the homepage box, like /hr/ and /schedule/. */
+  .office { width: 95%; max-width: 1060px; margin: 0 auto; }
+  .door { text-align: center; margin: 0 0 8px; }
+  .door-plate {
+    display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+    border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+    font-family: "Courier New", Courier, monospace;
+  }
+  .door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+  .door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+  .door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+  .office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 1.9; margin: 0 0 8px; font-family: "Courier New", Courier, monospace; }
+  .office-nav a { color: #7fd18b; text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+  .office-nav a:hover { text-decoration: underline; }
+  .office-nav a.on { color: #000; background: #7fd18b; }
+  .desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+  #floorPane { padding: 12px 14px 14px; border: 1px inset #888888; }
+  .floor-room { display: none; }
+  .floor-room.on { display: block; }
+  /* Each room fills the box: the old homepage widths and margins are dropped. */
+  #floorPane .floor-room { width: 100%; max-width: none; margin: 0; box-sizing: border-box; border: 0; box-shadow: none; padding: 0; background: none; }
+
+  /* RADAR room on computers: the scope on the left, sized to the window
+     height; console, scan status and source list beside it. */
+  @media (min-width: 901px) {
+    #floorPane .radar-section.on {
+      display: grid; grid-template-columns: auto minmax(300px, 1fr); column-gap: 18px; align-items: start;
+      grid-template-areas: "title title" "screen console" "screen status" "screen register";
+      grid-template-rows: auto auto auto 1fr;
+    }
+    #floorPane .radar-section > .radar-title { grid-area: title; margin-bottom: 10px; }
+    #floorPane .radar-console-layout { display: contents; }
+    #floorPane .radar-screen { grid-area: screen; width: min(calc(100vh - 300px), 540px); min-width: 320px; margin: 0; }
+    #floorPane .radar-console { grid-area: console; width: 100%; margin: 0; }
+    #floorPane .radar-section > .radar-status { grid-area: status; margin: 10px 0 0; }
+    #floorPane .radar-section > .home-register { grid-area: register; margin: 10px 0 0; max-width: none; }
+  }
+
+  /* Computers: the floor fits the window (frame bars 88 px); a room taller
+     than the box scrolls inside it. */
+  @media (min-width: 901px) and (min-height: 480px) {
+    .office { height: calc(100vh - 88px - 10px); display: flex; flex-direction: column; }
+    .desk { flex: 1; min-height: 0; display: flex; }
+    #floorPane { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+    #floorPane::-webkit-scrollbar { width: 10px; }
+    #floorPane::-webkit-scrollbar-track { background: #0a0a0a; }
+    #floorPane::-webkit-scrollbar-thumb { background: #444; border: 1px solid #777; }
+  }
 </style>
 </head>
 
@@ -1980,9 +2029,24 @@
 
   
 
-  <main class="page-shell floor-shell">
+  <main class="page-shell floor-shell office">
+    <div class="door">
+      <div class="door-plate">
+        <div class="door-room">OPERATIONS ROOM</div>
+        <div class="door-name">WATCH FLOOR</div>
+        <div class="door-hours">STAFFED 24 HOURS // RED CREW // BLUE CREW</div>
+      </div>
+    </div>
+    <nav class="office-nav" id="floorNav">
+      <a href="?view=radar" data-view="radar">[ RADAR ]</a>
+      <a href="?view=feed" data-view="feed">[ EVENT FEED ]</a>
+      <a href="?view=grid" data-view="grid">[ MONITORING GRID ]</a>
+      <a href="?view=network" data-view="network">[ NETWORK ]</a>
+    </nav>
+    <div class="desk"><div class="pane" id="floorPane">
 
-    <section class="radar-section">
+
+    <section class="radar-section floor-room" data-room="radar">
 
       <div class="radar-title">
         === OER RADAR MONITOR ===
@@ -2132,7 +2196,7 @@
 
     </section>
 
-    <section class="event-feed-preview">
+    <section class="event-feed-preview floor-room" data-room="feed">
       <div class="event-feed-preview-inner">
 
         <div class="event-feed-preview-title">
@@ -2164,7 +2228,7 @@
       </div>
     </section>
 
-    <section class="oer-monitor-section">
+    <section class="oer-monitor-section floor-room" data-room="grid">
       <div class="oer-monitor-inner">
 
         <div class="oer-monitor-title">
@@ -2179,7 +2243,7 @@
       </div>
     </section>
 
-    <section class="retro-info">
+    <section class="retro-info floor-room" data-room="network">
       <div class="retro-info-inner">
 
         <div class="retro-info-title">
@@ -2202,6 +2266,7 @@
       </div>
     </section>
 
+    </div></div>
   </main>
 
   <div
@@ -5629,6 +5694,30 @@
         button.innerHTML = on ? "&#9834; MUSIC: ON" : "&#9834; MUSIC: OFF";
         if (on) start(); else stop();
       });
+    })();
+
+    // Watch Floor rooms (2026-11-11): ?view=radar|feed|grid|network.
+    (function floorRooms() {
+      var nav = document.getElementById("floorNav");
+      var pane = document.getElementById("floorPane");
+      function show(view) {
+        var rooms = document.querySelectorAll(".floor-room");
+        var found = false;
+        Array.prototype.forEach.call(rooms, function (r) { if (r.getAttribute("data-room") === view) found = true; });
+        if (!found) view = "radar";
+        Array.prototype.forEach.call(rooms, function (r) { r.classList.toggle("on", r.getAttribute("data-room") === view); });
+        Array.prototype.forEach.call(nav.querySelectorAll("a"), function (a) { a.classList.toggle("on", a.getAttribute("data-view") === view); });
+        pane.scrollTop = 0;
+      }
+      nav.addEventListener("click", function (e) {
+        var a = e.target.closest("a[data-view]");
+        if (!a) return;
+        e.preventDefault();
+        history.pushState(null, "", a.getAttribute("href"));
+        show(a.getAttribute("data-view"));
+      });
+      window.addEventListener("popstate", function () { show(new URLSearchParams(location.search).get("view") || "radar"); });
+      show(new URLSearchParams(location.search).get("view") || "radar");
     })();
   </script>
 
