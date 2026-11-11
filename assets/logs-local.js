@@ -1,6 +1,7 @@
 /* Static copies of the Watch and Maintenance logs (2026-11-09).
    The "Publish site" workflow saves the whole logs every half hour as
-   /data/watch/index.json, /data/watch/<sheet>.json and /data/maintenance.json
+   /data/watch/index.json, /data/watch/<sheet>.json, /data/maintenance.json
+   (every year) and /data/maintenance/index.json + <year>.json (2026-11-11)
    (Apps Script ?logexport=, LogExport.js). The Watch and Maintenance pages
    ask here first: the same answers as getWatchLogPage (WatchLog.js) and
    getMaintenanceLogData (MaintenanceLog.js), worked out in the browser, so
@@ -135,8 +136,15 @@
     return n;
   }
 
-  function maintenancePage(allRecords, request) {
+  // years: newest first ("2003", "2002" ...). request.year "2001" = that year
+  // only; anything else = every year (as MaintenanceLog.js).
+  function maintenancePage(allRecords, request, years) {
     request = request || {};
+    years = years || [];
+    var year = text(request.year).toUpperCase();
+    if (year === "LATEST") year = years[0] || "ALL";
+    if (!/^\d{4}$/.test(year) || years.indexOf(year) < 0) year = "ALL";
+    if (year !== "ALL") allRecords = allRecords.filter(function (r) { return String(r.date).slice(0, 4) === year; });
     var distinct = function (prop) {
       var v = {};
       allRecords.forEach(function (r) { var t = text(r[prop]); if (t) v[t] = true; });
@@ -181,6 +189,8 @@
     var start = (page - 1) * pageSize;
     return {
       success: true,
+      year: year,
+      years: years,
       records: filtered.slice(start, start + pageSize).map(function (r) {
         return { id: r.id, date: r.date, era: r.era, author: r.author, role: r.role, system: r.system, action: r.action, entry: r.entry };
       }),
@@ -194,9 +204,30 @@
     };
   }
 
+  function yearsOf(records) {
+    var v = {};
+    records.forEach(function (r) { var y = String(r.date).slice(0, 4); if (/^\d{4}$/.test(y)) v[y] = true; });
+    return Object.keys(v).sort().reverse();
+  }
+
+  // One year's file when a year is asked for; the every-year file otherwise
+  // (or when the year files aren't there yet).
   function maintenance(request) {
-    return getJson("/data/maintenance.json").then(function (d) {
-      return maintenancePage(d.records || [], request);
+    var wanted = text(request && request.year).toUpperCase();
+    return getJson("/data/maintenance/index.json").then(function (ix) {
+      return (ix.years || []).map(function (y) { return text(y.year); }).reverse();
+    }, function () { return null; }).then(function (years) {
+      function all() {
+        return getJson("/data/maintenance.json").then(function (d) {
+          var recs = d.records || [];
+          return { recs: recs, years: years || yearsOf(recs) };
+        });
+      }
+      if (wanted === "LATEST" && years) wanted = years[0];
+      var load = (years && years.indexOf(wanted) !== -1)
+        ? getJson("/data/maintenance/" + wanted + ".json").then(function (d) { return { recs: d.records || [], years: years }; }, all)
+        : all();
+      return load.then(function (x) { return maintenancePage(x.recs, request, x.years); });
     }).catch(function () { return null; });
   }
 

@@ -74,6 +74,15 @@ jobs:
               save "logexport=watch&sheet=$s" "data/watch/$s.json"
             done
           fi
+          # Maintenance log by year (2026-11-11): data/maintenance/index.json + <year>.json.
+          mkdir -p data/maintenance
+          save "logexport=maintindex" data/maintenance/index.json
+          if [ -f data/maintenance/index.json ]; then
+            for y in $(node -e 'JSON.parse(require("fs").readFileSync("data/maintenance/index.json","utf8")).years.forEach(y=>console.log(y.year))'); do
+              case "$y" in [0-9][0-9][0-9][0-9]) ;; *) echo "::warning::skipped year $y"; continue;; esac
+              save "logexport=maintenance&year=$y" "data/maintenance/$y.json"
+            done
+          fi
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

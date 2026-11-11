@@ -594,10 +594,20 @@
 
           <tr>
             <td class="filter-label">
+              YEAR:
+            </td>
+
+            <td>
+              <select id="yearSelect" aria-label="Year">
+                <option value="LATEST">LATEST</option>
+              </select>
+            </td>
+
+            <td class="filter-label">
               SEARCH:
             </td>
 
-            <td colspan="3">
+            <td>
               <input
                 id="searchInput"
                 type="text"
@@ -932,6 +942,7 @@
     var maintenanceState = {
       page: 1,
       pageSize: 25,
+      year: (/[?&]year=(\d{4}|ALL)(&|$)/.exec(location.search) || [0, "LATEST"])[1],
       era: "",
       action: "",
       system: "",
@@ -963,6 +974,11 @@
       searchInput:
         document.getElementById(
           "searchInput"
+        ),
+
+      yearSelect:
+        document.getElementById(
+          "yearSelect"
         ),
 
       eraSelect:
@@ -1075,6 +1091,17 @@
 
 
     function bindMaintenanceLogEvents_() {
+
+      maintenanceElements.yearSelect.addEventListener(
+        "change",
+        function() {
+          maintenanceState.year = maintenanceElements.yearSelect.value;
+          maintenanceState.page = 1;
+          selectedMaintenanceRecordId = "";
+          pendingMaintenanceRecordSelection = "";
+          loadMaintenanceLogData_();
+        }
+      );
 
       maintenanceElements.applyButton.addEventListener(
         "click",
@@ -1260,6 +1287,7 @@
       maintenanceState = {
         page: 1,
         pageSize: 25,
+        year: maintenanceState.year,
         era: "",
         action: "",
         system: "",
@@ -1350,6 +1378,10 @@
         data.filters
       );
 
+      updateMaintenanceYearSelect_(
+        data
+      );
+
       renderMaintenanceStatus_(
         data
       );
@@ -1365,6 +1397,41 @@
       setMaintenanceLogLoading_(
         false
       );
+    }
+
+
+    // YEAR picker: newest year first, then ALL YEARS. The log is kept one
+    // tab per year (2026-11-11); a year change loads at once.
+    function updateMaintenanceYearSelect_(
+      data
+    ) {
+
+      var select =
+        maintenanceElements.yearSelect;
+
+      var years =
+        data.years || [];
+
+      var wanted =
+        years.concat(["ALL"]).join(",");
+
+      if (select.getAttribute("data-years") !== wanted) {
+        select.innerHTML = "";
+        years.forEach(function(y) {
+          var option = document.createElement("option");
+          option.value = y;
+          option.textContent = y;
+          select.appendChild(option);
+        });
+        var all = document.createElement("option");
+        all.value = "ALL";
+        all.textContent = "ALL YEARS";
+        select.appendChild(all);
+        select.setAttribute("data-years", wanted);
+      }
+
+      select.value =
+        data.year || "ALL";
     }
 
 
@@ -1495,13 +1562,17 @@
       if (total === 0) {
 
         maintenanceElements.statusLine.textContent =
-          "INDEX QUERY COMPLETE // NO RECORDS MATCH CURRENT CRITERIA.";
+          "INDEX QUERY COMPLETE // " +
+          (data.year && data.year !== "ALL" ? "YEAR " + data.year + " // " : "") +
+          "NO RECORDS MATCH CURRENT CRITERIA.";
 
         return;
       }
 
       maintenanceElements.statusLine.textContent =
-        "INDEX QUERY COMPLETE // DISPLAYING RECORDS " +
+        "INDEX QUERY COMPLETE // " +
+        (data.year && data.year !== "ALL" ? "YEAR " + data.year : "ALL YEARS") +
+        " // DISPLAYING RECORDS " +
         start +
         " THROUGH " +
         end +
