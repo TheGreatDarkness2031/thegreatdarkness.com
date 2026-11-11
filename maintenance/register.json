@@ -3,212 +3,212 @@
   "custodian": "ENGINEERING / MAINTENANCE",
   "documents": [
     { "no": "FLR-001", "series": "FACILITY", "title": "MACHINE ROOM FLOOR PLAN, SITE A", "revs": [
-      ["A", "1996-07-31", "Initial issue. Machine room from the Engineering Room plan: 18 in raised floor, rows A-C, three downflow cooling units, UPS room, clean-agent suppression zones."],
-      ["B", "1997-04-30", "Row positions fixed for central host delivery. Cable tray routes added."],
-      ["C", "1999-11-15", "Tape vault and spare parts cage added."],
-      ["D", "2003-09-22", "Row D added for the correlation cluster. Perforated tiles rearranged."],
-      ["E", "2004-10-18", "Hot and cold aisles. Rows A-D re-oriented."],
-      ["F", "2006-08-14", "Row E added for blade chassis. In-row cooling units."],
-      ["G", "2010-03-08", "Under-floor data cabling removed to overhead trays."],
-      ["H", "2013-05-20", "Leaf-spine cabinets at row ends."],
-      ["J", "2016-09-12", "Hot aisle containment doors and roof panels."],
-      ["K", "2020-02-24", "Row F added for accelerator nodes. Liquid cooling distribution."],
-      ["L", "2024-06-03", "Row C retired. Row F extended."]
+      ["A", "1996-07-31", "Initial issue. Machine room from the Engineering Room plan: 18 in raised floor, rows A-C, three downflow cooling units, UPS room, clean-agent suppression zones.", "FLR-001_A"],
+      ["B", "1997-04-30", "Row positions fixed for central host delivery. Cable tray routes added.", "FLR-001_B"],
+      ["C", "1999-11-15", "Tape vault and spare parts cage added.", "FLR-001_C"],
+      ["D", "2003-09-22", "Row D added for the correlation cluster. Perforated tiles rearranged.", "FLR-001_D"],
+      ["E", "2004-10-18", "Hot and cold aisles. Rows A-D re-oriented.", "FLR-001_E"],
+      ["F", "2006-08-14", "Row E added for blade chassis. In-row cooling units.", "FLR-001_F"],
+      ["G", "2010-03-08", "Under-floor data cabling removed to overhead trays.", "FLR-001_G"],
+      ["H", "2013-05-20", "Leaf-spine cabinets at row ends.", "FLR-001_H"],
+      ["J", "2016-09-12", "Hot aisle containment doors and roof panels.", "FLR-001_J"],
+      ["K", "2020-02-24", "Row F added for accelerator nodes. Liquid cooling distribution.", "FLR-001_K"],
+      ["L", "2024-06-03", "Row C retired. Row F extended.", "FLR-001_L"]
     ]},
     { "no": "FLR-002", "series": "FACILITY", "title": "WATCH FLOOR LAYOUT, SITE A", "revs": [
-      ["A", "1998-02-16", "Initial issue. Two console rows, operator workstations with 21 in monitors, 3 x 2 rear-projection video wall, Lead position, wall clocks UTC and local."],
-      ["B", "1998-06-15", "As built for commissioning. Phone bridge position added."],
-      ["C", "2001-11-05", "Door reader at the watch floor entrance."],
-      ["D", "2004-03-29", "Flat panel monitors replace CRTs. Video wall 4 x 2 cubes."],
-      ["E", "2010-11-08", "Thin-bezel video wall. Three monitors per console."],
-      ["F", "2022-04-11", "Direct-view LED wall. Console rows re-spaced."]
+      ["A", "1998-02-16", "Initial issue. Two console rows, operator workstations with 21 in monitors, 3 x 2 rear-projection video wall, Lead position, wall clocks UTC and local.", "FLR-002_A"],
+      ["B", "1998-06-15", "As built for commissioning. Phone bridge position added.", "FLR-002_B"],
+      ["C", "2001-11-05", "Door reader at the watch floor entrance.", "FLR-002_C"],
+      ["D", "2004-03-29", "Flat panel monitors replace CRTs. Video wall 4 x 2 cubes.", "FLR-002_D"],
+      ["E", "2010-11-08", "Thin-bezel video wall. Three monitors per console.", "FLR-002_E"],
+      ["F", "2022-04-11", "Direct-view LED wall. Console rows re-spaced.", "FLR-002_F"]
     ]},
     { "no": "MEC-001", "series": "FACILITY", "title": "COOLING AND ENVIRONMENTAL SYSTEMS, SITE A", "revs": [
-      ["A", "1996-09-03", "Initial issue. Three downflow cooling units, leak detection, temperature and humidity sensors."],
-      ["B", "2004-10-18", "Two cooling units added for hot and cold aisles."],
-      ["C", "2006-08-14", "In-row cooling for row E."],
-      ["D", "2016-09-12", "Hot aisle containment. Outside-air economizer assist."],
-      ["E", "2020-02-24", "Liquid cooling loop for row F."]
+      ["A", "1996-09-03", "Initial issue. Three downflow cooling units, leak detection, temperature and humidity sensors.", "MEC-001_A"],
+      ["B", "2004-10-18", "Two cooling units added for hot and cold aisles.", "MEC-001_B"],
+      ["C", "2006-08-14", "In-row cooling for row E.", "MEC-001_C"],
+      ["D", "2016-09-12", "Hot aisle containment. Outside-air economizer assist.", "MEC-001_D"],
+      ["E", "2020-02-24", "Liquid cooling loop for row F.", "MEC-001_E"]
     ]},
     { "no": "PWR-001", "series": "POWER", "title": "POWER ONE-LINE DIAGRAM, SITE A", "revs": [
-      ["A", "1996-09-03", "Initial issue. Utility feed, 500 kW diesel generator, automatic transfer switch, 2 x 80 kVA UPS."],
-      ["B", "1997-06-30", "As built. Distribution circuits for rows A-C."],
-      ["C", "1999-10-04", "Generator fuel capacity raised. Load bank connection."],
-      ["D", "2004-08-09", "2 x 300 kVA UPS replace the 80 kVA units."],
-      ["E", "2005-05-16", "Second generator. Generator plant moved to PWR-005."],
-      ["F", "2008-07-21", "Row E circuits."],
-      ["G", "2016-11-14", "Modular UPS frames."],
-      ["H", "2020-02-24", "Row F circuits. Cooling pumps on UPS."],
-      ["J", "2025-03-10", "UPS battery strings replaced."]
+      ["A", "1996-09-03", "Initial issue. Utility feed, 500 kW diesel generator, automatic transfer switch, 2 x 80 kVA UPS.", "PWR-001_A"],
+      ["B", "1997-06-30", "As built. Distribution circuits for rows A-C.", "PWR-001_B"],
+      ["C", "1999-10-04", "Generator fuel capacity raised. Load bank connection.", "PWR-001_C"],
+      ["D", "2004-08-09", "2 x 300 kVA UPS replace the 80 kVA units.", "PWR-001_D"],
+      ["E", "2005-05-16", "Second generator. Generator plant moved to PWR-005.", "PWR-001_E"],
+      ["F", "2008-07-21", "Row E circuits.", "PWR-001_F"],
+      ["G", "2016-11-14", "Modular UPS frames.", "PWR-001_G"],
+      ["H", "2020-02-24", "Row F circuits. Cooling pumps on UPS.", "PWR-001_H"],
+      ["J", "2025-03-10", "UPS battery strings replaced.", "PWR-001_J"]
     ]},
     { "no": "PWR-002", "series": "POWER", "title": "POWER ONE-LINE DIAGRAM, SITE B", "revs": [
-      ["A", "1999-08-23", "Initial issue. Generator, UPS and transfer switch for the alternate operations room."],
-      ["B", "2002-05-13", "Expanded for the full watch floor."],
-      ["C", "2012-09-17", "UPS replaced."],
-      ["D", "2021-06-07", "Modular UPS."]
+      ["A", "1999-08-23", "Initial issue. Generator, UPS and transfer switch for the alternate operations room.", "PWR-002_A"],
+      ["B", "2002-05-13", "Expanded for the full watch floor.", "PWR-002_B"],
+      ["C", "2012-09-17", "UPS replaced.", "PWR-002_C"],
+      ["D", "2021-06-07", "Modular UPS.", "PWR-002_D"]
     ]},
     { "no": "PWR-005", "series": "POWER", "title": "GENERATOR PLANT AND PARALLELING SWITCHGEAR, SITE A", "revs": [
-      ["A", "2005-05-16", "Initial issue. Two generators, paralleling switchgear."],
-      ["B", "2011-04-04", "Fuel polishing system. Provision for a third generator."],
-      ["C", "2019-10-21", "Generator 1 replaced."]
+      ["A", "2005-05-16", "Initial issue. Two generators, paralleling switchgear.", "PWR-005_A"],
+      ["B", "2011-04-04", "Fuel polishing system. Provision for a third generator.", "PWR-005_B"],
+      ["C", "2019-10-21", "Generator 1 replaced.", "PWR-005_C"]
     ]},
     { "no": "NET-001", "series": "NETWORK", "title": "LOCAL NETWORK TOPOLOGY, SITE A", "revs": [
-      ["A", "1996-11-04", "Initial issue. FDDI dual-ring backbone, switched 10 Mb/s Ethernet to engineering desks."],
-      ["B", "1997-07-03", "Central host on the FDDI ring."],
-      ["C", "1998-06-15", "Watch floor segment."],
-      ["D", "2000-06-12", "Gigabit Ethernet core replaces FDDI."],
-      ["E", "2003-09-22", "Cluster network for row D."],
-      ["F", "2007-03-19", "10 Gb Ethernet core."],
-      ["G", "2011-08-29", "IPv6 dual stack."],
-      ["H", "2013-05-20", "Machine room fabric moved to NET-006."],
-      ["J", "2017-10-09", "100 Gb spine."],
-      ["K", "2022-08-15", "400 Gb spine."],
-      ["L", "2025-11-03", "800 Gb core links."]
+      ["A", "1996-11-04", "Initial issue. FDDI dual-ring backbone, switched 10 Mb/s Ethernet to engineering desks.", "NET-001_A"],
+      ["B", "1997-07-03", "Central host on the FDDI ring.", "NET-001_B"],
+      ["C", "1998-06-15", "Watch floor segment.", "NET-001_C"],
+      ["D", "2000-06-12", "Gigabit Ethernet core replaces FDDI.", "NET-001_D"],
+      ["E", "2003-09-22", "Cluster network for row D.", "NET-001_E"],
+      ["F", "2007-03-19", "10 Gb Ethernet core.", "NET-001_F"],
+      ["G", "2011-08-29", "IPv6 dual stack.", "NET-001_G"],
+      ["H", "2013-05-20", "Machine room fabric moved to NET-006.", "NET-001_H"],
+      ["J", "2017-10-09", "100 Gb spine.", "NET-001_J"],
+      ["K", "2022-08-15", "400 Gb spine.", "NET-001_K"],
+      ["L", "2025-11-03", "800 Gb core links.", "NET-001_L"]
     ]},
     { "no": "NET-002", "series": "NETWORK", "title": "WIDE AREA NETWORK (INTER-SITE)", "revs": [
-      ["A", "1997-02-06", "Initial issue. T1 (1.5 Mb/s) links to nodes N1-N8 for acceptance testing."],
-      ["B", "1997-10-13", "Regional link test configuration."],
-      ["C", "1998-06-01", "ATM WAN. T1 pairs to N1-N8."],
-      ["D", "1999-09-13", "DS3 (45 Mb/s) to Site B."],
-      ["E", "2000-09-11", "OC-3 to Site B. DS3 to N1-N8."],
-      ["F", "2004-02-16", "OC-12 to Site B. OC-3 to N1-N8."],
-      ["G", "2007-11-05", "10 Gb wavelengths to Site B, N1, N2, N5, N7."],
-      ["H", "2010-06-14", "MPLS between all sites."],
-      ["J", "2014-04-07", "10 Gb wavelengths to all nodes."],
-      ["K", "2017-10-09", "All inter-site links encrypted. See NET-007."],
-      ["L", "2023-03-20", "Private 100 Gb wavelengths to every site."]
+      ["A", "1997-02-06", "Initial issue. T1 (1.5 Mb/s) links to nodes N1-N8 for acceptance testing.", "NET-002_A"],
+      ["B", "1997-10-13", "Regional link test configuration.", "NET-002_B"],
+      ["C", "1998-06-01", "ATM WAN. T1 pairs to N1-N8.", "NET-002_C"],
+      ["D", "1999-09-13", "DS3 (45 Mb/s) to Site B.", "NET-002_D"],
+      ["E", "2000-09-11", "OC-3 to Site B. DS3 to N1-N8.", "NET-002_E"],
+      ["F", "2004-02-16", "OC-12 to Site B. OC-3 to N1-N8.", "NET-002_F"],
+      ["G", "2007-11-05", "10 Gb wavelengths to Site B, N1, N2, N5, N7.", "NET-002_G"],
+      ["H", "2010-06-14", "MPLS between all sites.", "NET-002_H"],
+      ["J", "2014-04-07", "10 Gb wavelengths to all nodes.", "NET-002_J"],
+      ["K", "2017-10-09", "All inter-site links encrypted. See NET-007.", "NET-002_K"],
+      ["L", "2023-03-20", "Private 100 Gb wavelengths to every site.", "NET-002_L"]
     ]},
     { "no": "NET-005", "series": "NETWORK", "title": "OUT-OF-BAND MANAGEMENT NETWORK", "revs": [
-      ["A", "2004-01-12", "Initial issue. Console servers, separate management switches, dial-in modem pool."],
-      ["B", "2011-08-29", "Modems removed. Cellular backup path."],
-      ["C", "2018-02-05", "Management network separated per site."]
+      ["A", "2004-01-12", "Initial issue. Console servers, separate management switches, dial-in modem pool.", "NET-005_A"],
+      ["B", "2011-08-29", "Modems removed. Cellular backup path.", "NET-005_B"],
+      ["C", "2018-02-05", "Management network separated per site.", "NET-005_C"]
     ]},
     { "no": "NET-006", "series": "NETWORK", "title": "MACHINE ROOM LEAF-SPINE FABRIC, SITE A", "revs": [
-      ["A", "2013-05-20", "Initial issue. 40 Gb leaf-spine."],
-      ["B", "2017-10-09", "100 Gb spine."],
-      ["C", "2022-08-15", "400 Gb spine, 100 Gb leaves."]
+      ["A", "2013-05-20", "Initial issue. 40 Gb leaf-spine.", "NET-006_A"],
+      ["B", "2017-10-09", "100 Gb spine.", "NET-006_B"],
+      ["C", "2022-08-15", "400 Gb spine, 100 Gb leaves.", "NET-006_C"]
     ]},
     { "no": "NET-007", "series": "NETWORK", "title": "INTER-SITE LINK ENCRYPTION", "revs": [
-      ["A", "2017-10-09", "Initial issue."],
-      ["B", "2024-01-22", "Shorter key rotation. New cipher suite."]
+      ["A", "2017-10-09", "Initial issue.", "NET-007_A"],
+      ["B", "2024-01-22", "Shorter key rotation. New cipher suite.", "NET-007_B"]
     ]},
     { "no": "RCK-01", "series": "RACKS", "title": "RACK ELEVATIONS, ROW A (CENTRAL HOSTS)", "revs": [
-      ["A", "1997-07-03", "Initial issue. A01-A03: central host, 16 processors, 4 GB, with disk enclosures."],
-      ["B", "1998-03-16", "A04-A07: central host pair, primary and standby, 24 processors, 8 GB each. A01-A03 retained, powered."],
-      ["C", "2001-01-15", "A08-A11: second central host generation, 32 processors, 32 GB. A01-A03 retained, powered."],
-      ["D", "2006-04-24", "A04-A07 removed. A01-A03 retained, powered."],
-      ["E", "2013-07-15", "Database on the flash tier. A08-A11 removed. A01-A03 retained, powered."],
-      ["F", "2021-05-10", "A04-A09: database servers. A01-A03 retained, powered."]
+      ["A", "1997-07-03", "Initial issue. A01-A03: central host, 16 processors, 4 GB, with disk enclosures.", "RCK-01_A"],
+      ["B", "1998-03-16", "A04-A07: central host pair, primary and standby, 24 processors, 8 GB each. A01-A03 retained, powered.", "RCK-01_B"],
+      ["C", "2001-01-15", "A08-A10: second central host generation, 32 processors, 32 GB. A01-A03 retained, powered.", "RCK-01_C"],
+      ["D", "2006-04-24", "A04-A07 removed. A01-A03 retained, powered.", "RCK-01_D"],
+      ["E", "2013-07-15", "Database on the flash tier. A08-A10 removed. A01-A03 retained, powered.", "RCK-01_E"],
+      ["F", "2021-05-10", "A04-A09: database servers. A01-A03 retained, powered.", "RCK-01_F"]
     ]},
     { "no": "RCK-02", "series": "RACKS", "title": "RACK ELEVATIONS, ROW B (STORAGE AND TAPE)", "revs": [
-      ["A", "1997-07-03", "Initial issue. RAID-5 arrays, 200 GB. Tape library, 20 GB cartridges, 60 slots."],
-      ["B", "1998-05-07", "Fibre Channel arrays, 1 TB."],
-      ["C", "2000-11-06", "1 Gb Fibre Channel SAN, 6 TB. Tape library, 100 GB cartridges, 400 slots."],
-      ["D", "2003-10-20", "2 Gb SAN, 40 TB. Disk-to-disk backup ahead of tape."],
-      ["E", "2007-02-12", "4 Gb SAN, 300 TB, tiered."],
-      ["F", "2009-09-14", "Arrays 1-3 of 6 at new firmware. Arrays 4-6 at previous firmware."],
-      ["G", "2009-12-07", "Arrays 4-6 at new firmware. 8 Gb SAN, 1.5 PB."],
-      ["H", "2013-07-15", "Flash tier for the live database. 5 PB total."],
-      ["J", "2016-06-20", "Object storage for the archive, 20 PB. Tape kept as the offline copy."],
-      ["K", "2021-05-10", "60 PB. 18 TB tape cartridges."],
-      ["L", "2025-03-10", "120 PB. Immutable archive copies."]
+      ["A", "1997-07-03", "Initial issue. RAID-5 arrays, 200 GB. Tape library, 20 GB cartridges, 60 slots.", "RCK-02_A"],
+      ["B", "1998-05-07", "Fibre Channel arrays, 1 TB.", "RCK-02_B"],
+      ["C", "2000-11-06", "1 Gb Fibre Channel SAN, 6 TB. Tape library, 100 GB cartridges, 400 slots.", "RCK-02_C"],
+      ["D", "2003-10-20", "2 Gb SAN, 40 TB. Disk-to-disk backup ahead of tape.", "RCK-02_D"],
+      ["E", "2007-02-12", "4 Gb SAN, 300 TB, tiered.", "RCK-02_E"],
+      ["F", "2009-09-14", "Arrays 1-3 of 6 at new firmware. Arrays 4-6 at previous firmware.", "RCK-02_F"],
+      ["G", "2009-12-07", "Arrays 4-6 at new firmware. 8 Gb SAN, 1.5 PB.", "RCK-02_G"],
+      ["H", "2013-07-15", "Flash tier for the live database. 5 PB total.", "RCK-02_H"],
+      ["J", "2016-06-20", "Object storage for the archive, 20 PB. Tape kept as the offline copy.", "RCK-02_J"],
+      ["K", "2021-05-10", "60 PB. 18 TB tape cartridges.", "RCK-02_K"],
+      ["L", "2025-03-10", "120 PB. Immutable archive copies.", "RCK-02_L"]
     ]},
     { "no": "RCK-03", "series": "RACKS", "title": "RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)", "revs": [
-      ["A", "1997-02-06", "Initial issue. FDDI concentrators, WAN routers, T1 terminal equipment."],
-      ["B", "1998-06-01", "ATM switches."],
-      ["C", "2000-06-12", "Gigabit core switches."],
-      ["D", "2007-03-19", "10 Gb core."],
-      ["E", "2013-05-20", "Spine switches to row-end cabinets. Row C holds WAN and security equipment."],
-      ["F", "2024-06-03", "Row retired. WAN equipment moved to row F."]
+      ["A", "1997-02-06", "Initial issue. FDDI concentrators, WAN routers, T1 terminal equipment.", "RCK-03_A"],
+      ["B", "1998-06-01", "ATM switches.", "RCK-03_B"],
+      ["C", "2000-06-12", "Gigabit core switches.", "RCK-03_C"],
+      ["D", "2007-03-19", "10 Gb core.", "RCK-03_D"],
+      ["E", "2013-05-20", "Spine switches to row-end cabinets. Row C holds WAN and security equipment.", "RCK-03_E"],
+      ["F", "2024-06-03", "Row retired. WAN equipment moved to row F.", "RCK-03_F"]
     ]},
     { "no": "RCK-04", "series": "RACKS", "title": "RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)", "revs": [
-      ["A", "2003-09-22", "Initial issue. 64 dual-processor 1U servers, cluster switches."],
-      ["B", "2004-04-19", "Cluster in service. Correlation moved from the central host."],
-      ["C", "2004-04-26", "Rev B withdrawn. Correlation returned to the central host. Configuration as rev A."],
-      ["D", "2004-05-24", "Cluster in service. Correlation moved from the central host."],
-      ["E", "2010-03-08", "16 GPU nodes added."],
-      ["F", "2015-08-03", "Dense multicore servers. Support cluster."],
-      ["G", "2020-02-24", "GPU nodes moved to row F."]
+      ["A", "2003-09-22", "Initial issue. 64 dual-processor 1U servers, cluster switches.", "RCK-04_A"],
+      ["B", "2004-04-19", "Cluster in service. Correlation moved from the central host.", "RCK-04_B"],
+      ["C", "2004-04-26", "Rev B withdrawn. Correlation returned to the central host. Configuration as rev A.", "RCK-04_C"],
+      ["D", "2004-05-24", "Cluster in service. Correlation moved from the central host.", "RCK-04_D"],
+      ["E", "2010-03-08", "16 GPU nodes added.", "RCK-04_E"],
+      ["F", "2015-08-03", "Dense multicore servers. Support cluster.", "RCK-04_F"],
+      ["G", "2020-02-24", "GPU nodes moved to row F.", "RCK-04_G"]
     ]},
     { "no": "RCK-05", "series": "RACKS", "title": "RACK ELEVATIONS, ROW E (BLADE CHASSIS)", "revs": [
-      ["A", "2006-08-14", "Initial issue. Six 64-bit multicore blade chassis."],
-      ["B", "2007-05-21", "Virtualization hosts for support systems."],
-      ["C", "2011-03-14", "Distributed batch cluster over the archive."],
-      ["D", "2016-03-28", "Container hosts for collectors and feed handlers."],
-      ["E", "2023-09-11", "Chassis replaced with 2U servers."]
+      ["A", "2006-08-14", "Initial issue. Six 64-bit multicore blade chassis.", "RCK-05_A"],
+      ["B", "2007-05-21", "Virtualization hosts for support systems.", "RCK-05_B"],
+      ["C", "2011-03-14", "Distributed batch cluster over the archive.", "RCK-05_C"],
+      ["D", "2016-03-28", "Container hosts for collectors and feed handlers.", "RCK-05_D"],
+      ["E", "2023-09-11", "Chassis replaced with 2U servers.", "RCK-05_E"]
     ]},
     { "no": "RCK-06", "series": "RACKS", "title": "RACK ELEVATIONS, ROW F (ACCELERATORS)", "revs": [
-      ["A", "2020-02-24", "Initial issue. Accelerator nodes."],
-      ["B", "2024-06-03", "Row extended. Current-generation accelerators. WAN equipment from row C."]
+      ["A", "2020-02-24", "Initial issue. Accelerator nodes.", "RCK-06_A"],
+      ["B", "2024-06-03", "Row extended. Current-generation accelerators. WAN equipment from row C.", "RCK-06_B"]
     ]},
     { "no": "SWA-001", "series": "SOFTWARE", "title": "NEXUS SOFTWARE ARCHITECTURE", "revs": [
-      ["A", "1996-07-02", "Initial issue. Integrated prototype: collectors, ingestion, record store, comparison tests."],
-      ["B", "1997-05-19", "Interface contract. Message exchange and receiver acknowledgement."],
-      ["C", "1997-11-03", "NEXUS CORE acceptance baseline."],
-      ["D", "1998-06-15", "Operational configuration. Watch floor displays."],
-      ["E", "1999-11-15", "Rollover configuration."],
-      ["F", "2004-05-24", "Correlation on the cluster."],
-      ["G", "2010-06-14", "GPU correlation. Virtualized support services."],
-      ["H", "2016-03-28", "Collectors and feed handlers in containers."],
-      ["J", "2020-02-24", "Model-based correlation."],
-      ["K", "2024-09-16", "Collection processing at the nodes before transfer."]
+      ["A", "1996-07-02", "Initial issue. Integrated prototype: collectors, ingestion, record store, comparison tests.", "SWA-001_A"],
+      ["B", "1997-05-19", "Interface contract. Message exchange and receiver acknowledgement.", "SWA-001_B"],
+      ["C", "1997-11-03", "NEXUS CORE acceptance baseline.", "SWA-001_C"],
+      ["D", "1998-06-15", "Operational configuration. Watch floor displays.", "SWA-001_D"],
+      ["E", "1999-11-15", "Rollover configuration.", "SWA-001_E"],
+      ["F", "2004-05-24", "Correlation on the cluster.", "SWA-001_F"],
+      ["G", "2010-06-14", "GPU correlation. Virtualized support services.", "SWA-001_G"],
+      ["H", "2016-03-28", "Collectors and feed handlers in containers.", "SWA-001_H"],
+      ["J", "2020-02-24", "Model-based correlation.", "SWA-001_J"],
+      ["K", "2024-09-16", "Collection processing at the nodes before transfer.", "SWA-001_K"]
     ]},
     { "no": "SWA-002", "series": "SOFTWARE", "title": "DATA FLOW, REGIONAL NODE TO CORE", "revs": [
-      ["A", "1997-10-16", "Initial issue. Regional transfer contract: spool, transfer, commit verification."],
-      ["B", "1998-05-06", "Transfer state model."],
-      ["C", "2000-09-11", "Transfer schedule for DS3 links."],
-      ["D", "2008-02-04", "Compression on node links."],
-      ["E", "2024-09-16", "Processing at the nodes before transfer."]
+      ["A", "1997-10-16", "Initial issue. Regional transfer contract: spool, transfer, commit verification.", "SWA-002_A"],
+      ["B", "1998-05-06", "Transfer state model.", "SWA-002_B"],
+      ["C", "2000-09-11", "Transfer schedule for DS3 links.", "SWA-002_C"],
+      ["D", "2008-02-04", "Compression on node links.", "SWA-002_D"],
+      ["E", "2024-09-16", "Processing at the nodes before transfer.", "SWA-002_E"]
     ]},
     { "no": "INV-001", "series": "INVENTORY", "title": "EQUIPMENT INVENTORY, SITE A", "revs": [
-      ["A", "1997-07-03", "Initial issue."],
-      ["B", "1998-06-15", "Commissioning inventory."],
-      ["C", "2001-01-15", "Second central host generation."],
-      ["D", "2004-05-24", "Correlation cluster."],
-      ["E", "2007-05-21", "Blade chassis, virtualization hosts."],
-      ["F", "2010-03-08", "GPU nodes."],
-      ["G", "2013-07-15", "Flash tier, leaf-spine fabric."],
-      ["H", "2016-06-20", "Object storage, container hosts."],
-      ["J", "2020-02-24", "Accelerator nodes."],
-      ["K", "2024-06-03", "Row C retired, row F extended."]
+      ["A", "1997-07-03", "Initial issue.", "INV-001_A"],
+      ["B", "1998-06-15", "Commissioning inventory.", "INV-001_B"],
+      ["C", "2001-01-15", "Second central host generation.", "INV-001_C"],
+      ["D", "2004-05-24", "Correlation cluster.", "INV-001_D"],
+      ["E", "2007-05-21", "Blade chassis, virtualization hosts.", "INV-001_E"],
+      ["F", "2010-03-08", "GPU nodes.", "INV-001_F"],
+      ["G", "2013-07-15", "Flash tier, leaf-spine fabric.", "INV-001_G"],
+      ["H", "2016-06-20", "Object storage, container hosts.", "INV-001_H"],
+      ["J", "2020-02-24", "Accelerator nodes.", "INV-001_J"],
+      ["K", "2024-06-03", "Row C retired, row F extended.", "INV-001_K"]
     ]},
     { "no": "INV-002", "series": "INVENTORY", "title": "EQUIPMENT INVENTORY, NODES N1-N8", "revs": [
-      ["A", "1997-02-06", "Initial issue. Collector servers, sensor interfaces, T1 equipment."],
-      ["B", "1998-06-01", "As built, all eight nodes."],
-      ["C", "2004-02-16", "Second collector rack, OC-3 equipment."],
-      ["D", "2014-04-07", "Wavelength equipment, environmental monitoring."],
-      ["E", "2024-09-16", "Node processing servers."]
+      ["A", "1997-02-06", "Initial issue. Collector servers, sensor interfaces, T1 equipment.", "INV-002_A"],
+      ["B", "1998-06-01", "As built, all eight nodes.", "INV-002_B"],
+      ["C", "2004-02-16", "Second collector rack, OC-3 equipment.", "INV-002_C"],
+      ["D", "2014-04-07", "Wavelength equipment, environmental monitoring.", "INV-002_D"],
+      ["E", "2024-09-16", "Node processing servers.", "INV-002_E"]
     ]},
     { "no": "NODE-001", "series": "SITES", "title": "REGIONAL NODE STANDARD LAYOUT (N1-N8)", "revs": [
-      ["A", "1996-11-07", "Initial issue. Collector room, sensor interface rack, communications rack, UPS."],
-      ["B", "1998-06-01", "As built, all eight nodes."],
-      ["C", "2004-02-16", "Second collector rack. OC-3 terminal equipment."],
-      ["D", "2014-04-07", "Wavelength equipment. Environmental monitoring."],
-      ["E", "2024-09-16", "Node processing rack."]
+      ["A", "1996-11-07", "Initial issue. Collector room, sensor interface rack, communications rack, UPS.", "NODE-001_A"],
+      ["B", "1998-06-01", "As built, all eight nodes.", "NODE-001_B"],
+      ["C", "2004-02-16", "Second collector rack. OC-3 terminal equipment.", "NODE-001_C"],
+      ["D", "2014-04-07", "Wavelength equipment. Environmental monitoring.", "NODE-001_D"],
+      ["E", "2024-09-16", "Node processing rack.", "NODE-001_E"]
     ]},
     { "no": "SITE-B-001", "series": "SITES", "title": "ALTERNATE OPERATIONS SITE LAYOUT (SITE B)", "revs": [
-      ["A", "1997-09-15", "Initial issue. Leased space layout."],
-      ["B", "1999-10-25", "Alternate operations room: six consoles, replicated archive."],
-      ["C", "2002-05-13", "Full watch floor."],
-      ["D", "2010-11-08", "Consoles and video wall as FLR-002 rev E."],
-      ["E", "2022-04-11", "Direct-view LED wall."]
+      ["A", "1997-09-15", "Initial issue. Leased space layout.", "SITE-B-001_A"],
+      ["B", "1999-10-25", "Alternate operations room: six consoles, replicated archive.", "SITE-B-001_B"],
+      ["C", "2002-05-13", "Full watch floor.", "SITE-B-001_C"],
+      ["D", "2010-11-08", "Consoles and video wall as FLR-002 rev E.", "SITE-B-001_D"],
+      ["E", "2022-04-11", "Direct-view LED wall.", "SITE-B-001_E"]
     ]},
     { "no": "SITE-B-002", "series": "SITES", "title": "SWITCHOVER AND SWITCHBACK PROCEDURE", "revs": [
-      ["A", "1999-12-06", "Initial issue."],
-      ["B", "2000-04-10", "Hand-over timing and phone bridge order revised."],
-      ["C", "2002-06-03", "Full watch floor at Site B."],
-      ["D", "2008-03-03", "Replication checks before switchback."],
-      ["E", "2017-10-09", "Encrypted links."],
-      ["F", "2024-01-22", "Checklist steps automated where possible."]
+      ["A", "1999-12-06", "Initial issue.", "SITE-B-002_A"],
+      ["B", "2000-04-10", "Hand-over timing and phone bridge order revised.", "SITE-B-002_B"],
+      ["C", "2002-06-03", "Full watch floor at Site B.", "SITE-B-002_C"],
+      ["D", "2008-03-03", "Replication checks before switchback.", "SITE-B-002_D"],
+      ["E", "2017-10-09", "Encrypted links.", "SITE-B-002_E"],
+      ["F", "2024-01-22", "Checklist steps automated where possible.", "SITE-B-002_F"]
     ]},
     { "no": "SEC-001", "series": "SECURITY", "title": "PHYSICAL ACCESS CONTROL PLAN", "revs": [
-      ["A", "1996-05-13", "Initial issue. NX-1 badges, guard desk, keyed engineering room."],
-      ["B", "1998-06-01", "OER-1 laminated badges. Badge worn on the watch floor."],
-      ["C", "2000-08-28", "Guest badges GC-01 to GC-10 (cleared) and GN-01 to GN-10 (not cleared). Escort rule."],
-      ["D", "2001-11-05", "OER-2 magnetic stripe badges. Door readers at the watch floor and engineering entrances."],
-      ["E", "2006-10-02", "OER-3 proximity cards."],
-      ["F", "2012-03-05", "OER-4 smart cards with PIN."],
-      ["G", "2021-04-12", "OER-5 mobile credential and card."]
+      ["A", "1996-05-13", "Initial issue. NX-1 badges, guard desk, keyed engineering room.", "SEC-001_A"],
+      ["B", "1998-06-01", "OER-1 laminated badges. Badge worn on the watch floor.", "SEC-001_B"],
+      ["C", "2000-08-28", "Guest badges GC-01 to GC-10 (cleared) and GN-01 to GN-10 (not cleared). Escort rule.", "SEC-001_C"],
+      ["D", "2001-11-05", "OER-2 magnetic stripe badges. Door readers at the watch floor and engineering entrances.", "SEC-001_D"],
+      ["E", "2006-10-02", "OER-3 proximity cards.", "SEC-001_E"],
+      ["F", "2012-03-05", "OER-4 smart cards with PIN.", "SEC-001_F"],
+      ["G", "2021-04-12", "OER-5 mobile credential and card.", "SEC-001_G"]
     ]}
   ]
 }

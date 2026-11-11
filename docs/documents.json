@@ -328,5 +328,953 @@
   "category": "PERSONNEL",
   "file": "/hr/forms/HR-99.pdf",
   "bytes": 87717
+ },
+ "FLR-001_A": {
+  "name": "FLR-001 REV A // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_A.pdf",
+  "bytes": 125188
+ },
+ "FLR-001_B": {
+  "name": "FLR-001 REV B // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_B.pdf",
+  "bytes": 125692
+ },
+ "FLR-001_C": {
+  "name": "FLR-001 REV C // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_C.pdf",
+  "bytes": 129687
+ },
+ "FLR-001_D": {
+  "name": "FLR-001 REV D // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_D.pdf",
+  "bytes": 138192
+ },
+ "FLR-001_E": {
+  "name": "FLR-001 REV E // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_E.pdf",
+  "bytes": 138441
+ },
+ "FLR-001_F": {
+  "name": "FLR-001 REV F // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_F.pdf",
+  "bytes": 143654
+ },
+ "FLR-001_G": {
+  "name": "FLR-001 REV G // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_G.pdf",
+  "bytes": 147194
+ },
+ "FLR-001_H": {
+  "name": "FLR-001 REV H // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_H.pdf",
+  "bytes": 149997
+ },
+ "FLR-001_J": {
+  "name": "FLR-001 REV J // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_J.pdf",
+  "bytes": 151446
+ },
+ "FLR-001_K": {
+  "name": "FLR-001 REV K // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_K.pdf",
+  "bytes": 158548
+ },
+ "FLR-001_L": {
+  "name": "FLR-001 REV L // MACHINE ROOM FLOOR PLAN, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-001_L.pdf",
+  "bytes": 164284
+ },
+ "FLR-002_A": {
+  "name": "FLR-002 REV A // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_A.pdf",
+  "bytes": 114492
+ },
+ "FLR-002_B": {
+  "name": "FLR-002 REV B // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_B.pdf",
+  "bytes": 117357
+ },
+ "FLR-002_C": {
+  "name": "FLR-002 REV C // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_C.pdf",
+  "bytes": 117167
+ },
+ "FLR-002_D": {
+  "name": "FLR-002 REV D // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_D.pdf",
+  "bytes": 120821
+ },
+ "FLR-002_E": {
+  "name": "FLR-002 REV E // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_E.pdf",
+  "bytes": 122065
+ },
+ "FLR-002_F": {
+  "name": "FLR-002 REV F // WATCH FLOOR LAYOUT, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/FLR-002_F.pdf",
+  "bytes": 122329
+ },
+ "MEC-001_A": {
+  "name": "MEC-001 REV A // COOLING AND ENVIRONMENTAL SYSTEMS, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/MEC-001_A.pdf",
+  "bytes": 126031
+ },
+ "MEC-001_B": {
+  "name": "MEC-001 REV B // COOLING AND ENVIRONMENTAL SYSTEMS, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/MEC-001_B.pdf",
+  "bytes": 139063
+ },
+ "MEC-001_C": {
+  "name": "MEC-001 REV C // COOLING AND ENVIRONMENTAL SYSTEMS, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/MEC-001_C.pdf",
+  "bytes": 144913
+ },
+ "MEC-001_D": {
+  "name": "MEC-001 REV D // COOLING AND ENVIRONMENTAL SYSTEMS, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/MEC-001_D.pdf",
+  "bytes": 150854
+ },
+ "MEC-001_E": {
+  "name": "MEC-001 REV E // COOLING AND ENVIRONMENTAL SYSTEMS, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/MEC-001_E.pdf",
+  "bytes": 157298
+ },
+ "PWR-001_A": {
+  "name": "PWR-001 REV A // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_A.pdf",
+  "bytes": 110668
+ },
+ "PWR-001_B": {
+  "name": "PWR-001 REV B // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_B.pdf",
+  "bytes": 112965
+ },
+ "PWR-001_C": {
+  "name": "PWR-001 REV C // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_C.pdf",
+  "bytes": 113114
+ },
+ "PWR-001_D": {
+  "name": "PWR-001 REV D // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_D.pdf",
+  "bytes": 118320
+ },
+ "PWR-001_E": {
+  "name": "PWR-001 REV E // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_E.pdf",
+  "bytes": 114547
+ },
+ "PWR-001_F": {
+  "name": "PWR-001 REV F // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_F.pdf",
+  "bytes": 118069
+ },
+ "PWR-001_G": {
+  "name": "PWR-001 REV G // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_G.pdf",
+  "bytes": 119298
+ },
+ "PWR-001_H": {
+  "name": "PWR-001 REV H // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_H.pdf",
+  "bytes": 120327
+ },
+ "PWR-001_J": {
+  "name": "PWR-001 REV J // POWER ONE-LINE DIAGRAM, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-001_J.pdf",
+  "bytes": 121699
+ },
+ "PWR-002_A": {
+  "name": "PWR-002 REV A // POWER ONE-LINE DIAGRAM, SITE B",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-002_A.pdf",
+  "bytes": 102522
+ },
+ "PWR-002_B": {
+  "name": "PWR-002 REV B // POWER ONE-LINE DIAGRAM, SITE B",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-002_B.pdf",
+  "bytes": 102865
+ },
+ "PWR-002_C": {
+  "name": "PWR-002 REV C // POWER ONE-LINE DIAGRAM, SITE B",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-002_C.pdf",
+  "bytes": 104109
+ },
+ "PWR-002_D": {
+  "name": "PWR-002 REV D // POWER ONE-LINE DIAGRAM, SITE B",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-002_D.pdf",
+  "bytes": 105358
+ },
+ "PWR-005_A": {
+  "name": "PWR-005 REV A // GENERATOR PLANT AND PARALLELING SWITCHGEAR, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-005_A.pdf",
+  "bytes": 103559
+ },
+ "PWR-005_B": {
+  "name": "PWR-005 REV B // GENERATOR PLANT AND PARALLELING SWITCHGEAR, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-005_B.pdf",
+  "bytes": 109368
+ },
+ "PWR-005_C": {
+  "name": "PWR-005 REV C // GENERATOR PLANT AND PARALLELING SWITCHGEAR, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/PWR-005_C.pdf",
+  "bytes": 108362
+ },
+ "NET-001_A": {
+  "name": "NET-001 REV A // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_A.pdf",
+  "bytes": 117431
+ },
+ "NET-001_B": {
+  "name": "NET-001 REV B // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_B.pdf",
+  "bytes": 118121
+ },
+ "NET-001_C": {
+  "name": "NET-001 REV C // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_C.pdf",
+  "bytes": 122135
+ },
+ "NET-001_D": {
+  "name": "NET-001 REV D // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_D.pdf",
+  "bytes": 113099
+ },
+ "NET-001_E": {
+  "name": "NET-001 REV E // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_E.pdf",
+  "bytes": 118122
+ },
+ "NET-001_F": {
+  "name": "NET-001 REV F // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_F.pdf",
+  "bytes": 123640
+ },
+ "NET-001_G": {
+  "name": "NET-001 REV G // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_G.pdf",
+  "bytes": 124611
+ },
+ "NET-001_H": {
+  "name": "NET-001 REV H // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_H.pdf",
+  "bytes": 125311
+ },
+ "NET-001_J": {
+  "name": "NET-001 REV J // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_J.pdf",
+  "bytes": 125969
+ },
+ "NET-001_K": {
+  "name": "NET-001 REV K // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_K.pdf",
+  "bytes": 124533
+ },
+ "NET-001_L": {
+  "name": "NET-001 REV L // LOCAL NETWORK TOPOLOGY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-001_L.pdf",
+  "bytes": 124729
+ },
+ "NET-002_A": {
+  "name": "NET-002 REV A // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_A.pdf",
+  "bytes": 126339
+ },
+ "NET-002_B": {
+  "name": "NET-002 REV B // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_B.pdf",
+  "bytes": 129115
+ },
+ "NET-002_C": {
+  "name": "NET-002 REV C // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_C.pdf",
+  "bytes": 131204
+ },
+ "NET-002_D": {
+  "name": "NET-002 REV D // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_D.pdf",
+  "bytes": 132111
+ },
+ "NET-002_E": {
+  "name": "NET-002 REV E // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_E.pdf",
+  "bytes": 132699
+ },
+ "NET-002_F": {
+  "name": "NET-002 REV F // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_F.pdf",
+  "bytes": 134707
+ },
+ "NET-002_G": {
+  "name": "NET-002 REV G // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_G.pdf",
+  "bytes": 137485
+ },
+ "NET-002_H": {
+  "name": "NET-002 REV H // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_H.pdf",
+  "bytes": 134591
+ },
+ "NET-002_J": {
+  "name": "NET-002 REV J // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_J.pdf",
+  "bytes": 136086
+ },
+ "NET-002_K": {
+  "name": "NET-002 REV K // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_K.pdf",
+  "bytes": 137919
+ },
+ "NET-002_L": {
+  "name": "NET-002 REV L // WIDE AREA NETWORK (INTER-SITE)",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-002_L.pdf",
+  "bytes": 135859
+ },
+ "NET-005_A": {
+  "name": "NET-005 REV A // OUT-OF-BAND MANAGEMENT NETWORK",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-005_A.pdf",
+  "bytes": 101980
+ },
+ "NET-005_B": {
+  "name": "NET-005 REV B // OUT-OF-BAND MANAGEMENT NETWORK",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-005_B.pdf",
+  "bytes": 103897
+ },
+ "NET-005_C": {
+  "name": "NET-005 REV C // OUT-OF-BAND MANAGEMENT NETWORK",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-005_C.pdf",
+  "bytes": 107258
+ },
+ "NET-006_A": {
+  "name": "NET-006 REV A // MACHINE ROOM LEAF-SPINE FABRIC, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-006_A.pdf",
+  "bytes": 101272
+ },
+ "NET-006_B": {
+  "name": "NET-006 REV B // MACHINE ROOM LEAF-SPINE FABRIC, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-006_B.pdf",
+  "bytes": 103981
+ },
+ "NET-006_C": {
+  "name": "NET-006 REV C // MACHINE ROOM LEAF-SPINE FABRIC, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-006_C.pdf",
+  "bytes": 103228
+ },
+ "NET-007_A": {
+  "name": "NET-007 REV A // INTER-SITE LINK ENCRYPTION",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-007_A.pdf",
+  "bytes": 106032
+ },
+ "NET-007_B": {
+  "name": "NET-007 REV B // INTER-SITE LINK ENCRYPTION",
+  "category": "ENGINEERING",
+  "file": "/docs/NET-007_B.pdf",
+  "bytes": 104139
+ },
+ "RCK-01_A": {
+  "name": "RCK-01 REV A // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_A.pdf",
+  "bytes": 122873
+ },
+ "RCK-01_B": {
+  "name": "RCK-01 REV B // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_B.pdf",
+  "bytes": 132177
+ },
+ "RCK-01_C": {
+  "name": "RCK-01 REV C // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_C.pdf",
+  "bytes": 128721
+ },
+ "RCK-01_D": {
+  "name": "RCK-01 REV D // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_D.pdf",
+  "bytes": 137134
+ },
+ "RCK-01_E": {
+  "name": "RCK-01 REV E // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_E.pdf",
+  "bytes": 139389
+ },
+ "RCK-01_F": {
+  "name": "RCK-01 REV F // RACK ELEVATIONS, ROW A (CENTRAL HOSTS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-01_F.pdf",
+  "bytes": 145244
+ },
+ "RCK-02_A": {
+  "name": "RCK-02 REV A // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_A.pdf",
+  "bytes": 125004
+ },
+ "RCK-02_B": {
+  "name": "RCK-02 REV B // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_B.pdf",
+  "bytes": 123769
+ },
+ "RCK-02_C": {
+  "name": "RCK-02 REV C // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_C.pdf",
+  "bytes": 122374
+ },
+ "RCK-02_D": {
+  "name": "RCK-02 REV D // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_D.pdf",
+  "bytes": 120112
+ },
+ "RCK-02_E": {
+  "name": "RCK-02 REV E // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_E.pdf",
+  "bytes": 122122
+ },
+ "RCK-02_F": {
+  "name": "RCK-02 REV F // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_F.pdf",
+  "bytes": 123677
+ },
+ "RCK-02_G": {
+  "name": "RCK-02 REV G // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_G.pdf",
+  "bytes": 124526
+ },
+ "RCK-02_H": {
+  "name": "RCK-02 REV H // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_H.pdf",
+  "bytes": 127604
+ },
+ "RCK-02_J": {
+  "name": "RCK-02 REV J // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_J.pdf",
+  "bytes": 132398
+ },
+ "RCK-02_K": {
+  "name": "RCK-02 REV K // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_K.pdf",
+  "bytes": 130843
+ },
+ "RCK-02_L": {
+  "name": "RCK-02 REV L // RACK ELEVATIONS, ROW B (STORAGE AND TAPE)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-02_L.pdf",
+  "bytes": 135625
+ },
+ "RCK-03_A": {
+  "name": "RCK-03 REV A // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_A.pdf",
+  "bytes": 113610
+ },
+ "RCK-03_B": {
+  "name": "RCK-03 REV B // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_B.pdf",
+  "bytes": 111796
+ },
+ "RCK-03_C": {
+  "name": "RCK-03 REV C // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_C.pdf",
+  "bytes": 109566
+ },
+ "RCK-03_D": {
+  "name": "RCK-03 REV D // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_D.pdf",
+  "bytes": 111885
+ },
+ "RCK-03_E": {
+  "name": "RCK-03 REV E // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_E.pdf",
+  "bytes": 117694
+ },
+ "RCK-03_F": {
+  "name": "RCK-03 REV F // RACK ELEVATIONS, ROW C (NETWORK AND COMMUNICATIONS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-03_F.pdf",
+  "bytes": 125461
+ },
+ "RCK-04_A": {
+  "name": "RCK-04 REV A // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_A.pdf",
+  "bytes": 111275
+ },
+ "RCK-04_B": {
+  "name": "RCK-04 REV B // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_B.pdf",
+  "bytes": 112563
+ },
+ "RCK-04_C": {
+  "name": "RCK-04 REV C // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_C.pdf",
+  "bytes": 113753
+ },
+ "RCK-04_D": {
+  "name": "RCK-04 REV D // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_D.pdf",
+  "bytes": 115154
+ },
+ "RCK-04_E": {
+  "name": "RCK-04 REV E // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_E.pdf",
+  "bytes": 116882
+ },
+ "RCK-04_F": {
+  "name": "RCK-04 REV F // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_F.pdf",
+  "bytes": 145404
+ },
+ "RCK-04_G": {
+  "name": "RCK-04 REV G // RACK ELEVATIONS, ROW D (CORRELATION CLUSTER)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-04_G.pdf",
+  "bytes": 145161
+ },
+ "RCK-05_A": {
+  "name": "RCK-05 REV A // RACK ELEVATIONS, ROW E (BLADE CHASSIS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-05_A.pdf",
+  "bytes": 125839
+ },
+ "RCK-05_B": {
+  "name": "RCK-05 REV B // RACK ELEVATIONS, ROW E (BLADE CHASSIS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-05_B.pdf",
+  "bytes": 128132
+ },
+ "RCK-05_C": {
+  "name": "RCK-05 REV C // RACK ELEVATIONS, ROW E (BLADE CHASSIS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-05_C.pdf",
+  "bytes": 127795
+ },
+ "RCK-05_D": {
+  "name": "RCK-05 REV D // RACK ELEVATIONS, ROW E (BLADE CHASSIS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-05_D.pdf",
+  "bytes": 129397
+ },
+ "RCK-05_E": {
+  "name": "RCK-05 REV E // RACK ELEVATIONS, ROW E (BLADE CHASSIS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-05_E.pdf",
+  "bytes": 138926
+ },
+ "RCK-06_A": {
+  "name": "RCK-06 REV A // RACK ELEVATIONS, ROW F (ACCELERATORS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-06_A.pdf",
+  "bytes": 131180
+ },
+ "RCK-06_B": {
+  "name": "RCK-06 REV B // RACK ELEVATIONS, ROW F (ACCELERATORS)",
+  "category": "ENGINEERING",
+  "file": "/docs/RCK-06_B.pdf",
+  "bytes": 148626
+ },
+ "SWA-001_A": {
+  "name": "SWA-001 REV A // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_A.pdf",
+  "bytes": 96613
+ },
+ "SWA-001_B": {
+  "name": "SWA-001 REV B // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_B.pdf",
+  "bytes": 102342
+ },
+ "SWA-001_C": {
+  "name": "SWA-001 REV C // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_C.pdf",
+  "bytes": 104235
+ },
+ "SWA-001_D": {
+  "name": "SWA-001 REV D // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_D.pdf",
+  "bytes": 107705
+ },
+ "SWA-001_E": {
+  "name": "SWA-001 REV E // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_E.pdf",
+  "bytes": 107895
+ },
+ "SWA-001_F": {
+  "name": "SWA-001 REV F // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_F.pdf",
+  "bytes": 110027
+ },
+ "SWA-001_G": {
+  "name": "SWA-001 REV G // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_G.pdf",
+  "bytes": 113459
+ },
+ "SWA-001_H": {
+  "name": "SWA-001 REV H // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_H.pdf",
+  "bytes": 113368
+ },
+ "SWA-001_J": {
+  "name": "SWA-001 REV J // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_J.pdf",
+  "bytes": 116221
+ },
+ "SWA-001_K": {
+  "name": "SWA-001 REV K // NEXUS SOFTWARE ARCHITECTURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-001_K.pdf",
+  "bytes": 117400
+ },
+ "SWA-002_A": {
+  "name": "SWA-002 REV A // DATA FLOW, REGIONAL NODE TO CORE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-002_A.pdf",
+  "bytes": 97376
+ },
+ "SWA-002_B": {
+  "name": "SWA-002 REV B // DATA FLOW, REGIONAL NODE TO CORE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-002_B.pdf",
+  "bytes": 105250
+ },
+ "SWA-002_C": {
+  "name": "SWA-002 REV C // DATA FLOW, REGIONAL NODE TO CORE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-002_C.pdf",
+  "bytes": 104995
+ },
+ "SWA-002_D": {
+  "name": "SWA-002 REV D // DATA FLOW, REGIONAL NODE TO CORE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-002_D.pdf",
+  "bytes": 107597
+ },
+ "SWA-002_E": {
+  "name": "SWA-002 REV E // DATA FLOW, REGIONAL NODE TO CORE",
+  "category": "ENGINEERING",
+  "file": "/docs/SWA-002_E.pdf",
+  "bytes": 108220
+ },
+ "INV-001_A": {
+  "name": "INV-001 REV A // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_A.pdf",
+  "bytes": 116925
+ },
+ "INV-001_B": {
+  "name": "INV-001 REV B // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_B.pdf",
+  "bytes": 122667
+ },
+ "INV-001_C": {
+  "name": "INV-001 REV C // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_C.pdf",
+  "bytes": 133115
+ },
+ "INV-001_D": {
+  "name": "INV-001 REV D // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_D.pdf",
+  "bytes": 134387
+ },
+ "INV-001_E": {
+  "name": "INV-001 REV E // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_E.pdf",
+  "bytes": 143348
+ },
+ "INV-001_F": {
+  "name": "INV-001 REV F // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_F.pdf",
+  "bytes": 137499
+ },
+ "INV-001_G": {
+  "name": "INV-001 REV G // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_G.pdf",
+  "bytes": 144837
+ },
+ "INV-001_H": {
+  "name": "INV-001 REV H // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_H.pdf",
+  "bytes": 148018
+ },
+ "INV-001_J": {
+  "name": "INV-001 REV J // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_J.pdf",
+  "bytes": 150275
+ },
+ "INV-001_K": {
+  "name": "INV-001 REV K // EQUIPMENT INVENTORY, SITE A",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-001_K.pdf",
+  "bytes": 156874
+ },
+ "INV-002_A": {
+  "name": "INV-002 REV A // EQUIPMENT INVENTORY, NODES N1-N8",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-002_A.pdf",
+  "bytes": 111466
+ },
+ "INV-002_B": {
+  "name": "INV-002 REV B // EQUIPMENT INVENTORY, NODES N1-N8",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-002_B.pdf",
+  "bytes": 115572
+ },
+ "INV-002_C": {
+  "name": "INV-002 REV C // EQUIPMENT INVENTORY, NODES N1-N8",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-002_C.pdf",
+  "bytes": 122085
+ },
+ "INV-002_D": {
+  "name": "INV-002 REV D // EQUIPMENT INVENTORY, NODES N1-N8",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-002_D.pdf",
+  "bytes": 124425
+ },
+ "INV-002_E": {
+  "name": "INV-002 REV E // EQUIPMENT INVENTORY, NODES N1-N8",
+  "category": "ENGINEERING",
+  "file": "/docs/INV-002_E.pdf",
+  "bytes": 125229
+ },
+ "NODE-001_A": {
+  "name": "NODE-001 REV A // REGIONAL NODE STANDARD LAYOUT (N1-N8)",
+  "category": "ENGINEERING",
+  "file": "/docs/NODE-001_A.pdf",
+  "bytes": 99611
+ },
+ "NODE-001_B": {
+  "name": "NODE-001 REV B // REGIONAL NODE STANDARD LAYOUT (N1-N8)",
+  "category": "ENGINEERING",
+  "file": "/docs/NODE-001_B.pdf",
+  "bytes": 101500
+ },
+ "NODE-001_C": {
+  "name": "NODE-001 REV C // REGIONAL NODE STANDARD LAYOUT (N1-N8)",
+  "category": "ENGINEERING",
+  "file": "/docs/NODE-001_C.pdf",
+  "bytes": 104618
+ },
+ "NODE-001_D": {
+  "name": "NODE-001 REV D // REGIONAL NODE STANDARD LAYOUT (N1-N8)",
+  "category": "ENGINEERING",
+  "file": "/docs/NODE-001_D.pdf",
+  "bytes": 112420
+ },
+ "NODE-001_E": {
+  "name": "NODE-001 REV E // REGIONAL NODE STANDARD LAYOUT (N1-N8)",
+  "category": "ENGINEERING",
+  "file": "/docs/NODE-001_E.pdf",
+  "bytes": 113047
+ },
+ "SITE-B-001_A": {
+  "name": "SITE-B-001 REV A // ALTERNATE OPERATIONS SITE LAYOUT (SITE B)",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-001_A.pdf",
+  "bytes": 92967
+ },
+ "SITE-B-001_B": {
+  "name": "SITE-B-001 REV B // ALTERNATE OPERATIONS SITE LAYOUT (SITE B)",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-001_B.pdf",
+  "bytes": 108319
+ },
+ "SITE-B-001_C": {
+  "name": "SITE-B-001 REV C // ALTERNATE OPERATIONS SITE LAYOUT (SITE B)",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-001_C.pdf",
+  "bytes": 114781
+ },
+ "SITE-B-001_D": {
+  "name": "SITE-B-001 REV D // ALTERNATE OPERATIONS SITE LAYOUT (SITE B)",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-001_D.pdf",
+  "bytes": 116091
+ },
+ "SITE-B-001_E": {
+  "name": "SITE-B-001 REV E // ALTERNATE OPERATIONS SITE LAYOUT (SITE B)",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-001_E.pdf",
+  "bytes": 115059
+ },
+ "SITE-B-002_A": {
+  "name": "SITE-B-002 REV A // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_A.pdf",
+  "bytes": 105211
+ },
+ "SITE-B-002_B": {
+  "name": "SITE-B-002 REV B // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_B.pdf",
+  "bytes": 106657
+ },
+ "SITE-B-002_C": {
+  "name": "SITE-B-002 REV C // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_C.pdf",
+  "bytes": 108610
+ },
+ "SITE-B-002_D": {
+  "name": "SITE-B-002 REV D // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_D.pdf",
+  "bytes": 109604
+ },
+ "SITE-B-002_E": {
+  "name": "SITE-B-002 REV E // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_E.pdf",
+  "bytes": 111212
+ },
+ "SITE-B-002_F": {
+  "name": "SITE-B-002 REV F // SWITCHOVER AND SWITCHBACK PROCEDURE",
+  "category": "ENGINEERING",
+  "file": "/docs/SITE-B-002_F.pdf",
+  "bytes": 111292
+ },
+ "SEC-001_A": {
+  "name": "SEC-001 REV A // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_A.pdf",
+  "bytes": 106442
+ },
+ "SEC-001_B": {
+  "name": "SEC-001 REV B // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_B.pdf",
+  "bytes": 109752
+ },
+ "SEC-001_C": {
+  "name": "SEC-001 REV C // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_C.pdf",
+  "bytes": 110671
+ },
+ "SEC-001_D": {
+  "name": "SEC-001 REV D // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_D.pdf",
+  "bytes": 113355
+ },
+ "SEC-001_E": {
+  "name": "SEC-001 REV E // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_E.pdf",
+  "bytes": 115267
+ },
+ "SEC-001_F": {
+  "name": "SEC-001 REV F // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_F.pdf",
+  "bytes": 118707
+ },
+ "SEC-001_G": {
+  "name": "SEC-001 REV G // PHYSICAL ACCESS CONTROL PLAN",
+  "category": "ENGINEERING",
+  "file": "/docs/SEC-001_G.pdf",
+  "bytes": 118076
  }
 }

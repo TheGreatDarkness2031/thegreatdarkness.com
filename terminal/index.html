@@ -517,7 +517,89 @@
             "Not for operational use."
           ].join("\n"), { owner: "wpike", date: "1996-06-03" })
         }, { date: "1996-06-03" }),
-        restricted: dir({}, { owner: "root", restricted: true, date: "1996-06-10" }),
+        restricted: dir({
+          "NET-003_A.txt": file([
+            "NET-003  REV A                     2003-03-17",
+            "WIDE AREA LINK, SITE C",
+            "NOT ENTERED IN THE DOCUMENT REGISTER",
+            "",
+            " [SITE A]====(       )====[SITE C]",
+            "             PATH NOT",
+            "              SHOWN",
+            "",
+            "LINK      private fiber. Not a carrier circuit.",
+            "          No circuit ID issued.",
+            "TERMINAL  supplied and installed by Site C.",
+            "          Site A rack space: 2U, row C, sealed.",
+            "ADDRESS   10.3.0.0/16 assigned. Not routed",
+            "          from Site A.",
+            "MONITOR   Site A sees link state only (UP/DOWN).",
+            "          No traffic counters.",
+            "",
+            "DRAWN     ----        CHECKED   ----",
+            "APPROVED  WITHHELD",
+            "DISTRIBUTION  2 COPIES. NOT FOR THE LIBRARY."
+          ].join("\n"), { owner: "root", date: "2003-03-17" }),
+
+          "PWR-003_A.txt": file([
+            "PWR-003  REV A                     2003-03-17",
+            "POWER, SITE C",
+            "NOT ENTERED IN THE DOCUMENT REGISTER",
+            "",
+            "SOURCE      on site. Not utility.",
+            "            Rating withheld.",
+            "STANDBY     none required.",
+            "UPS         none required.",
+            "LOAD        Site A link terminal: 0.4 kW",
+            "            from Site A UPS (PWR-001, PDU-2).",
+            "            All other loads: not shown.",
+            "TEST        no generator test entries for",
+            "            Site C in the Site A log.",
+            "",
+            "DRAWN     ----        CHECKED   ----",
+            "APPROVED  WITHHELD"
+          ].join("\n"), { owner: "root", date: "2003-03-17" }),
+
+          "NET-004_A.txt": file([
+            "NET-004  REV A                     2003-11-10",
+            "WIDE AREA LINK, SITE D",
+            "NOT ENTERED IN THE DOCUMENT REGISTER",
+            "",
+            " [SITE D]-------->-------->[SITE A]",
+            "          ONE WAY. NO RETURN.",
+            "",
+            "LINK      receive only at Site A.",
+            "          Site A cannot transmit to Site D.",
+            "SCHEDULE  set by Site D. Not published.",
+            "RECEIVER  Site A, row C, 1U, sealed.",
+            "          Output to archive only. Not to",
+            "          the watch floor.",
+            "CHECK     none. Received data is stored as",
+            "          received. Do not normalize.",
+            "",
+            "DRAWN     ----        CHECKED   ----",
+            "APPROVED  WITHHELD",
+            "DISTRIBUTION  2 COPIES. NOT FOR THE LIBRARY."
+          ].join("\n"), { owner: "root", date: "2003-11-10" }),
+
+          "PWR-004_A.txt": file([
+            "PWR-004  REV A                     2003-11-10",
+            "POWER, SITE D",
+            "NOT ENTERED IN THE DOCUMENT REGISTER",
+            "",
+            "SOURCE      self-contained.",
+            "            No fuel. No grid connection.",
+            "ATTENDED    no.",
+            "SERVICE     none scheduled.",
+            "DESIGN LIFE not stated.",
+            "LOAD        not shown.",
+            "SITE A      receiver on Site A UPS",
+            "            (PWR-001, PDU-2): 0.1 kW.",
+            "",
+            "DRAWN     ----        CHECKED   ----",
+            "APPROVED  WITHHELD"
+          ].join("\n"), { owner: "root", date: "2003-11-10" })
+        }, { owner: "root", restricted: true, date: "1996-06-10" }),
         "2031": dir({}, { owner: "root", unlock: Date.UTC(2031, 6, 1, 12, 0, 0), date: "1996-06-10" })
       })
     }, { date: "1996-04-16" });

@@ -689,8 +689,11 @@
     // PREVIOUS / NEXT step through the documents of the same section, in
     // the order of /docs/documents.json (the same order as the list page).
     function renderDocNav_(list, key, category) {
+      // Engineering drawings step through the revisions of one drawing.
+      var eng = category === "ENGINEERING";
+      var drawing = String(key).split("_")[0];
       var keys = Object.keys(list).filter(function(k) {
-        return list[k].category === category;
+        return list[k].category === category && (!eng || k.split("_")[0] === drawing);
       });
       var at = keys.indexOf(key);
       if (at === -1) return;
@@ -708,15 +711,17 @@
       }
       setLink("docPrev", keys[at - 1]);
       setLink("docNext", keys[at + 1]);
-      document.getElementById("docCount").textContent =
-        String(category || "").toUpperCase() + " " + (at + 1) + " OF " + keys.length;
+      document.getElementById("docCount").textContent = eng
+        ? drawing + " // REVISION " + (at + 1) + " OF " + keys.length
+        : String(category || "").toUpperCase() + " " + (at + 1) + " OF " + keys.length;
       document.getElementById("docNav").hidden = false;
       // Wellness documents return to the Wellness page, Personnel Office
       // forms to the forms rack on /hr/.
       var RETURNS = {
         WELLNESS: ["/wellness/", "[ RETURN TO WELLNESS ]"],
         PERSONNEL: ["/hr/?view=forms", "[ RETURN TO FORMS RACK ]"],
-        HANDBOOK: ["/hr/?view=handbook", "[ RETURN TO PERSONNEL OFFICE ]"]
+        HANDBOOK: ["/hr/?view=handbook", "[ RETURN TO PERSONNEL OFFICE ]"],
+        ENGINEERING: ["/maintenance/?view=register", "[ RETURN TO DOCUMENT REGISTER ]"]
       };
       if (RETURNS[category]) {
         ["docReturn", "docReturnBottom"].forEach(function(id) {
