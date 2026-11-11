@@ -1510,11 +1510,16 @@
       font-size: 1rem;
     }
 
+    /* 1997 push button: gray face, light top-left edge, dark
+       bottom-right edge; pressed = edges swap and the label shifts. */
     .bbs-btn {
       width: 100%;
       padding: 12px 15px;
-      background: #ffffff;
-      border: 2px outset #ffffff;
+      background: #c0c0c0;
+      border-style: solid;
+      border-width: 2px;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      box-shadow: inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
       border-radius: 0;
       color: #000000;
       font-family: "Courier New", monospace;
@@ -1524,7 +1529,14 @@
     }
 
     .bbs-btn:active {
-      border-style: inset;
+      border-color: #404040 #ffffff #ffffff #404040;
+      box-shadow: inset 2px 2px 0 #808080, inset -2px -2px 0 #dfdfdf;
+      padding: 13px 14px 11px 16px;
+    }
+
+    .bbs-btn:focus-visible {
+      outline: 1px dotted #000000;
+      outline-offset: -6px;
     }
 
     .bbs-feed {
