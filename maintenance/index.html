@@ -579,6 +579,7 @@
       <div class="view-tabs" role="tablist">
         <button type="button" class="view-tab active" data-view="records" role="tab">MAINTENANCE RECORDS</button>
         <button type="button" class="view-tab" data-view="register" role="tab">DOCUMENT REGISTER</button>
+        <button type="button" class="view-tab" data-view="projects" role="tab">ENGINEERING PROJECTS</button>
       </div>
 
       <div id="recordsPane" class="view-pane">
@@ -884,6 +885,32 @@
           <div id="regViewBody" class="record-view-body">
             <div class="record-placeholder">
               SELECT A DOCUMENT FROM THE REGISTER TO DISPLAY ITS REVISION HISTORY.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="projectsPane" class="view-pane" hidden>
+
+        <div id="prjStatus" class="status-line bevel-inset">
+          RETRIEVING PROJECT STATUS...
+        </div>
+
+        <div class="bevel-inset">
+          <div class="index-title">
+            ENGINEERING PROJECT STATUS BOARD
+          </div>
+          <div id="prjList" class="record-list register-list">
+            <div class="record-empty">RETRIEVING PROJECT STATUS...</div>
+          </div>
+        </div>
+
+        <div class="record-view bevel-inset">
+          <div id="prjViewTitle" class="record-view-title">PROJECT VIEW</div>
+          <div id="prjViewBody" class="record-view-body">
+            <div class="record-placeholder">
+              SELECT A PROJECT TO DISPLAY ITS LATEST ENGINEERING ENTRIES.
             </div>
           </div>
         </div>
@@ -2172,7 +2199,7 @@ function exitMaintenanceLog() {
   // /tools/document/; without one the revision is on paper only.
   (function () {
     var tabs = document.querySelectorAll(".view-tab");
-    var panes = { records: document.getElementById("recordsPane"), register: document.getElementById("registerPane") };
+    var panes = { records: document.getElementById("recordsPane"), register: document.getElementById("registerPane"), projects: document.getElementById("projectsPane") };
     var modeLabel = document.getElementById("displayMode");
     var el = {
       search: document.getElementById("regSearch"),
@@ -2197,12 +2224,13 @@ function exitMaintenanceLog() {
       for (var i = 0; i < tabs.length; i++) {
         tabs[i].classList.toggle("active", tabs[i].getAttribute("data-view") === name);
       }
-      modeLabel.textContent = name === "register" ? "REGISTER VIEW" : "INDEX VIEW";
+      modeLabel.textContent = name === "register" ? "REGISTER VIEW" : name === "projects" ? "PROJECT VIEW" : "INDEX VIEW";
       var url = new URL(location.href);
-      if (name === "register") url.searchParams.set("view", "register"); else url.searchParams.delete("view");
+      if (name === "register" || name === "projects") url.searchParams.set("view", name); else url.searchParams.delete("view");
       history.replaceState(null, "", url.pathname + url.search);
       if (window.oerRefreshMenu) window.oerRefreshMenu();
       if (name === "register") load();
+      if (name === "projects" && window.oerLoadProjects) window.oerLoadProjects();
     }
 
     function load() {
@@ -2313,7 +2341,147 @@ function exitMaintenanceLog() {
       if (tr) showDoc(tr.getAttribute("data-no"));
     });
 
-    if (new URLSearchParams(location.search).get("view") === "register") showView("register");
+    var startView = new URLSearchParams(location.search).get("view");
+    if (startView === "register" || startView === "projects") showView(startView);
+  })();
+  </script>
+
+  <style>
+    .prj-table td.prj-status { white-space: nowrap; font-weight: bold; letter-spacing: 1px; }
+    .prj-ACTIVE { color: #0a7a0a; }
+    .prj-IDLE { color: #9a6a00; }
+    .prj-DORMANT { color: #777777; }
+    body.oer-night .prj-ACTIVE { color: #33ff33; }
+    body.oer-night .prj-IDLE { color: #ffbf00; }
+    .prj-entries td { vertical-align: top; padding: 4px 6px; border-bottom: 1px dotted #999; }
+    .prj-entries .prj-date { white-space: nowrap; }
+  </style>
+  <script>
+  // ENGINEERING PROJECTS view (2026-11-11): maintenance-log systems grouped
+  // into projects; status from each project's newest entry.
+  (function () {
+    var PROJECTS = [
+      ["ENG-01", "ARCHIVE WRITE PERFORMANCE", /^Archive (Write )?Performance$|^Archive (Host|Test Host|Services|Integrity|Verification|Retrieval)$/,
+        "Nightly archive write phase, host capacity and verification of archived counts."],
+      ["ENG-02", "EXTERNAL FEED TIMING", /Regional Timing|Regional Clock|External Feed|July 1997 Record/,
+        "Late and out-of-sequence regional updates; open item OER-OPS-1998-024."],
+      ["ENG-03", "RECEIVER AND COMMIT CHAIN", /Inbound Interface|Regional Receiver|Commit Monitor|Pending-Confirmation|Receiver Replay|Retry Handling|Run-State|Process-State/,
+        "Receipt, sender commitment and confirmation between regional nodes and the central receiver."],
+      ["ENG-04", "REGIONAL STATUS REPORTING", /Regional Status/,
+        "Displayed regional status that stops updating while receiver activity continues."],
+      ["ENG-05", "MONITORING PROTOTYPE", /Monitoring (Prototype|Proposal|Requirements)/,
+        "Isolated automated monitoring prototype. Not deployed."],
+      ["ENG-06", "MONITORING RESEARCH PROGRAM", /Research|Monitoring Data Integration|Network Observation|Capability Review/,
+        "Survey of network, feed, storage and correlation methods for a future monitoring system."],
+      ["ENG-07", "EVENT CORRELATION", /Event Correlation|Correlation/,
+        "Relating records across regions and sources without assigning unsupported causes."],
+      ["ENG-08", "OPERATOR PROCEDURES", /Operator Procedure|Operations Reference|Recovery Procedure|Emergency Procedure|Maintenance Log Integration/,
+        "Watch-floor procedures, references and recovery walkthroughs."],
+      ["ENG-09", "CHANGE CONTROL AND RELEASE", /Change Control|Release|Revision Control|Configuration|Test Environment$/,
+        "Release inventory, approved changes and the controlled test environment."],
+      ["ENG-10", "ACCESS AND FACILITY SECURITY", /Access|Security/,
+        "Access reviews, test-environment access and facility security posture."]
+    ];
+    var loaded = false, projects = [], selected = "";
+    var els = {
+      status: document.getElementById("prjStatus"),
+      list: document.getElementById("prjList"),
+      title: document.getElementById("prjViewTitle"),
+      body: document.getElementById("prjViewBody")
+    };
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+    }
+    function days(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 86400000); }
+
+    function build(records) {
+      var end = records.reduce(function (m, r) { return r.date > m ? r.date : m; }, "");
+      projects = PROJECTS.map(function (p) { return { code: p[0], name: p[1], re: p[2], scope: p[3], rows: [] }; });
+      records.forEach(function (r) {
+        if (!/^\d{4}-\d\d-\d\d$/.test(r.date || "")) return;
+        for (var i = 0; i < projects.length; i++) {
+          if (projects[i].re.test(r.system || "")) { projects[i].rows.push(r); return; }
+        }
+      });
+      projects = projects.filter(function (p) { return p.rows.length; });
+      projects.forEach(function (p) {
+        p.rows.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.idNumber || 0) - (b.idNumber || 0); });
+        p.opened = p.rows[0].date;
+        p.last = p.rows[p.rows.length - 1];
+        var gap = days(p.last.date, end);
+        p.status = gap <= 120 ? "ACTIVE" : gap <= 365 ? "IDLE" : "DORMANT";
+        var count = {};
+        p.rows.slice(-20).forEach(function (r) { if (!/Staff$/.test(r.author)) count[r.author] = (count[r.author] || 0) + 1; });
+        p.lead = Object.keys(count).sort(function (a, b) { return count[b] - count[a]; })[0] || "ENGINEERING";
+      });
+      var rank = { ACTIVE: 0, IDLE: 1, DORMANT: 2 };
+      projects.sort(function (a, b) { return rank[a.status] - rank[b.status] || (a.last.date < b.last.date ? 1 : -1); });
+      return end;
+    }
+
+    function render(end) {
+      var active = projects.filter(function (p) { return p.status === "ACTIVE"; }).length;
+      els.status.classList.remove("error");
+      els.status.textContent = projects.length + " PROJECT(S) // " + active + " ACTIVE // STATUS AS OF " + end + " (LAST ENGINEERING RECORD).";
+      els.list.innerHTML = '<table class="record-table register-table prj-table"><thead><tr>' +
+        '<th style="width:64px">PROJECT</th><th>TITLE</th><th style="width:78px">STATUS</th>' +
+        '<th style="width:84px">OPENED</th><th style="width:84px">LAST ENTRY</th><th style="width:54px">ENTRIES</th></tr></thead><tbody>' +
+        projects.map(function (p) {
+          return '<tr data-code="' + p.code + '"' + (p.code === selected ? ' class="selected"' : '') + '>' +
+            '<td class="record-id">' + p.code + '</td><td title="' + esc(p.scope) + '">' + esc(p.name) + '</td>' +
+            '<td class="prj-status prj-' + p.status + '">' + p.status + '</td>' +
+            '<td>' + p.opened + '</td><td>' + p.last.date + '</td><td>' + p.rows.length + '</td></tr>';
+        }).join("") + '</tbody></table>';
+    }
+
+    function show(code) {
+      var p = projects.filter(function (x) { return x.code === code; })[0];
+      if (!p) return;
+      selected = code;
+      var trs = els.list.querySelectorAll("tbody tr");
+      for (var i = 0; i < trs.length; i++) trs[i].classList.toggle("selected", trs[i].getAttribute("data-code") === code);
+      var systems = {};
+      p.rows.forEach(function (r) { systems[r.system] = 1; });
+      els.title.textContent = p.code + " // " + p.name;
+      els.body.innerHTML =
+        '<table class="record-view-meta">' +
+        '<tr><td class="record-view-label">SCOPE:</td><td>' + esc(p.scope) + '</td></tr>' +
+        '<tr><td class="record-view-label">STATUS:</td><td class="prj-' + p.status + '"><b>' + p.status + '</b></td></tr>' +
+        '<tr><td class="record-view-label">ENGINEER:</td><td>' + esc(p.lead) + '</td></tr>' +
+        '<tr><td class="record-view-label">OPENED:</td><td>' + p.opened + '</td></tr>' +
+        '<tr><td class="record-view-label">LAST ENTRY:</td><td>' + p.last.date + ' (' + esc(p.last.action) + ')</td></tr>' +
+        '<tr><td class="record-view-label">RECORDS:</td><td>' + p.rows.length + ' ENTRIES UNDER ' + Object.keys(systems).length + ' SYSTEM HEADING(S)</td></tr>' +
+        '</table><div class="record-entry-divider"></div>' +
+        '<div class="record-view-label" style="margin-bottom:6px">LATEST ENTRIES</div>' +
+        '<table class="prj-entries">' +
+        p.rows.slice(-6).reverse().map(function (r) {
+          return '<tr><td class="prj-date">' + r.date + '</td><td><b>' + esc(r.system) + '</b> // ' + esc(r.action) +
+            ' // ' + esc(r.author) + '<br>' + esc(r.entry) + '</td></tr>';
+        }).join("") + '</table>';
+    }
+
+    window.oerLoadProjects = function () {
+      if (loaded) return;
+      loaded = true;
+      fetch("/data/maintenance.json", { cache: "no-cache" })
+        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+        .then(function (d) {
+          if (!d || d.ok !== true || !d.records) throw new Error("bad file");
+          render(build(d.records));
+        })
+        .catch(function () {
+          loaded = false;
+          els.status.classList.add("error");
+          els.status.textContent = "PROJECT STATUS UNAVAILABLE. RETRY LATER.";
+          els.list.innerHTML = '<div class="record-empty">PROJECT STATUS NOT RETRIEVED.</div>';
+        });
+    };
+    els.list.addEventListener("click", function (e) {
+      var tr = e.target.closest("tr[data-code]");
+      if (tr) show(tr.getAttribute("data-code"));
+    });
+    // Opened straight at ?view=projects: the tab switcher ran before this script.
+    if (new URLSearchParams(location.search).get("view") === "projects") window.oerLoadProjects();
   })();
   </script>
 

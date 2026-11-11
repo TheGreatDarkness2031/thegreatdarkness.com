@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+
+<meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Watch Schedule">
+<meta property="og:description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:url" content="https://thegreatdarkness.com/schedule/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="description" content="OER watch schedule: the crew on the floor now, the watch bill and the Red / Blue rotation.">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OER // Watch Schedule</title>
+
+<style>
+:root {
+  --outer-gray: #404040;
+  --dark-gray: #1a1a1a;
+  --title-blue: #000080;
+  --title-blue-dark: #00004f;
+  --body-gray: #c4c4c4;
+  --muted: #8a8a8a;
+  --line: #4a4a4a;
+  --green: #7fd18b;
+  --red-crew: #e06c6c;
+  --blue-crew: #7fa6ff;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
+body { padding: 24px 12px 32px; }
+
+.hr-shell {
+  width: 100%; max-width: 1080px; margin: 0 auto; padding: 5px;
+  background: var(--outer-gray);
+  border-top: 2px solid #bdbdbd; border-left: 2px solid #bdbdbd;
+  border-right: 2px solid #111; border-bottom: 2px solid #111;
+  box-shadow: 6px 6px 0 #000, 0 0 22px rgba(255,255,255,0.05);
+}
+.hr-window { background: var(--dark-gray); border: 2px inset #8d8d8d; }
+.title-bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  min-height: 29px; padding: 5px 8px;
+  background: linear-gradient(to right, var(--title-blue), var(--title-blue-dark));
+  color: #fff; font-family: Arial, Helvetica, sans-serif; font-size: 0.76rem; font-weight: bold; letter-spacing: 1px;
+}
+.title-bar small { color: #d2d8ff; font-size: 0.61rem; font-weight: normal; letter-spacing: 0.8px; white-space: nowrap; }
+.tabs {
+  display: flex; flex-wrap: wrap; gap: 2px; padding: 6px 8px 0;
+  background: #c0c0c0; border-bottom: 2px solid #808080;
+  font-family: Arial, Helvetica, sans-serif; font-size: 0.7rem; letter-spacing: 0.5px;
+}
+.tabs a {
+  display: block; padding: 5px 12px 4px; color: #111; text-decoration: none;
+  background: #b4b4b4; border: 1px solid #808080; border-bottom: none;
+  border-top-color: #eee; border-left-color: #eee;
+}
+.tabs a.on { background: #d4d4d4; font-weight: bold; position: relative; top: 2px; }
+.pane { padding: 16px 18px 22px; min-height: 420px; }
+.pane h2 { margin: 0 0 4px; color: #fff; font-size: 1rem; letter-spacing: 2px; }
+.note { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; margin: 0 0 14px; }
+
+.crew-red { color: var(--red-crew); }
+.crew-blue { color: var(--blue-crew); }
+
+/* on the floor */
+.now { display: grid; grid-template-columns: 260px 1fr; gap: 22px; align-items: start; }
+.board { border: 2px inset #6a6a6a; background: #000; padding: 14px; text-align: center; }
+.board .lbl { color: var(--muted); font-size: 0.65rem; letter-spacing: 2px; }
+.board .big { font-size: 1.6rem; font-weight: bold; letter-spacing: 3px; margin: 4px 0 10px; }
+.board .clock { color: #fff; font-size: 1.3rem; letter-spacing: 2px; margin: 4px 0 10px; }
+.board .row { display: flex; justify-content: space-between; font-size: 0.72rem; padding: 3px 0; border-top: 1px dashed #333; }
+.board .row b { color: #eee; font-weight: normal; }
+table.bill { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+table.bill th { text-align: left; color: #fff; letter-spacing: 1px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+table.bill td { padding: 6px 8px; border-bottom: 1px solid #262626; vertical-align: middle; }
+table.bill td.seat { color: var(--muted); letter-spacing: 1px; white-space: nowrap; }
+table.bill a { color: #eee; text-decoration: none; }
+table.bill a:hover { color: var(--green); text-decoration: underline; }
+table.bill .vacant { color: #555; font-style: italic; }
+.since { color: var(--muted); font-size: 0.66rem; margin-left: 6px; }
+.lit { background: #0b1a0b; }
+
+/* rotation */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin: 0 0 10px; }
+.cal-head a { color: var(--green); text-decoration: none; font-size: 0.75rem; letter-spacing: 1px; }
+.cal-head a:hover { text-decoration: underline; }
+.cal-head b { color: #fff; letter-spacing: 3px; }
+table.cal { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 0.75rem; }
+table.cal th { color: var(--muted); font-weight: normal; letter-spacing: 1px; padding: 4px; border-bottom: 1px solid var(--line); }
+table.cal td { height: 58px; vertical-align: top; padding: 4px 6px; border: 1px solid #2a2a2a; background: #121212; }
+table.cal td.empty { background: #0c0c0c; }
+table.cal td .d { color: #aaa; }
+table.cal td .c { display: block; margin-top: 8px; font-weight: bold; letter-spacing: 2px; }
+table.cal td.red { background: #1d0f0f; }
+table.cal td.blue { background: #0f1424; }
+table.cal td.today { outline: 2px solid var(--green); outline-offset: -2px; }
+.legend { margin-top: 12px; font-size: 0.72rem; color: var(--muted); letter-spacing: 1px; line-height: 1.7; }
+
+@media (max-width: 720px) {
+  .now { grid-template-columns: 1fr; }
+  .pane { padding: 12px 10px 18px; }
+  table.bill { font-size: 0.72rem; }
+  table.bill td, table.bill th { padding: 5px 4px; }
+  table.cal td { height: 46px; padding: 3px; }
+  table.cal td .c { margin-top: 4px; letter-spacing: 0; }
+}
+</style>
+</head>
+
+<body>
+<div class="hr-shell">
+  <div class="hr-window">
+    <div class="title-bar">
+      <span>WATCH SCHEDULE // OPERATIONAL EVENT REGISTER</span>
+      <small>FACILITY TIME: CENTRAL</small>
+    </div>
+    <nav class="tabs" id="tabs">
+      <a href="?view=now" data-view="now">ON THE FLOOR</a>
+      <a href="?view=bill" data-view="bill">WATCH BILL</a>
+      <a href="?view=rotation" data-view="rotation">ROTATION</a>
+    </nav>
+    <div class="pane" id="pane"></div>
+  </div>
+</div>
+
+<script src="/hr/data.js"></script>
+<script>
+(function () {
+  var HR = window.HR || { people: [] };
+  var pane = document.getElementById("pane");
+  var MONTHS = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+  var DAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  var ROLES = ["Watch Lead", "Watch Monitoring", "Watch Correlation", "Watch COMM"];
+  var ROLE_WORDS = { "Watch Lead": "LEAD", "Watch Monitoring": "MONITORING", "Watch Correlation": "CORRELATION", "Watch COMM": "COMM" };
+  var DAY = 86400000;
+
+  // Red / Blue rotation: a 10-day cycle counted from 24 June 1998, Red on
+  // days 0, 1, 5, 6, 7 (same rule as the watch log, WatchLogGen.js wlgCrew_).
+  // A crew holds the floor 07:00-07:00: Day Watch to 19:00, then its Night Watch.
+  function crewOn(y, m, d) {
+    var n = Math.floor((Date.UTC(y, m, d) - Date.UTC(1998, 5, 24)) / DAY);
+    n = ((n % 10) + 10) % 10;
+    return [0, 1, 5, 6, 7].indexOf(n) >= 0 ? "Red" : "Blue";
+  }
+
+  // Facility (Central) wall-clock parts for an instant.
+  function central(ms) {
+    var f = new Intl.DateTimeFormat("en-US", {
+      timeZone: "America/Chicago", year: "numeric", month: "numeric", day: "numeric",
+      hour: "numeric", minute: "2-digit", second: "2-digit", hourCycle: "h23", weekday: "short"
+    });
+    var o = {};
+    f.formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = p.value; });
+    return { y: +o.year, m: +o.month - 1, d: +o.day, h: +o.hour, mi: +o.minute, s: +o.second, wd: o.weekday };
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function today() { var c = central(Date.now()); return c.y + "-" + pad(c.m + 1) + "-" + pad(c.d); }
+
+  // Current watch staff from the personnel file.
+  function staff() {
+    var t = today();
+    return HR.people.filter(function (p) {
+      return /^Watch /.test(p.title) && /Crew/.test(p.unit) && (!p.hire || p.hire <= t) && (!p.sep || p.sep >= t);
+    });
+  }
+  function holder(list, crew, watch, role) {
+    return list.filter(function (p) {
+      return p.title === role && p.unit.indexOf(crew + " Crew") === 0 && (watch ? p.unit.indexOf(watch + " Watch") >= 0 : true);
+    })[0];
+  }
+  function relief(list, crew) {
+    return list.filter(function (p) { return p.title === "Watch Relief" && p.unit.indexOf(crew + " Crew") === 0; });
+  }
+  function nameCell(p) {
+    var td = el("td");
+    if (!p) { td.appendChild(el("span", "vacant", "VACANT // RELIEF COVER")); return td; }
+    var a = el("a", null, p.name);
+    a.href = "/hr/?id=" + encodeURIComponent(p.id);
+    td.appendChild(a);
+    return td;
+  }
+
+  function renderNow() {
+    var c = central(Date.now());
+    // Before 07:00 the night belongs to the previous day's crew.
+    var base = c.h < 7 ? new Date(Date.UTC(c.y, c.m, c.d) - DAY) : new Date(Date.UTC(c.y, c.m, c.d));
+    var crew = crewOn(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate());
+    var watch = c.h >= 7 && c.h < 19 ? "Day" : "Night";
+    var next = watch === "Day" ? "19:00 // " + crew.toUpperCase() + " NIGHT WATCH"
+      : "07:00 // " + (function () {
+        var nd = c.h < 7 ? new Date(Date.UTC(c.y, c.m, c.d)) : new Date(Date.UTC(c.y, c.m, c.d) + DAY);
+        return crewOn(nd.getUTCFullYear(), nd.getUTCMonth(), nd.getUTCDate()).toUpperCase();
+      })() + " DAY WATCH";
+
+    pane.appendChild(el("h2", null, "ON THE FLOOR"));
+    pane.appendChild(el("p", "note", "WATCH FLOOR STAFFING AT THIS HOUR. TURNOVER BRIEFINGS BEGIN 15 MINUTES BEFORE EACH CHANGE OF WATCH."));
+    var wrap = el("div", "now");
+    var board = el("div", "board");
+    board.appendChild(el("div", "lbl", "FACILITY TIME"));
+    var clock = el("div", "clock", "--:--:--");
+    board.appendChild(clock);
+    board.appendChild(el("div", "lbl", "CREW ON WATCH"));
+    board.appendChild(el("div", "big crew-" + crew.toLowerCase(), crew.toUpperCase() + " CREW"));
+    [["WATCH", watch.toUpperCase() + " WATCH"], ["HOURS", watch === "Day" ? "07:00 - 19:00" : "19:00 - 07:00"], ["NEXT TURNOVER", next]].forEach(function (r) {
+      var row = el("div", "row");
+      row.appendChild(el("span", null, r[0]));
+      row.appendChild(el("b", null, r[1]));
+      board.appendChild(row);
+    });
+    wrap.appendChild(board);
+
+    var list = staff();
+    var t = el("table", "bill");
+    var hr = el("tr");
+    ["POSITION", "ON WATCH"].forEach(function (h) { hr.appendChild(el("th", null, h)); });
+    t.appendChild(hr);
+    ROLES.forEach(function (role) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "seat", ROLE_WORDS[role]));
+      tr.appendChild(nameCell(holder(list, crew, watch, role)));
+      t.appendChild(tr);
+    });
+    var rl = relief(list, crew);
+    var tr = el("tr");
+    tr.appendChild(el("td", "seat", "RELIEF"));
+    tr.appendChild(nameCell(rl[0]));
+    t.appendChild(tr);
+    wrap.appendChild(t);
+    pane.appendChild(wrap);
+
+    function tick() {
+      var n = central(Date.now());
+      clock.textContent = pad(n.h) + ":" + pad(n.mi) + ":" + pad(n.s);
+    }
+    tick();
+    var timer = setInterval(function () { if (!document.body.contains(clock)) clearInterval(timer); else tick(); }, 1000);
+  }
+
+  function renderBill() {
+    pane.appendChild(el("h2", null, "WATCH BILL"));
+    pane.appendChild(el("p", "note", "STANDING SEAT ASSIGNMENTS, BOTH CREWS. A VACANT SEAT IS COVERED BY THE CREW RELIEF WATCHSTANDER."));
+    var list = staff();
+    var c = central(Date.now());
+    var base = c.h < 7 ? new Date(Date.UTC(c.y, c.m, c.d) - DAY) : new Date(Date.UTC(c.y, c.m, c.d));
+    var onCrew = crewOn(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate());
+    var onWatch = c.h >= 7 && c.h < 19 ? "Day" : "Night";
+    var cols = [["Red", "Day"], ["Red", "Night"], ["Blue", "Day"], ["Blue", "Night"]];
+    var t = el("table", "bill");
+    var hr = el("tr");
+    hr.appendChild(el("th", null, "POSITION"));
+    cols.forEach(function (k) {
+      var th = el("th", "crew-" + k[0].toLowerCase(), k[0].toUpperCase() + " " + k[1].toUpperCase());
+      hr.appendChild(th);
+    });
+    t.appendChild(hr);
+    ROLES.forEach(function (role) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "seat", ROLE_WORDS[role]));
+      cols.forEach(function (k) {
+        var td = nameCell(holder(list, k[0], k[1], role));
+        if (k[0] === onCrew && k[1] === onWatch) td.className = "lit";
+        tr.appendChild(td);
+      });
+      t.appendChild(tr);
+    });
+    var tr = el("tr");
+    tr.appendChild(el("td", "seat", "RELIEF"));
+    ["Red", "Blue"].forEach(function (crew) {
+      var td = nameCell(relief(list, crew)[0]);
+      td.colSpan = 2;
+      tr.appendChild(td);
+    });
+    t.appendChild(tr);
+    pane.appendChild(t);
+    pane.appendChild(el("p", "legend", "HIGHLIGHTED: THE WATCH ON THE FLOOR NOW. NAMES OPEN THE PERSONNEL FILE."));
+  }
+
+  function renderRotation(q) {
+    var c = central(Date.now());
+    var ym = /^(\d{4})-(\d{2})$/.exec(q.month || "");
+    var y = ym ? +ym[1] : c.y, m = ym ? +ym[2] - 1 : c.m;
+    if (y < 1998 || (y === 1998 && m < 5)) { y = 1998; m = 5; }
+    if (y > 2031 || (y === 2031 && m > 6)) { y = 2031; m = 6; }
+    function link(dy, dm, label) {
+      var d = new Date(Date.UTC(y, m + dm, 1));
+      var a = el("a", null, label);
+      a.href = "?view=rotation&month=" + d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1);
+      a.addEventListener("click", function (e) { e.preventDefault(); go(a.getAttribute("href")); });
+      return a;
+    }
+    pane.appendChild(el("h2", null, "ROTATION"));
+    pane.appendChild(el("p", "note", "EACH CREW HOLDS THE FLOOR FROM 07:00 FOR 24 HOURS: DAY WATCH TO 19:00, THEN ITS NIGHT WATCH. TEN-DAY CYCLE SINCE JUNE 1998."));
+    var head = el("div", "cal-head");
+    head.appendChild(link(0, -1, "<< PREVIOUS"));
+    head.appendChild(el("b", null, MONTHS[m] + " " + y));
+    head.appendChild(link(0, 1, "NEXT >>"));
+    pane.appendChild(head);
+    var t = el("table", "cal");
+    var hr = el("tr");
+    DAYS.forEach(function (d) { hr.appendChild(el("th", null, d)); });
+    t.appendChild(hr);
+    var first = new Date(Date.UTC(y, m, 1)).getUTCDay();
+    var days = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
+    var tr = el("tr");
+    for (var i = 0; i < first; i++) tr.appendChild(el("td", "empty"));
+    for (var d = 1; d <= days; d++) {
+      var crew = crewOn(y, m, d);
+      var td = el("td", crew.toLowerCase());
+      if (y === c.y && m === c.m && d === c.d) td.className += " today";
+      td.appendChild(el("span", "d", String(d)));
+      td.appendChild(el("span", "c crew-" + crew.toLowerCase(), crew.toUpperCase()));
+      tr.appendChild(td);
+      if ((first + d) % 7 === 0) { t.appendChild(tr); tr = el("tr"); }
+    }
+    if (tr.children.length) {
+      while (tr.children.length < 7) tr.appendChild(el("td", "empty"));
+      t.appendChild(tr);
+    }
+    pane.appendChild(t);
+    pane.appendChild(el("p", "legend", "OUTLINED: TODAY. BEFORE 07:00 THE FLOOR IS STILL HELD BY THE PREVIOUS DAY'S NIGHT WATCH."));
+  }
+
+  function params() {
+    var q = {};
+    location.search.replace(/^\?/, "").split("&").forEach(function (kv) {
+      if (!kv) return;
+      var p = kv.split("=");
+      q[decodeURIComponent(p[0])] = decodeURIComponent(p[1] || "");
+    });
+    return q;
+  }
+  function go(href) {
+    history.pushState(null, "", href);
+    render();
+    if (window.oerRefreshMenu) window.oerRefreshMenu();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
+    a.addEventListener("click", function (e) { e.preventDefault(); go(a.getAttribute("href")); });
+  });
+  window.addEventListener("popstate", render);
+
+  function render() {
+    var q = params();
+    var view = q.view || "now";
+    pane.textContent = "";
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
+      a.classList.toggle("on", a.getAttribute("data-view") === view);
+    });
+    if (view === "bill") renderBill();
+    else if (view === "rotation") renderRotation(q);
+    else renderNow();
+  }
+  render();
+})();
+</script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>

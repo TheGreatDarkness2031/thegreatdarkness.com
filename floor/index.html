@@ -1,0 +1,5666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="robots" content="noindex">
+<script src="/assets/config.js"></script>
+<script>
+  // Connecting screen waits for these (console.js), up to 12 s.
+  window.OER_CONNECT_WAIT = [["system", "MONITORING GRID"], ["radar", "RADAR"], ["events", "EVENT FEED"]];</script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+  <meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Watch Floor">
+<meta property="og:description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:url" content="https://thegreatdarkness.com/floor/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<link rel="alternate" type="application/rss+xml" title="OER // Event Reporting Console" href="https://thegreatdarkness.com/feed.xml">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>OER // Watch Floor</title>
+
+  <style>
+    :root {
+      --bg: #000000;
+      --white: #ffffff;
+      --green: #00ff00;
+      --yellow: #ffff00;
+      --orange: #ff9900;
+      --red: #ff0000;
+      --cyan: #00ccff;
+      --archive-red: #5a1717;
+      --archive-red-dark: #250505;
+      --archive-red-light: #813131;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      padding: 72px 10px 20px;
+      overflow-x: hidden;
+      color: var(--white);
+      font-family: "Courier New", Courier, monospace;
+      text-align: center;
+    }
+
+    .marquee-wrapper {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+      width: 100%;
+      padding: 7px 0;
+      background: #111111;
+      border-bottom: 2px solid var(--white);
+      box-shadow: 0 2px 0 #333333;
+    }
+
+    marquee {
+      color: var(--white);
+      font-size: 1rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .page-shell {
+      width: 100%;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    /* =========================================================
+       OER ARCHIVAL HEADER / PROFILE ACCESS
+       ========================================================= */
+
+    .oer-header {
+      width: 95%;
+      max-width: 760px;
+      margin: 0 auto 16px;
+      padding: 4px;
+      background: #111111;
+      border: 2px solid #888888;
+      box-shadow: 4px 4px 0 #222222;
+    }
+
+    .oer-header-inner {
+      overflow: hidden;
+      background: #000000;
+      border: 1px inset #666666;
+    }
+
+    .oer-profile-link {
+      display: block;
+      background: #000000;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .oer-profile-link:focus {
+      outline: 1px dotted #ffffff;
+      outline-offset: -5px;
+    }
+
+    .oer-header-image {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #000000;
+    }
+
+    .oer-profile-link:hover .oer-header-image,
+    .oer-profile-link:focus .oer-header-image {
+      filter:
+        brightness(1.12)
+        contrast(1.05);
+    }
+    
+
+    /* =========================================================
+       LATE-MAINTAINER ADDENDUM
+       ========================================================= */
+
+    .late-addendum {
+      position: relative;
+      width: 96%;
+      max-width: 760px;
+      margin: 0 auto 24px;
+      padding: 5px;
+      background: #000000;
+      border: 2px solid var(--archive-red);
+      box-shadow:
+        5px 5px 0 var(--archive-red-dark),
+        0 0 0 1px #160303;
+    }
+
+    .late-addendum::before,
+    .late-addendum::after {
+      content: "";
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      pointer-events: none;
+    }
+
+    .late-addendum::before {
+      top: -3px;
+      left: -3px;
+      border-top: 3px solid var(--archive-red-light);
+      border-left: 3px solid var(--archive-red-light);
+    }
+
+    .late-addendum::after {
+      right: -3px;
+      bottom: -3px;
+      border-right: 3px solid var(--archive-red-light);
+      border-bottom: 3px solid var(--archive-red-light);
+    }
+
+    .late-addendum-inner {
+      padding: 13px 10px 15px;
+      background: #000000;
+      border: 1px inset #301010;
+    }
+
+    .late-addendum-label {
+      display: inline-block;
+      margin-bottom: 12px;
+      padding: 3px 6px;
+      border: 1px solid var(--archive-red);
+      color: #b77878;
+      font-size: 0.58rem;
+      letter-spacing: 1.2px;
+    }
+
+    .great-darkness-title {
+      margin: 0;
+      color: #ffffff;
+      font-family: Impact, "Arial Black", Arial, sans-serif;
+      font-size: clamp(2.2rem, 9vw, 5.2rem);
+      font-weight: normal;
+      letter-spacing: 3px;
+      line-height: 1;
+      text-shadow:
+        2px 2px 0 #333333,
+        0 0 10px rgba(255,255,255,0.15);
+      animation: titleFlicker 2.8s steps(2, start) infinite;
+    }
+
+    .event-date-title {
+      margin: 13px 0 17px;
+      color: #cccccc;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(1.1rem, 4vw, 1.7rem);
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    @keyframes titleFlicker {
+      0%, 88%, 100% {
+        opacity: 1;
+      }
+
+      89%, 92% {
+        opacity: 0.62;
+      }
+
+      93% {
+        opacity: 0.25;
+      }
+    }
+
+    .timer-line {
+      display: block;
+      margin: 10px 0;
+      color: #ffffff;
+      font-size: clamp(2rem, 8.5vw, 4.8rem);
+      font-weight: bold;
+      letter-spacing: 0;
+      line-height: 0.95;
+      white-space: nowrap;
+      text-shadow:
+        2px 2px 0 #333333,
+        0 0 12px rgba(255,255,255,0.12);
+    }
+
+    .timer-label {
+      margin-bottom: 13px;
+      color: #aaaaaa;
+      font-size: 0.72rem;
+      letter-spacing: 4px;
+      text-transform: uppercase;
+    }
+
+    .addendum-divider {
+      margin: 18px 0 14px;
+      border-top: 1px dashed #6e3030;
+    }
+
+    .late-addendum-note {
+      width: 95%;
+      max-width: 650px;
+      margin: 0 auto 13px;
+      color: #aaaaaa;
+      font-size: 0.66rem;
+      letter-spacing: 0.5px;
+      line-height: 1.65;
+    }
+
+    .retained-resources-title {
+      margin-bottom: 9px;
+      padding-bottom: 9px;
+      border-bottom: 1px dashed #555555;
+      color: #ffffff;
+      font-size: 0.72rem;
+      font-weight: bold;
+      letter-spacing: 1.5px;
+    }
+
+    .resource-nav {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .resource-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 10px;
+      background: #222222;
+      border: 3px outset #aaaaaa;
+      box-shadow: 3px 3px 0 #222222;
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    .resource-box:hover,
+    .resource-box:focus {
+      background: #333333;
+    }
+
+    .resource-box:active {
+      border-style: inset;
+      box-shadow: 1px 1px 0 #222222;
+    }
+
+    .original-system-record {
+      margin: -10px auto 20px;
+      color: #555555;
+      font-size: 0.62rem;
+      letter-spacing: 1px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .original-system-record:hover,
+    .original-system-record:focus {
+      color: #aaaaaa;
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       WATCH-FLOOR STATUS
+       ========================================================= */
+
+    .system-status {
+      width: 95%;
+      max-width: 760px;
+      margin: 0 auto 20px;
+      padding: 5px;
+      background: #111111;
+      border: 2px outset #888888;
+      color: #cccccc;
+      font-size: 0.72rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .system-status-inner {
+      padding: 7px 5px;
+      border: 1px inset #888888;
+      line-height: 1.8;
+    }
+
+    .status-online {
+      color: var(--green);
+    }
+
+    .status-offline {
+      color: var(--red);
+    }
+
+    .status-separator {
+      margin: 0 5px;
+      color: #666666;
+    }
+
+    /* =========================================================
+       RADAR
+       ========================================================= */
+
+    .radar-section {
+      width: 95%;
+      max-width: 550px;
+      margin: 28px auto 30px;
+    }
+
+        /* =========================================================
+       RADAR (shared: HomeView.html and RadarView.html)
+       Included with include("RadarCommonCss") inside <style>.
+       Edit here; both Radars change together.
+       ========================================================= */
+
+    .radar-title,
+    .radar-status {
+      padding: 10px 5px;
+      background: #050505;
+      border: 2px solid #cccccc;
+      color: #00ff00;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .radar-title {
+      border-bottom: 0;
+      color: #cccccc;
+    }
+
+    .radar-status {
+      border-top: 0;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .radar-console-layout {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .radar-screen {
+      position: relative;
+      width: min(88vw, 440px);
+      aspect-ratio: 1 / 1;
+      overflow: hidden;
+      margin: 0 auto;
+      background:
+        radial-gradient(
+          circle at center,
+          #063b06 0%,
+          #021c02 48%,
+          #000000 100%
+        );
+      border: 4px double #00ff00;
+      border-radius: 50%;
+      box-shadow:
+        0 0 0 2px #001500,
+        0 0 15px rgba(0,255,0,0.45),
+        inset 0 0 35px rgba(0,255,0,0.45);
+    }
+
+    .radar-screen::before,
+    .radar-screen::after {
+      content: "";
+      position: absolute;
+      border: 1px solid rgba(0,255,0,0.55);
+      border-radius: 50%;
+      z-index: 1;
+    }
+
+    .radar-screen::before {
+      inset: 12%;
+    }
+
+    .radar-screen::after {
+      inset: 27%;
+    }
+
+    .radar-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .radar-grid::before,
+    .radar-grid::after {
+      content: "";
+      position: absolute;
+      background: rgba(0,255,0,0.55);
+    }
+
+    .radar-grid::before {
+      top: 0;
+      left: 50%;
+      width: 1px;
+      height: 100%;
+    }
+
+    .radar-grid::after {
+      top: 50%;
+      left: 0;
+      width: 100%;
+      height: 1px;
+    }
+
+    .radar-crosshair {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 1;
+      width: 100%;
+      height: 1px;
+      background: rgba(0,255,0,0.32);
+      transform-origin: center;
+    }
+
+    .radar-crosshair.horizontal {
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+
+    .radar-crosshair.vertical {
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+
+    .radar-sweep {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      z-index: 3;
+      width: 2px;
+      height: 50%;
+      background: #00ff00;
+      box-shadow:
+        0 0 4px #00ff00,
+        0 0 8px rgba(0,255,0,0.75);
+      transform-origin: 50% 100%;
+      animation: radarSweep 8s linear infinite;
+    }
+
+    @keyframes radarSweep {
+      from {
+        transform: translateX(-50%) rotate(0deg);
+      }
+
+      to {
+        transform: translateX(-50%) rotate(360deg);
+      }
+    }
+
+    .radar-center {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 5;
+      width: 10px;
+      height: 10px;
+      background: #00ff00;
+      border: 2px solid #001500;
+      border-radius: 50%;
+      box-shadow:
+        0 0 8px #00ff00,
+        0 0 15px rgba(0,255,0,0.8);
+      transform: translate(-50%, -50%);
+    }
+
+    #radarContacts {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+    }
+
+    .radar-contact {
+      position: absolute;
+      width: 9px;
+      height: 9px;
+      background: #00ff00;
+      border: 2px solid #001500;
+      border-radius: 50%;
+      box-shadow:
+        0 0 6px #00ff00,
+        0 0 14px rgba(0,255,0,0.9);
+      transform: translate(-50%, -50%);
+      animation: radarBlink 0.8s steps(2, start) infinite;
+    }
+
+    @keyframes radarBlink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    /* Background contacts: small, half-bright, no glow. */
+    .radar-contact.radar-contact-bg {
+      width: 6px;
+      height: 6px;
+      border-width: 1px;
+      box-shadow: none;
+      animation-name: radarBlinkDim;
+    }
+
+    @keyframes radarBlinkDim {
+      0%, 100% {
+        opacity: 0.5;
+      }
+
+      50% {
+        opacity: 0.15;
+      }
+    }
+
+    /* Source Register (standalone Radar): one light per monitor,
+       label beside it. Large and readable for a watch floor. */
+    .source-register-panel {
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+    }
+
+    .source-register-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 6px 8px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .source-register {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .source-register-cell {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      padding: 5px 8px;
+      background: #141414;
+      border: 1px solid #555555;
+      color: #ffffff;
+      font-size: 0.85rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .source-register-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .source-lamp {
+      flex-shrink: 0;
+      width: 14px;
+      height: 14px;
+      background: #000000;
+      border: 2px solid #555555;
+      border-radius: 50%;
+    }
+
+    .source-register-cell.light-off .source-register-label {
+      color: #8a8a8a;
+    }
+
+    .source-register-cell.light-future {
+      border-color: #333333;
+    }
+
+    .source-register-cell.light-future .source-register-label {
+      color: #4a4a4a;
+    }
+
+    .source-register-cell.light-future .source-lamp {
+      border-color: #2a2a2a;
+    }
+
+    .source-register-cell.light-down .source-register-label,
+    .source-register-state {
+      color: #ff3030;
+    }
+
+    .source-register-state {
+      margin-left: auto;
+      font-size: 0.62rem;
+      letter-spacing: 0;
+    }
+
+    .source-register-cell.light-down {
+      gap: 6px;
+    }
+
+    .source-register-cell.light-down .source-register-label {
+      overflow: visible;
+      letter-spacing: 0.5px;
+    }
+
+    /* Intentional historical DOWN: hollow ring, slow blink. */
+    .source-lamp.lamp-down {
+      background: transparent;
+      border-width: 3px;
+      animation: lampDownBlink 2.4s steps(2, start) infinite;
+    }
+
+    @keyframes lampDownBlink {
+      50% {
+        opacity: 0.2;
+      }
+    }
+    .radar-console {
+      width: 100%;
+      padding: 10px 12px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+      color: #dddddd;
+      text-align: left;
+    }
+
+    .console-header {
+      margin-bottom: 8px;
+      padding: 6px 4px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.95rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .sound-button {
+      width: 100%;
+      margin-bottom: 8px;
+      padding: 7px 5px;
+      background: #555555;
+      border: 3px outset #aaaaaa;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.85rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .console-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 6px 0;
+      padding: 5px 8px;
+      border-bottom: 1px solid #666666;
+    }
+
+    .console-label {
+      width: 90px;
+      flex-shrink: 0;
+      color: #bbbbbb;
+      font-size: 0.7rem;
+      letter-spacing: 1px;
+    }
+
+    .console-value {
+      color: #ffffff;
+      font-size: 0.82rem;
+      font-weight: bold;
+    }
+
+    .console-online,
+    .console-warning {
+      color: #00ff00;
+    }
+
+    .console-slider {
+      flex: 1;
+      width: auto;
+      min-width: 0;  /* phones: a range input won't shrink below ~130 px without this */
+      margin: 3px 0 0;
+      accent-color: #00ff00;
+      cursor: pointer;
+    }
+
+
+    /* ---- Stacks (step 7) ---- */
+    .radar-stack {
+      position: absolute;
+      width: 0;
+      height: 0;
+    }
+
+    .radar-stack > .radar-contact {
+      left: 0;
+      top: 0;
+    }
+
+    .radar-stack.inspectable {
+      cursor: pointer;
+    }
+
+    /* Bigger click/hover target than the blip itself. */
+    .radar-stack.inspectable::before {
+      content: "";
+      position: absolute;
+      left: -14px;
+      top: -14px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .radar-stack-badge {
+      position: absolute;
+      z-index: 2;
+      padding: 0 3px;
+      background: #000000;
+      border: 1px solid #cccccc;
+      color: #ffffff;
+      font-size: 0.6rem;
+      font-weight: bold;
+      line-height: 1.2;
+      pointer-events: none;
+    }
+
+    /* Several sources at one spot: ring of their colors. */
+    .radar-stack-ring {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      -webkit-mask: radial-gradient(circle, transparent 58%, #000000 60%);
+      mask: radial-gradient(circle, transparent 58%, #000000 60%);
+      pointer-events: none;
+    }
+
+    /* CRITICAL: slow pulsing halo in the source color. */
+    .radar-halo {
+      position: absolute;
+      left: 0;
+      top: 0;
+      border: 2px solid #ff3030;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0.5);
+      animation: radarHalo 2s ease-out infinite;
+      pointer-events: none;
+    }
+
+    @keyframes radarHalo {
+      0% {
+        opacity: 0.9;
+        transform: translate(-50%, -50%) scale(0.5);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.6);
+      }
+    }
+
+    /* ---- Contact detail card (standalone Radar) ---- */
+    .radar-detail {
+      position: fixed;
+      z-index: 1000;
+      display: none;
+      width: 340px;
+      max-width: calc(100vw - 24px);
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 8px 10px 10px;
+      background: #3a3a3a;
+      border: 3px outset #888888;
+      box-shadow: 5px 5px 0 #111111;
+      color: #dddddd;
+      text-align: left;
+    }
+
+    .radar-detail-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+      padding: 5px 6px;
+      background: #222222;
+      border: 2px inset #888888;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-close {
+      padding: 0 6px;
+      background: #555555;
+      border: 2px outset #aaaaaa;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .radar-detail-signal {
+      margin-bottom: 6px;
+      color: #00ff00;
+      font-size: 0.68rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .radar-detail-signal.ended {
+      color: #ff9900;
+    }
+
+    .radar-detail-entry {
+      margin-top: 6px;
+      padding: 6px 7px;
+      background: #141414;
+      border: 1px solid #555555;
+    }
+
+    .radar-detail-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      color: #ffffff;
+      font-size: 0.78rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-sev {
+      margin-left: auto;
+      color: #cccccc;
+      font-size: 0.68rem;
+    }
+
+    .radar-detail-row {
+      display: flex;
+      gap: 8px;
+      padding: 1px 0;
+      font-size: 0.7rem;
+    }
+
+    .radar-detail-label {
+      flex: 0 0 104px;
+      color: #999999;
+      letter-spacing: 1px;
+    }
+
+    .radar-detail-value {
+      color: #ffffff;
+      word-break: break-word;
+    }
+
+    /* ---- Hover card (both Radars): follows the pointer ---- */
+    .radar-hover-card {
+      z-index: 1001;
+      width: 300px;
+      pointer-events: none;
+    }
+
+    .radar-contact-bg,
+    .radar-stack {
+      cursor: default;
+    }
+
+    /* ---- Timeline (step 9) ---- */
+    /* Historical overview: steady blips, so a cluster built up over
+       hours isn't read as contacts active at the same moment. */
+    .radar-history-static .radar-contact {
+      animation: none;
+    }
+
+    .radar-history-static .radar-contact-bg {
+      opacity: 0.35;
+    }
+
+    .radar-detail-signal.archive {
+      color: #00d5e8;
+    }
+
+    /* ---- Monitoring Grid feeds (step 11) ---- */
+
+    /* Contacts that stay lit until the monitor's next run: a slow,
+       steady pulse instead of the quick blink. */
+    .radar-contact.stay-lit {
+      animation: radarSteady 3.2s ease-in-out infinite;
+    }
+
+    @keyframes radarSteady {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.55; }
+    }
+
+    /* Space weather: the outline takes the status color. */
+    .radar-screen.ring-watch {
+      border-color: #ffff00;
+      box-shadow: 0 0 0 2px #151500, 0 0 18px rgba(255, 255, 0, 0.45), inset 0 0 30px rgba(255, 255, 0, 0.08);
+    }
+
+    .radar-screen.ring-elevated {
+      border-color: #ff9900;
+      box-shadow: 0 0 0 2px #150a00, 0 0 20px rgba(255, 153, 0, 0.5), inset 0 0 30px rgba(255, 153, 0, 0.1);
+    }
+
+    .radar-screen.ring-critical {
+      border-color: #ff0000;
+      box-shadow: 0 0 0 2px #150000, 0 0 24px rgba(255, 0, 0, 0.6), inset 0 0 34px rgba(255, 0, 0, 0.12);
+      animation: radarRingCritical 2.4s ease-in-out infinite;
+    }
+
+    @keyframes radarRingCritical {
+      50% { box-shadow: 0 0 0 2px #150000, 0 0 8px rgba(255, 0, 0, 0.3), inset 0 0 20px rgba(255, 0, 0, 0.06); }
+    }
+
+    .radar-history-static .radar-contact.stay-lit {
+      animation: none;
+    }
+
+
+    /* Homepage-only: compact Radar console (step 6). */
+    .compact-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .compact-sound {
+      flex: 0 0 auto;
+      width: auto;
+      margin: 0;
+      padding: 5px 10px;
+    }
+
+    .console-label.compact-label {
+      width: auto;
+    }
+
+    .compact-readouts {
+      display: grid;
+      grid-template-columns: 0.6fr 1.4fr 1fr;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .compact-readouts > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 4px 6px;
+      background: #2e2e2e;
+      border: 1px solid #666666;
+    }
+
+    .compact-readouts .console-label {
+      width: auto;
+      font-size: 0.6rem;
+    }
+
+    .compact-readouts .console-value {
+      font-size: 0.75rem;
+    }
+
+    .open-radar-button {
+      display: block;
+      box-sizing: border-box;
+      margin: 0;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    /* =========================================================
+       EVENT FEED PREVIEW
+       ========================================================= */
+
+    .event-feed-preview {
+      width: 95%;
+      max-width: 800px;
+      margin: 0 auto 24px;
+      padding: 4px;
+      background: #080808;
+      border: 2px solid #777777;
+      box-shadow: 4px 4px 0 #111111;
+    }
+
+    .event-feed-preview-inner {
+      padding: 12px;
+      background: #000000;
+      border: 1px inset #444444;
+    }
+
+    .event-feed-preview-title {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #666666;
+      color: #cccccc;
+      font-size: 0.76rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .event-feed-preview-note {
+      margin-bottom: 9px;
+      color: #777777;
+      font-size: 0.6rem;
+      letter-spacing: 1px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .event-preview-list {
+      background: #000000;
+      border: 1px inset #555555;
+      text-align: left;
+    }
+
+    .event-preview-row {
+      padding: 7px;
+      border-bottom: 1px dotted #444444;
+      background: #000000;
+      text-align: left;
+    }
+
+    .event-preview-row:last-child {
+      border-bottom: 0;
+    }
+
+    .event-preview-row:hover {
+      background: #0c0c0c;
+    }
+
+    .event-preview-topline {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+
+    .event-preview-time {
+      color: #d0d0d0;
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
+    .event-preview-badge {
+      display: inline-block;
+      min-width: 64px;
+      padding: 2px 4px;
+      border: 1px solid currentColor;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.56rem;
+      font-weight: bold;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .event-preview-source {
+      color: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.64rem;
+      font-weight: bold;
+      letter-spacing: 0.4px;
+    }
+
+    .event-preview-source.linked {
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .event-preview-source.linked:hover,
+    .event-preview-source.linked:focus {
+      filter: brightness(1.45);
+      outline: none;
+      text-shadow: 0 0 6px currentColor;
+    }
+
+    .event-preview-summary {
+      color: #e0e0e0;
+      font-size: 0.64rem;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .event-preview-id {
+      margin-top: 4px;
+      color: #666666;
+      font-size: 0.54rem;
+      letter-spacing: 0.4px;
+      overflow-wrap: anywhere;
+    }
+
+    .event-preview-empty {
+      padding: 17px 8px;
+      color: #777777;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .event-feed-access {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 9px 12px;
+      background: #222222;
+      border: 3px outset #aaaaaa;
+      box-shadow: 3px 3px 0 #333333;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.7rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-decoration: underline;
+    }
+
+    .event-feed-access:active {
+      border-style: inset;
+      box-shadow: 1px 1px 0 #333333;
+    }
+
+    /* =========================================================
+       COMPACT OER MONITOR GRID
+       ========================================================= */
+
+    .oer-monitor-section {
+      width: 95%;
+      max-width: 800px;
+      margin: 0 auto 24px;
+      padding: 4px;
+      background: #111111;
+      border: 2px solid #888888;
+      box-shadow: 4px 4px 0 #222222;
+    }
+
+    .oer-monitor-inner {
+      padding: 12px;
+      background: #000000;
+      border: 1px inset #666666;
+    }
+
+    .oer-monitor-title {
+      margin-bottom: 12px;
+      padding-bottom: 9px;
+      border-bottom: 1px dashed #666666;
+      color: #cccccc;
+      font-size: 0.76rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .oer-monitor-grid {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 7px;
+    }
+
+    .oer-monitor-cell {
+      min-height: 104px;
+      padding: 8px 5px;
+      background: #050505;
+      border: 1px solid #555555;
+      color: #ffffff;
+      text-align: center;
+      text-decoration: none;
+    }
+
+    .oer-monitor-cell.active {
+      border-color: #aaaaaa;
+      cursor: pointer;
+    }
+
+    .oer-monitor-cell.active:hover,
+    .oer-monitor-cell.active:focus {
+      background: #101010;
+      border-color: #ffffff;
+      box-shadow:
+        0 0 8px rgba(255,255,255,0.18),
+        inset 0 0 10px rgba(255,255,255,0.04);
+      outline: none;
+    }
+
+    .oer-monitor-id {
+      margin-bottom: 5px;
+      color: #666666;
+      font-size: 0.58rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .oer-monitor-name {
+      min-height: 30px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.58rem;
+      font-weight: bold;
+      letter-spacing: 0.6px;
+      line-height: 1.25;
+    }
+
+    .oer-monitor-value {
+      display: block;
+      margin: 8px 0 4px;
+      color: #ffffff;
+      font-family: "Courier New", Courier, monospace;
+      font-size: clamp(0.95rem, 2.4vw, 1.2rem);
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    .oer-monitor-status {
+      min-height: 16px;
+      color: #888888;
+      font-size: 0.54rem;
+      font-weight: bold;
+      letter-spacing: 0.6px;
+      line-height: 1.3;
+    }
+
+    .health-green {
+      color: #00ff00 !important;
+    }
+
+    .health-yellow {
+      color: #ffff00 !important;
+    }
+
+    .health-orange {
+      color: #ff9900 !important;
+    }
+
+    .health-red {
+      color: #ff0000 !important;
+    }
+
+    .health-cyan {
+      color: #00ccff !important;
+    }
+
+    .health-gray {
+      color: #777777 !important;
+    }
+
+    /* =========================================================
+       NETWORK / MAINTENANCE
+       ========================================================= */
+
+    .retro-info,
+    .maintenance-section {
+      width: 95%;
+      max-width: 800px;
+      margin: 25px auto;
+      padding: 4px;
+      background: #050505;
+      border: 2px solid #888888;
+    }
+
+    .retro-info-inner,
+    .maintenance-section-inner {
+      padding: 12px;
+      border: 1px inset #888888;
+    }
+
+    .retro-info-title,
+    .maintenance-section-title {
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #777777;
+      color: #cccccc;
+      font-size: 0.82rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .network-status-note {
+      margin-bottom: 8px;
+      color: #777777;
+      font-size: 0.65rem;
+      line-height: 1.7;
+    }
+
+    .network-status-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-height: 23px;
+      padding: 2px 0;
+      border-bottom: 1px dotted #333333;
+      color: #aaaaaa;
+      font-size: 0.68rem;
+      line-height: 1.8;
+      text-align: left;
+    }
+
+    .network-status-name {
+      flex-shrink: 0;
+      color: #cccccc;
+      white-space: nowrap;
+    }
+
+    .network-status-link-area {
+      flex: 1;
+      min-width: 20px;
+      align-self: stretch;
+      cursor: pointer;
+    }
+
+    .network-status-online,
+    .network-status-offline,
+    .network-status-archived,
+    .network-status-unknown,
+    .network-status-checking,
+    .network-status-updating {
+      flex-shrink: 0;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .network-status-online {
+      color: #00ff00;
+    }
+
+    .network-status-offline {
+      color: #ff0000;
+    }
+
+    .network-status-archived {
+      color: #ffbf00;
+    }
+
+    .network-status-unknown {
+      color: #aaaaaa;
+    }
+
+    .network-status-checking {
+      color: #ffff00;
+      animation: networkStatusBlink 0.55s steps(2, start) infinite;
+    }
+
+    .network-status-updating {
+      color: #00ffff;
+      animation: networkStatusBlink 0.25s steps(2, start) infinite;
+    }
+
+    .network-status-complete {
+      animation: networkStatusComplete 0.45s steps(2, start) 1;
+    }
+
+    @keyframes networkStatusBlink {
+      50% {
+        opacity: 0.25;
+      }
+    }
+
+    @keyframes networkStatusComplete {
+      0% {
+        opacity: 0;
+      }
+
+      50%,
+      100% {
+        opacity: 1;
+      }
+    }
+
+    .maintenance-section-note {
+      color: #888888;
+      font-size: 0.65rem;
+      line-height: 1.7;
+    }
+
+    .maintenance-log-link {
+      margin-top: 10px;
+      padding-top: 9px;
+      border-top: 1px dotted #333333;
+      text-align: center;
+    }
+
+    .maintenance-log-button {
+      display: inline-block;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      color: #999999;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.66rem;
+      letter-spacing: 1px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .maintenance-log-button:hover,
+    .maintenance-log-button:focus {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       PUBLIC LOG
+       ========================================================= */
+
+    .bbs-container {
+      width: 95%;
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 15px;
+      background: #050505;
+      border: 2px solid #ffffff;
+      text-align: left;
+    }
+
+    .bbs-header {
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 2px dashed #ffffff;
+      font-size: 0.9rem;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .bbs-input {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 12px 8px;
+      background: #111111;
+      border: 1px solid #ffffff;
+      border-radius: 0;
+      color: #ffffff;
+      font-family: "Courier New", monospace;
+      font-size: 1rem;
+    }
+
+    /* 1997 push button: gray face, light top-left edge, dark
+       bottom-right edge; pressed = edges swap and the label shifts. */
+    .bbs-btn {
+      width: 100%;
+      padding: 12px 15px;
+      background: #c0c0c0;
+      border-style: solid;
+      border-width: 2px;
+      border-color: #ffffff #404040 #404040 #ffffff;
+      box-shadow: inset -2px -2px 0 #808080, inset 2px 2px 0 #dfdfdf;
+      border-radius: 0;
+      color: #000000;
+      font-family: "Courier New", monospace;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .bbs-btn:active {
+      border-color: #404040 #ffffff #ffffff #404040;
+      box-shadow: inset 2px 2px 0 #808080, inset -2px -2px 0 #dfdfdf;
+      padding: 13px 14px 11px 16px;
+    }
+
+    .bbs-btn:focus-visible {
+      outline: 1px dotted #000000;
+      outline-offset: -6px;
+    }
+
+    .bbs-feed {
+      height: 400px;
+      overflow-y: auto;
+      margin-top: 15px;
+      padding: 10px;
+      background: #000000;
+      border: 1px inset #ffffff;
+    }
+
+    .bbs-post {
+      padding: 4px 0;
+      border-bottom: 1px dashed #444444;
+      font-size: 0.85rem;
+      line-height: 1.25;
+      overflow-wrap: anywhere;
+    }
+
+    .bbs-meta {
+      color: #888888;
+    }
+
+    .bbs-handle {
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .log-archive-toggle {
+      margin-top: 10px;
+    }
+
+    .log-archive-menu {
+      margin-top: 8px;
+      padding: 8px;
+      background: #000000;
+      border: 1px inset #ffffff;
+    }
+
+    .log-archive-option {
+      display: block;
+      width: 100%;
+      margin-bottom: 6px;
+      padding: 9px 8px;
+      background: #111111;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      font-family: "Courier New", monospace;
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    /* =========================================================
+       SYSTEM INFORMATION / FOOTER
+       ========================================================= */
+
+    .system-info-section {
+      width: 95%;
+      max-width: 800px;
+      margin: 28px auto 20px;
+      padding: 4px;
+      background: #050505;
+      border: 2px solid #888888;
+    }
+
+    .system-info-inner {
+      padding: 12px;
+      border: 1px inset #888888;
+    }
+
+    .system-info-title {
+      margin-bottom: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed #777777;
+      color: #cccccc;
+      font-size: 0.82rem;
+      font-weight: bold;
+      letter-spacing: 2px;
+    }
+
+    .system-info-line {
+      color: #aaaaaa;
+      font-size: 0.72rem;
+      line-height: 1.8;
+    }
+
+    .system-info-line strong {
+      color: #ffffff;
+    }
+
+    .system-record-line {
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px dotted #333333;
+    }
+
+    .system-record-link {
+      color: #666666;
+      font-family: "Courier New", Courier, monospace;
+      font-size: 0.62rem;
+      letter-spacing: 0.7px;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .system-record-link:hover,
+    .system-record-link:focus {
+      color: #aaaaaa;
+      text-decoration: underline;
+    }
+
+    .bbs-public-note { margin: 4px 0 8px; color: #666666; font-size: 0.62rem; letter-spacing: 1px; text-align: center; }
+    .bbs-public-note a { color: #888888; text-decoration: none; white-space: nowrap; }
+    .bbs-public-note a:hover, .bbs-public-note a:focus { color: #cccccc; text-decoration: underline; }
+
+    .system-record-terminal { color: #00cc00; }
+    .system-record-terminal:hover,
+    .system-record-terminal:focus { color: #00ff00; }
+    .system-record-personnel { color: #e0a000; }
+    .system-record-personnel:hover,
+    .system-record-personnel:focus { color: #ffc23a; }
+
+    .retro-status-green {
+      color: #00ff00;
+    }
+
+    .counter-footer {
+      margin-top: 35px;
+      padding-bottom: 10px;
+      color: #888888;
+      font-size: 0.8rem;
+    }
+
+    .counter-label {
+      margin-bottom: 4px;
+      color: #777777;
+      font-size: 0.75rem;
+      letter-spacing: 2px;
+    }
+
+    .counter-since {
+      margin-top: 5px;
+      color: #555555;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+    }
+
+    .hit-counter {
+      display: inline-block;
+      min-width: 120px;
+      margin-top: 8px;
+      padding: 6px 12px;
+      background: #111111;
+      border: 2px inset #ffffff;
+      color: #ffffff;
+      font-family: "Courier New", monospace;
+      font-size: 1.3rem;
+      font-weight: bold;
+      letter-spacing: 3px;
+    }
+
+    .webring {
+      width: 95%;
+      max-width: 800px;
+      margin: 25px auto 10px;
+      padding: 12px 5px;
+      color: #666666;
+      font-size: 0.65rem;
+      letter-spacing: 1px;
+    }
+
+    .webring-title {
+      margin-bottom: 8px;
+      color: #888888;
+      font-weight: bold;
+    }
+
+    .webring-links {
+      color: #aaaaaa;
+    }
+
+    .webring-node {
+      margin-top: 8px;
+      color: #555555;
+    }
+
+    /* =========================================================
+       ORIGINAL OER NOTICE MODAL
+       ========================================================= */
+
+    .original-system-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      background: rgba(0,0,0,0.95);
+    }
+
+    .original-system-modal.open {
+      display: flex;
+    }
+
+    .original-system-notice {
+      width: min(620px, 92vw);
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 28px 24px 24px;
+      background: #000000;
+      border: 1px solid #555555;
+      box-shadow: 0 0 25px rgba(255,255,255,0.08);
+      color: #cccccc;
+      text-align: left;
+    }
+
+    .original-system-notice-header {
+      margin-bottom: 24px;
+      color: #ffffff;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-align: center;
+    }
+
+    .original-system-notice-line {
+      margin: 7px 0;
+      line-height: 1.6;
+    }
+
+    .original-system-notice-terminal {
+      margin-top: 28px;
+      color: #888888;
+      line-height: 1.7;
+    }
+
+    .original-system-notice-warning {
+      margin-top: 28px;
+      color: #ffffff;
+      font-weight: bold;
+    }
+
+    .original-system-notice-close {
+      margin-top: 28px;
+      color: #666666;
+      font-size: 0.65rem;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .original-system-notice-close:hover {
+      color: #ffffff;
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       BOTTOM NAV (base styles)
+       ========================================================= */
+
+    .main-nav {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      width: 95%;
+      max-width: 800px;
+      margin: 0 auto 24px;
+    }
+
+    .merch-box {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 54px;
+      padding: 10px;
+      background: #222222;
+      border: 3px outset #aaaaaa;
+      box-shadow: 3px 3px 0 #222222;
+      color: #ffffff;
+      text-decoration: none;
+    }
+
+    .merch-box:hover,
+    .merch-box:focus {
+      background: #333333;
+    }
+
+    .merch-box:active {
+      border-style: inset;
+      box-shadow: 1px 1px 0 #222222;
+    }
+
+    .merch-text {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    @media (min-width: 480px) {
+      .bbs-container {
+        padding: 20px;
+      }
+
+      .bbs-feed {
+        height: 220px;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .main-nav {
+        grid-template-columns: repeat(2, 180px);
+        gap: 8px;
+      }
+
+      .system-status {
+        max-width: 368px;
+      }
+
+      .merch-box {
+        min-height: 55px;
+        padding: 10px 8px;
+      }
+
+      .merch-text {
+        font-size: 0.9rem;
+      }
+
+      .oer-monitor-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .oer-monitor-cell {
+        min-height: 108px;
+      }
+
+      .oer-monitor-name {
+        font-size: 0.54rem;
+      }
+
+      .oer-monitor-status {
+        font-size: 0.5rem;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .main-nav {
+        grid-template-columns: 1fr;
+        max-width: 210px;
+      }
+
+      .resource-nav {
+        grid-template-columns: 1fr;
+      }
+
+      .system-status {
+        max-width: 210px;
+      }
+
+      .oer-header-inner {
+        padding-right: 7px;
+        padding-left: 7px;
+      }
+
+      .oer-monitor-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+  
+    /* Homepage color key under the Radar: compact, only the real
+       sources (unassigned positions hidden). */
+    .home-register {
+      max-width: 760px;
+      margin: 10px auto 0;
+      text-align: left;
+    }
+
+    .home-register .source-register {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 4px;
+    }
+
+    .home-register .source-register-cell {
+      padding: 3px 7px;
+      font-size: 0.75rem;
+    }
+
+    .home-register .light-future {
+      display: none;
+    }
+
+    @media (max-width: 700px) {
+      .home-register .source-register {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+  </style>
+
+<style>
+  /* The four crossed-out icons across the top of the homepage. */
+  .no-power-row {
+    display: flex;
+    justify-content: center;
+    margin: 4px auto 14px;
+  }
+  .no-power-row img {
+    display: block;
+    width: min(760px, 96vw);
+    height: auto;
+    /* the picture's near-black background becomes the page's black */
+    filter: contrast(1.15);
+  }
+</style>
+
+<style>
+  /* The orange XML button: opens the OER channel viewer. */
+  .xml-button {
+    display: inline-block;
+    padding: 1px 5px;
+    background: #ff6600;
+    color: #ffffff !important;
+    font: bold 10px Verdana, Arial, sans-serif;
+    letter-spacing: 0;
+    text-decoration: none !important;
+    border: 1px solid;
+    border-color: #ffa060 #803000 #803000 #ffa060;
+    vertical-align: middle;
+  }
+  .xml-button:hover, .xml-button:focus { background: #ff7f2a; }
+
+  /* WATCH FLOOR (2026-11-11): the homepage's live panels, in the console frame. */
+  body { padding-top: 0 !important; }
+  .floor-shell { padding-top: 14px; }
+</style>
+</head>
+
+<body>
+
+  
+
+  <main class="page-shell floor-shell">
+
+    <section class="system-status">
+      <div class="system-status-inner">
+
+        SYSTEM STATUS:
+        <span class="status-online">ONLINE</span>
+
+        <span class="status-separator">|</span>
+
+        PUBLIC LOG:
+        <span class="status-online">ACTIVE</span>
+
+        <span class="status-separator">|</span>
+
+        RADAR:
+        <span class="status-online">ACTIVE</span>
+
+        <span class="status-separator">|</span>
+
+        COUNTDOWN:
+        <span class="status-online">RUNNING</span>
+
+        <span class="status-separator">|</span>
+
+        ARCHIVE:
+        <span class="status-offline">OFFLINE</span>
+
+      </div>
+    </section>
+
+    <section class="radar-section">
+
+      <div class="radar-title">
+        === OER RADAR MONITOR ===
+      </div>
+
+      <div class="radar-console-layout">
+
+        <div class="radar-screen">
+          <div class="radar-grid"></div>
+          <div class="radar-crosshair horizontal"></div>
+          <div class="radar-crosshair vertical"></div>
+          <div class="radar-sweep"></div>
+          <div id="radarContacts"></div>
+          <div class="radar-center"></div>
+        </div>
+
+        <div class="radar-console compact-console">
+
+          <div class="console-header">
+            === OER RADAR CONSOLE ===
+          </div>
+
+          <div class="compact-row">
+            <button
+              id="radarSoundButton"
+              class="sound-button compact-sound"
+              type="button"
+              onclick="toggleRadarSound()"
+            >
+              SOUND: OFF
+            </button>
+
+            <span class="console-label compact-label">VOL</span>
+
+            <input
+              id="radarVolume"
+              class="console-slider"
+              type="range"
+              min="0"
+              max="100"
+              value="35"
+              oninput="updateRadarVolume()"
+            >
+          </div>
+
+          <div class="compact-row">
+            <span class="console-label compact-label">BRIGHT</span>
+
+            <input
+              id="radarBrightness"
+              class="console-slider"
+              type="range"
+              min="30"
+              max="150"
+              value="100"
+              oninput="updateRadarBrightness()"
+            >
+
+            <span class="console-label compact-label">SWEEP</span>
+
+            <input
+              id="radarSweepSpeed"
+              class="console-slider"
+              type="range"
+              min="5"
+              max="15"
+              value="10"
+              oninput="updateRadarSweepSpeed()"
+            >
+
+            <span
+              id="radarSweepSpeedValue"
+              class="console-value"
+            >
+              10 SEC
+            </span>
+          </div>
+
+          <div class="compact-readouts">
+            <div>
+              <span class="console-label">CONTACTS</span>
+              <span
+                id="consoleContacts"
+                class="console-value"
+              >
+                00
+              </span>
+            </div>
+
+            <div>
+              <span class="console-label">THREAT STATUS</span>
+              <span
+                id="consoleThreat"
+                class="console-value console-warning"
+              >
+                MONITORING
+              </span>
+            </div>
+
+            <div>
+              <span class="console-label">LAST SCAN</span>
+              <span
+                id="consoleLastScan"
+                class="console-value"
+              >
+                --
+              </span>
+            </div>
+          </div>
+
+          <a
+            id="openRadarConsole"
+            class="sound-button open-radar-button"
+            href="#"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            OPEN RADAR CONSOLE
+          </a>
+
+        </div>
+
+      </div>
+
+      <div
+        class="radar-status"
+        id="radarStatus"
+      >
+        INITIALIZING RADAR...
+      </div>
+
+      <!-- Color key: which Radar color belongs to which source.
+           Filled by the shared Radar code (RadarCommonJs). -->
+      <div class="source-register-panel home-register">
+
+        <div class="source-register-header">
+          <span>=== SOURCES ===</span>
+          <span id="sourceRegisterCount">--</span>
+        </div>
+
+        <div
+          id="sourceRegister"
+          class="source-register"
+        ></div>
+
+      </div>
+
+    </section>
+
+    <section class="event-feed-preview">
+      <div class="event-feed-preview-inner">
+
+        <div class="event-feed-preview-title">
+          === OER EVENT FEED ===
+        </div>
+
+        <div class="event-feed-preview-note">
+          AUTOMATED MONITOR REPORTS // CURRENT EVENTS // NEWEST FIRST
+        </div>
+
+        <div
+          id="eventFeedPreviewList"
+          class="event-preview-list"
+        >
+          <div class="event-preview-empty">
+            RETRIEVING CURRENT EVENT REPORTS...
+          </div>
+        </div>
+
+        <a
+          href="/events/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="event-feed-access"
+        >
+          [ ACCESS LIVE OER EVENT FEED ]
+        </a>
+
+      </div>
+    </section>
+
+    <section class="oer-monitor-section">
+      <div class="oer-monitor-inner">
+
+        <div class="oer-monitor-title">
+          === OPERATIONAL EVENT REGISTER / MONITORING GRID ===
+        </div>
+
+        <div
+          id="oerMonitorGrid"
+          class="oer-monitor-grid"
+        ></div>
+
+      </div>
+    </section>
+
+    <section class="retro-info">
+      <div class="retro-info-inner">
+
+        <div class="retro-info-title">
+          === NETWORK / EXTERNAL REFERENCE SYSTEMS ===
+        </div>
+
+        <div class="network-status-note">
+          ORIGINAL REFERENCE: 1998
+          <br>
+          CURRENT STATUS CHECK: 2026
+          <br>
+          NETWORKS MONITORED:
+          <span id="networkStatusCount">--</span>
+        </div>
+
+        <div id="networkStatusRows">
+          LOADING NETWORK STATUS...
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <div
+    id="originalSystemNoticeModal"
+    class="original-system-modal"
+    onclick="closeOriginalSystemNotice(event)"
+  >
+    <div
+      class="original-system-notice"
+      onclick="event.stopPropagation()"
+    >
+
+      <div class="original-system-notice-header">
+        === ORIGINAL OER SYSTEM NOTICE ===
+      </div>
+
+      <div class="original-system-notice-line">
+        01 JULY 1998
+      </div>
+
+      <div class="original-system-notice-line">
+        THIS SYSTEM WILL REMAIN ACTIVE
+      </div>
+
+      <div class="original-system-notice-line">
+        UNTIL 01 JULY 2031.
+      </div>
+
+      <div class="original-system-notice-warning">
+        DO NOT DISCONNECT.
+      </div>
+
+      <div class="original-system-notice-terminal">
+        THIS NOTICE HAS NOT BEEN MODIFIED
+        <br>
+        SINCE ACTIVATION.
+      </div>
+
+      <div
+        class="original-system-notice-close"
+        onclick="closeOriginalSystemNotice()"
+      >
+        [ CLOSE ]
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_URL =
+      TGD_API_URL;
+
+    let allLogPosts = [];
+    let currentLogView = "current";
+    let networkStatusCheckRunning = false;
+    let networkStatusRequestCounter = 0;
+    let systemStatusRequestCounter = 0;
+    let eventFeedPreviewRequestCounter = 0;
+
+    const targetDate =
+      Date.UTC(
+        2031,
+        6,
+        1,
+        12,
+        0,
+        0
+      );
+
+    const systemActivationTime =
+      Date.UTC(
+        1998,
+        6,
+        1,
+        12,
+        0,
+        0
+      );
+
+    function openOriginalSystemNotice() {
+      const modal =
+        document.getElementById(
+          "originalSystemNoticeModal"
+        );
+
+      if (modal) {
+        modal.classList.add("open");
+      }
+    }
+
+    function closeOriginalSystemNotice(
+      event
+    ) {
+
+      if (
+        event &&
+        event.target &&
+        event.target.id !==
+        "originalSystemNoticeModal"
+      ) {
+        return;
+      }
+
+      const modal =
+        document.getElementById(
+          "originalSystemNoticeModal"
+        );
+
+      if (modal) {
+        modal.classList.remove("open");
+      }
+    }
+
+    document.addEventListener(
+      "keydown",
+      function(event) {
+        if (event.key === "Escape") {
+          closeOriginalSystemNotice();
+        }
+      }
+    );
+
+    /* =======================================================
+       OER MONITOR GRID
+       ======================================================= */
+
+    window.handleSystemStatusResponse =
+      function(data) {
+        if (window.oerReady) window.oerReady("system");
+
+        renderOerSystemGrid_(data);
+
+        if (data && Array.isArray(data.systems)) {
+          writeGridCache_(data);
+        }
+
+        const oldScript =
+          document.getElementById(
+            "systemStatusJsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+      };
+
+    function loadSystemStatusData() {
+      systemStatusRequestCounter++;
+
+      const oldScript =
+        document.getElementById(
+          "systemStatusJsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script =
+        document.createElement("script");
+
+      script.id =
+        "systemStatusJsonpScript";
+
+      script.src =
+        API_URL +
+        "?systemstatus=1" +
+        "&callback=handleSystemStatusResponse" +
+        "&_request=" +
+        systemStatusRequestCounter +
+        "&_ts=" +
+        Date.now();
+
+      document.body.appendChild(script);
+    }
+
+    const GRID_CACHE_KEY = "oerGridCache";
+    const GRID_SKELETON_COUNT = 15; // set to your real number of cells
+
+    function readGridCache_() {
+      try {
+        const raw =
+          localStorage.getItem(GRID_CACHE_KEY);
+
+        return raw
+          ? JSON.parse(raw)
+          : null;
+      } catch (error) {
+        return null;
+      }
+    }
+
+    function writeGridCache_(data) {
+      try {
+        localStorage.setItem(
+          GRID_CACHE_KEY,
+          JSON.stringify(data)
+        );
+      } catch (error) {
+      }
+    }
+
+    function buildGridSkeleton_(count) {
+      const grid =
+        document.getElementById(
+          "oerMonitorGrid"
+        );
+
+      if (!grid) {
+        return;
+      }
+
+      grid.innerHTML = "";
+
+      for (let i = 0; i < count; i++) {
+        const cell =
+          document.createElement("div");
+
+        cell.className =
+          "oer-monitor-cell";
+
+        cell.innerHTML =
+          '<div class="oer-monitor-id">--</div>' +
+          '<div class="oer-monitor-name health-gray">LOADING</div>' +
+          '<div class="oer-monitor-value health-gray">--</div>' +
+          '<div class="oer-monitor-status health-gray">--</div>';
+
+        grid.appendChild(cell);
+      }
+    }
+
+    function createOerCell_(system) {
+      const nameText =
+        String(system.name || "UNKNOWN");
+
+      const isLegacyDialUp =
+        nameText
+          .toUpperCase()
+          .indexOf("DIAL") !== -1;
+
+      const isActive =
+        !!system.active &&
+        !!system.route;
+
+      const cell =
+        document.createElement(
+          isActive
+            ? "a"
+            : "div"
+        );
+
+      cell.className =
+        "oer-monitor-cell" +
+        (
+          isActive
+            ? " active"
+            : ""
+        );
+
+      if (isActive) {
+        cell.href =
+          tgdPage(String(system.route));
+
+        cell.target = "_blank";
+        cell.rel =
+          "noopener noreferrer";
+      }
+
+      const id =
+        document.createElement("div");
+
+      id.className =
+        "oer-monitor-id";
+
+      id.textContent =
+        String(system.id || "--");
+
+      const name =
+        document.createElement("div");
+
+      name.className =
+        "oer-monitor-name";
+
+      name.style.color =
+        String(
+          system.accentColor ||
+          "#cccccc"
+        );
+
+      name.textContent = nameText;
+
+      const value =
+        document.createElement("div");
+
+      value.className =
+        "oer-monitor-value " +
+        String(
+          system.healthClass ||
+          "health-gray"
+        );
+
+      const status =
+        document.createElement("div");
+
+      status.className =
+        "oer-monitor-status " +
+        String(
+          system.healthClass ||
+          "health-gray"
+        );
+
+      if (
+        !isActive &&
+        !isLegacyDialUp
+      ) {
+
+        value.textContent = "--";
+        status.textContent = "--";
+
+      } else {
+
+        value.textContent =
+          String(
+            system.value || "--"
+          );
+
+        status.textContent =
+          String(
+            system.status || "--"
+          );
+      }
+
+      cell.appendChild(id);
+      cell.appendChild(name);
+      cell.appendChild(value);
+      cell.appendChild(status);
+
+      return cell;
+    }
+
+    function renderOerSystemGrid_(data) {
+      const grid =
+        document.getElementById(
+          "oerMonitorGrid"
+        );
+
+      if (!grid) {
+        return;
+      }
+
+      if (
+        !data ||
+        !Array.isArray(data.systems)
+      ) {
+        if (!grid.children.length) {
+          grid.textContent =
+            "OER SYSTEM STATUS UNAVAILABLE.";
+        }
+
+        return;
+      }
+
+      data.systems.forEach(
+        function(system, index) {
+          const cell =
+            createOerCell_(system);
+
+          const existing =
+            grid.children[index];
+
+          if (existing) {
+            existing.replaceWith(cell);
+          } else {
+            grid.appendChild(cell);
+          }
+        }
+      );
+
+      while (
+        grid.children.length >
+        data.systems.length
+      ) {
+        grid.removeChild(grid.lastChild);
+      }
+    }
+
+    /* =======================================================
+       EVENT FEED PREVIEW
+       ======================================================= */
+
+    function formatEventFeedPreviewTime_(
+      isoValue
+    ) {
+
+      if (!isoValue) {
+        return "--";
+      }
+
+      var date =
+        new Date(isoValue);
+
+      if (
+        isNaN(
+          date.getTime()
+        )
+      ) {
+        return "--";
+      }
+
+      var reportingDate =
+        new Date(
+          date.getTime() -
+          5 *
+          60 *
+          60 *
+          1000
+        );
+
+      var month =
+        String(
+          reportingDate.getUTCMonth() + 1
+        )
+          .padStart(2, "0");
+
+      var day =
+        String(
+          reportingDate.getUTCDate()
+        )
+          .padStart(2, "0");
+
+      var year =
+        String(
+          reportingDate.getUTCFullYear()
+        )
+          .slice(-2);
+
+      var hours =
+        String(
+          reportingDate.getUTCHours()
+        )
+          .padStart(2, "0");
+
+      var minutes =
+        String(
+          reportingDate.getUTCMinutes()
+        )
+          .padStart(2, "0");
+
+      return (
+        month +
+        "/" +
+        day +
+        "/" +
+        year +
+        " " +
+        hours +
+        ":" +
+        minutes
+      );
+    }
+
+    function getEventFeedPreviewSeverityClass_(
+      event
+    ) {
+
+      var status =
+        String(
+          event.status || ""
+        )
+          .trim()
+          .toUpperCase();
+
+      if (status === "CRITICAL") {
+        return "health-red";
+      }
+
+      if (status === "ELEVATED") {
+        return "health-orange";
+      }
+
+      if (status === "WATCH") {
+        return "health-yellow";
+      }
+
+      return "health-green";
+    }
+
+    function buildEventFeedPreviewRoute_(
+      route
+    ) {
+
+      route =
+        String(
+          route || ""
+        )
+          .trim();
+
+      if (!route) {
+        return "";
+      }
+
+      if (
+        /^https?:\/\//i.test(route)
+      ) {
+        return route;
+      }
+
+      if (
+        route.indexOf("?") === 0
+      ) {
+        return tgdPage(route);
+      }
+
+      return route;
+    }
+
+    function openEventFeedPreviewRoute_(
+      route
+    ) {
+
+      var destination =
+        buildEventFeedPreviewRoute_(
+          route
+        );
+
+      if (!destination) {
+        return;
+      }
+
+      window.open(
+        destination,
+        "_blank",
+        "noopener"
+      );
+    }
+
+    function renderEventFeedPreview_(
+      data
+    ) {
+
+      var container =
+        document.getElementById(
+          "eventFeedPreviewList"
+        );
+
+      if (!container) {
+        return;
+      }
+
+      container.innerHTML = "";
+
+      if (
+        !data ||
+        !data.success ||
+        !Array.isArray(data.events)
+      ) {
+
+        var unavailable =
+          document.createElement(
+            "div"
+          );
+
+        unavailable.className =
+          "event-preview-empty";
+
+        unavailable.textContent =
+          "CURRENT EVENT FEED UNAVAILABLE.";
+
+        container.appendChild(
+          unavailable
+        );
+
+        return;
+      }
+
+      if (data.events.length === 0) {
+
+        var empty =
+          document.createElement(
+            "div"
+          );
+
+        empty.className =
+          "event-preview-empty";
+
+        empty.textContent =
+          "NO CURRENT REPORTING EVENTS.";
+
+        container.appendChild(
+          empty
+        );
+
+        return;
+      }
+
+      data.events.forEach(
+        function(event) {
+
+          var row =
+            document.createElement(
+              "div"
+            );
+
+          row.className =
+            "event-preview-row";
+
+          var topline =
+            document.createElement(
+              "div"
+            );
+
+          topline.className =
+            "event-preview-topline";
+
+          var timestamp =
+            document.createElement(
+              "span"
+            );
+
+          timestamp.className =
+            "event-preview-time";
+
+          timestamp.textContent =
+            formatEventFeedPreviewTime_(
+              event.loggedAt
+            );
+
+          var badge =
+            document.createElement(
+              "span"
+            );
+
+          badge.className =
+            "event-preview-badge " +
+            getEventFeedPreviewSeverityClass_(
+              event
+            );
+
+          badge.textContent =
+            String(
+              event.status ||
+              "NOMINAL"
+            )
+              .trim()
+              .toUpperCase() +
+            " / S" +
+            String(
+              event.severity || 1
+            );
+
+          var source =
+            document.createElement(
+              event.route
+                ? "a"
+                : "span"
+            );
+
+          source.className =
+            "event-preview-source" +
+            (
+              event.route
+                ? " linked"
+                : ""
+            );
+
+          source.style.color =
+            event.sourceAccentColor ||
+            "#b0b0b0";
+
+          source.textContent =
+            event.sourceDisplayName ||
+            event.eventType ||
+            event.source ||
+            "SYSTEM EVENT";
+
+          if (event.route) {
+
+            source.href =
+              buildEventFeedPreviewRoute_(
+                event.route
+              );
+
+            source.target = "_blank";
+
+            source.rel =
+              "noopener noreferrer";
+
+            source.addEventListener(
+              "click",
+              function(clickEvent) {
+
+                clickEvent.preventDefault();
+
+                openEventFeedPreviewRoute_(
+                  event.route
+                );
+              }
+            );
+          }
+
+          var summary =
+            document.createElement(
+              "div"
+            );
+
+          summary.className =
+            "event-preview-summary";
+
+          summary.textContent =
+            event.summary ||
+            "NO SUMMARY AVAILABLE.";
+
+          var eventId =
+            document.createElement(
+              "div"
+            );
+
+          eventId.className =
+            "event-preview-id";
+
+          eventId.textContent =
+            "EVENT: " +
+            (
+              event.eventId ||
+              "--"
+            );
+
+          topline.appendChild(timestamp);
+          topline.appendChild(badge);
+          topline.appendChild(source);
+
+          row.appendChild(topline);
+          row.appendChild(summary);
+          row.appendChild(eventId);
+
+          container.appendChild(row);
+        }
+      );
+    }
+
+    window.handleEventFeedPreviewResponse =
+      function(data) {
+        if (window.oerReady) window.oerReady("events");
+
+        renderEventFeedPreview_(
+          data
+        );
+
+        var oldScript =
+          document.getElementById(
+            "eventFeedPreviewJsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+      };
+
+    function loadEventFeedPreview() {
+
+      eventFeedPreviewRequestCounter++;
+
+      var oldScript =
+        document.getElementById(
+          "eventFeedPreviewJsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      var script =
+        document.createElement(
+          "script"
+        );
+
+      script.id =
+        "eventFeedPreviewJsonpScript";
+
+      script.src =
+        API_URL +
+        "?eventsdata=1" +
+        "&view=current" +
+        "&severity=1,2,3,4,5" +
+        "&limit=10" +
+        "&callback=handleEventFeedPreviewResponse" +
+        "&_request=" +
+        eventFeedPreviewRequestCounter +
+        "&_ts=" +
+        Date.now();
+
+      document.body.appendChild(
+        script
+      );
+    }
+
+    /* =======================================================
+       NETWORK STATUS
+       ======================================================= */
+
+    function randomNetworkDelay_(
+      minimum,
+      maximum
+    ) {
+      return Math.floor(
+        minimum +
+        Math.random() *
+        (
+          maximum -
+          minimum +
+          1
+        )
+      );
+    }
+
+    function waitForNetworkStatus_(
+      milliseconds
+    ) {
+      return new Promise(
+        function(resolve) {
+          setTimeout(resolve, milliseconds);
+        }
+      );
+    }
+
+    function setNetworkStatusDisplay_(
+      statusElement,
+      text,
+      className
+    ) {
+      statusElement.textContent = text;
+      statusElement.className = className;
+    }
+
+    function getNetworkStatusClass_(
+      status
+    ) {
+      const normalized =
+        String(status || "")
+          .trim()
+          .toUpperCase();
+
+      if (normalized === "ONLINE") {
+        return "network-status-online";
+      }
+
+      if (normalized === "OFFLINE") {
+        return "network-status-offline";
+      }
+
+      if (normalized === "ARCHIVED") {
+        return "network-status-archived";
+      }
+
+      return "network-status-unknown";
+    }
+
+    function isValidNetworkStatusUrl_(
+      url
+    ) {
+      try {
+        const parsed =
+          new URL(
+            String(url || "")
+              .trim()
+          );
+
+        return (
+          parsed.protocol === "http:" ||
+          parsed.protocol === "https:"
+        );
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function renderNetworkStatus_(data) {
+      const rowsContainer =
+        document.getElementById(
+          "networkStatusRows"
+        );
+
+      const countElement =
+        document.getElementById(
+          "networkStatusCount"
+        );
+
+      if (
+        !rowsContainer ||
+        !countElement
+      ) {
+        return;
+      }
+
+      rowsContainer.innerHTML = "";
+
+      if (
+        !data ||
+        !Array.isArray(data.networks)
+      ) {
+        countElement.textContent = "0";
+
+        rowsContainer.textContent =
+          "NETWORK STATUS UNAVAILABLE.";
+
+        return;
+      }
+
+      const networks =
+        data.networks.filter(
+          function(network) {
+            return (
+              network &&
+              String(
+                network.name || ""
+              ).trim() !== ""
+            );
+          }
+        );
+
+      countElement.textContent =
+        String(networks.length);
+
+      networks.forEach(
+        function(network) {
+
+          const row =
+            document.createElement(
+              "div"
+            );
+
+          row.className =
+            "network-status-row";
+
+          const name =
+            document.createElement(
+              "span"
+            );
+
+          name.className =
+            "network-status-name";
+
+          name.textContent =
+            String(network.name || "")
+              .trim();
+
+          const linkArea =
+            document.createElement(
+              "span"
+            );
+
+          linkArea.className =
+            "network-status-link-area";
+
+          const destination =
+            String(network.url || "")
+              .trim();
+
+          if (
+            isValidNetworkStatusUrl_(
+              destination
+            )
+          ) {
+            linkArea.addEventListener(
+              "click",
+              function() {
+                window.open(
+                  destination,
+                  "_blank",
+                  "noopener"
+                );
+              }
+            );
+          }
+
+          const status =
+            document.createElement(
+              "span"
+            );
+
+          const statusText =
+            String(
+              network.status || "UNKNOWN"
+            )
+              .trim()
+              .toUpperCase() ||
+            "UNKNOWN";
+
+          status.className =
+            getNetworkStatusClass_(
+              statusText
+            );
+
+          status.textContent = statusText;
+          status.dataset.finalStatus = statusText;
+          status.dataset.finalClass = status.className;
+
+          row.appendChild(name);
+          row.appendChild(linkArea);
+          row.appendChild(status);
+
+          rowsContainer.appendChild(row);
+        }
+      );
+    }
+
+    window.handleNetworkStatusResponse =
+      function(data) {
+        renderNetworkStatus_(data);
+
+        const oldScript =
+          document.getElementById(
+            "networkStatusJsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+
+        if (!networkStatusCheckRunning) {
+          setTimeout(
+            runNetworkStatusCheck,
+            900
+          );
+        }
+      };
+
+    function loadNetworkStatusData() {
+      networkStatusRequestCounter++;
+
+      const oldScript =
+        document.getElementById(
+          "networkStatusJsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script =
+        document.createElement(
+          "script"
+        );
+
+      script.id =
+        "networkStatusJsonpScript";
+
+      script.src =
+        API_URL +
+        "?networkstatus=1" +
+        "&callback=handleNetworkStatusResponse" +
+        "&_request=" +
+        networkStatusRequestCounter +
+        "&_ts=" +
+        Date.now();
+
+      document.body.appendChild(script);
+    }
+
+    async function runNetworkStatusCheck() {
+      if (networkStatusCheckRunning) {
+        return;
+      }
+
+      networkStatusCheckRunning = true;
+
+      try {
+        const rows =
+          document.querySelectorAll(
+            ".network-status-row"
+          );
+
+        for (
+          let i = 0;
+          i < rows.length;
+          i++
+        ) {
+          const statusElement =
+            rows[i].querySelector(
+              ".network-status-online, " +
+              ".network-status-offline, " +
+              ".network-status-archived, " +
+              ".network-status-unknown"
+            );
+
+          if (!statusElement) {
+            continue;
+          }
+
+          const finalStatus =
+            statusElement.dataset.finalStatus;
+
+          const finalClass =
+            statusElement.dataset.finalClass;
+
+          setNetworkStatusDisplay_(
+            statusElement,
+            finalStatus,
+            finalClass
+          );
+
+          await waitForNetworkStatus_(
+            randomNetworkDelay_(800, 1800)
+          );
+
+          setNetworkStatusDisplay_(
+            statusElement,
+            "CHECKING...",
+            "network-status-checking"
+          );
+
+          await waitForNetworkStatus_(
+            randomNetworkDelay_(2000, 4500)
+          );
+
+          setNetworkStatusDisplay_(
+            statusElement,
+            "UPDATING...",
+            "network-status-updating"
+          );
+
+          await waitForNetworkStatus_(
+            randomNetworkDelay_(1100, 2700)
+          );
+
+          setNetworkStatusDisplay_(
+            statusElement,
+            finalStatus,
+            finalClass +
+            " network-status-complete"
+          );
+
+          await waitForNetworkStatus_(
+            randomNetworkDelay_(500, 1200)
+          );
+
+          statusElement.className = finalClass;
+        }
+      } finally {
+        networkStatusCheckRunning = false;
+
+        setTimeout(
+          runNetworkStatusCheck,
+          90000
+        );
+      }
+    }
+
+    /* =======================================================
+       COUNTDOWN / UPTIME
+       ======================================================= */
+
+    function updateCountdown() {
+      const difference =
+        targetDate - Date.now();
+
+      if (difference <= 0) {
+        document.getElementById(
+          "dateLine"
+        ).textContent = "00 : 00 : 00";
+
+        document.getElementById(
+          "timeLine"
+        ).textContent = "00 : 00 : 00";
+
+        return;
+      }
+
+      const totalSeconds =
+        Math.floor(difference / 1000);
+
+      const totalMinutes =
+        Math.floor(totalSeconds / 60);
+
+      const totalHours =
+        Math.floor(totalMinutes / 60);
+
+      const totalDays =
+        Math.floor(totalHours / 24);
+
+      const years =
+        Math.floor(totalDays / 365);
+
+      const remainingDays =
+        totalDays % 365;
+
+      const months =
+        Math.floor(remainingDays / 30.44);
+
+      const days =
+        Math.floor(remainingDays % 30.44);
+
+      const hours =
+        totalHours % 24;
+
+      const minutes =
+        totalMinutes % 60;
+
+      const seconds =
+        totalSeconds % 60;
+
+      const format =
+        function(value) {
+          return String(value)
+            .padStart(2, "0")
+            .slice(-2);
+        };
+
+      document.getElementById(
+        "dateLine"
+      ).textContent =
+        format(years) +
+        " : " +
+        format(months) +
+        " : " +
+        format(days);
+
+      document.getElementById(
+        "timeLine"
+      ).textContent =
+        format(hours) +
+        " : " +
+        format(minutes) +
+        " : " +
+        format(seconds);
+    }
+
+    function updateSystemUptime() {
+      const uptimeElement =
+        document.getElementById(
+          "systemUptime"
+        );
+
+      if (!uptimeElement) {
+        return;
+      }
+
+      const elapsed =
+        Math.max(
+          0,
+          Date.now() -
+          systemActivationTime
+        );
+
+      const totalSeconds =
+        Math.floor(elapsed / 1000);
+
+      const totalMinutes =
+        Math.floor(totalSeconds / 60);
+
+      const totalHours =
+        Math.floor(totalMinutes / 60);
+
+      const days =
+        Math.floor(totalHours / 24);
+
+      const format =
+        function(value) {
+          return String(value)
+            .padStart(2, "0");
+        };
+
+      uptimeElement.textContent =
+        days +
+        " DAYS " +
+        format(totalHours % 24) +
+        ":" +
+        format(totalMinutes % 60) +
+        ":" +
+        format(totalSeconds % 60);
+    }
+
+    /* =======================================================
+       PUBLIC LOG
+       ======================================================= */
+
+    function formatPublicLogCreatedAt_(
+      createdAt
+    ) {
+      if (!createdAt) {
+        return "UNKNOWN";
+      }
+
+      const date =
+        new Date(createdAt);
+
+      if (isNaN(date.getTime())) {
+        return String(createdAt);
+      }
+
+      return (
+        (date.getMonth() + 1) +
+        "/" +
+        date.getDate() +
+        "/" +
+        String(date.getFullYear()).slice(-2) +
+        " " +
+        String(date.getHours()).padStart(2, "0") +
+        ":" +
+        String(date.getMinutes()).padStart(2, "0")
+      );
+    }
+
+    function extractRadarIdFromMessage_(
+      message
+    ) {
+      const match =
+        String(message || "")
+          .match(/\bAI-\d+-\d+\b/);
+
+      return match
+        ? match[0]
+        : "";
+    }
+
+    function renderLogView(view) {
+      const feed =
+        document.getElementById("bbsFeed");
+
+      if (!feed) {
+        return;
+      }
+
+      feed.innerHTML = "";
+
+      let postsToShow = [];
+
+      if (view === "all") {
+        postsToShow = allLogPosts;
+      } else if (view === "current") {
+        postsToShow =
+          allLogPosts.filter(
+            function(post) {
+              return (
+                post.archive === 0 ||
+                post.archive === "" ||
+                post.archive === null ||
+                typeof post.archive ===
+                "undefined"
+              );
+            }
+          );
+      } else {
+        postsToShow =
+          allLogPosts.filter(
+            function(post) {
+              return (
+                Number(post.archive) ===
+                Number(view)
+              );
+            }
+          );
+      }
+
+      const header =
+        document.createElement("div");
+
+      header.style.textAlign = "center";
+      header.style.fontWeight = "bold";
+      header.style.borderBottom =
+        "1px dashed #ffffff";
+      header.style.paddingBottom = "8px";
+      header.style.marginBottom = "5px";
+      header.style.letterSpacing = "1px";
+      header.style.fontSize = "0.8rem";
+
+      if (view === "current") {
+        header.textContent =
+          "=== CURRENT LOG ===";
+      } else if (view === "all") {
+        header.innerHTML =
+          "=== PUBLIC LOG ARCHIVE ===<br>VIEW ALL LOGS";
+      } else {
+        header.innerHTML =
+          "=== PUBLIC LOG ARCHIVE ===<br>ARCHIVE " +
+          view;
+      }
+
+      feed.appendChild(header);
+
+      if (postsToShow.length === 0) {
+        const empty =
+          document.createElement("div");
+
+        empty.textContent =
+          "NO LOG ENTRIES FOUND.";
+
+        feed.appendChild(empty);
+        return;
+      }
+
+      postsToShow.forEach(
+        function(post) {
+          const div =
+            document.createElement("div");
+
+          div.className = "bbs-post";
+
+          const loggedAt =
+            formatPublicLogCreatedAt_(
+              post.createdAt
+            );
+
+          const radarId =
+            String(post.radarId || "")
+              .trim() ||
+            extractRadarIdFromMessage_(
+              post.message
+            );
+
+          let hoverText =
+            "LOGGED: " + loggedAt;
+
+          if (radarId) {
+            hoverText +=
+              "\nRADAR ID: " +
+              radarId;
+          }
+
+          div.title = hoverText;
+
+          const metadata =
+            document.createElement("span");
+
+          metadata.className = "bbs-meta";
+          metadata.textContent = loggedAt;
+
+          const handle =
+            document.createElement("span");
+
+          handle.className = "bbs-handle";
+          handle.textContent =
+            " " +
+            String(post.handle || "UNKNOWN") +
+            ":";
+
+          const message =
+            document.createTextNode(
+              " " +
+              String(post.message || "")
+            );
+
+          div.appendChild(metadata);
+          div.appendChild(handle);
+          div.appendChild(message);
+
+          feed.appendChild(div);
+        }
+      );
+    }
+
+    function buildLogArchiveMenu() {
+      const menu =
+        document.getElementById(
+          "logArchiveMenu"
+        );
+
+      if (!menu) {
+        return;
+      }
+
+      menu.innerHTML = "";
+
+      const archiveNumbers =
+        [
+          ...new Set(
+            allLogPosts
+              .map(
+                function(post) {
+                  return Number(post.archive);
+                }
+              )
+              .filter(
+                function(number) {
+                  return (
+                    Number.isInteger(number) &&
+                    number > 0
+                  );
+                }
+              )
+          )
+        ].sort(
+          function(a, b) {
+            return a - b;
+          }
+        );
+
+      function addButton(label, value) {
+        const button =
+          document.createElement("button");
+
+        button.className =
+          "log-archive-option";
+
+        button.type = "button";
+        button.textContent = label;
+
+        button.onclick =
+          function() {
+            currentLogView = value;
+            renderLogView(value);
+            closeLogArchive();
+          };
+
+        menu.appendChild(button);
+      }
+
+      addButton("CURRENT LOG", "current");
+      addButton("VIEW ALL LOGS", "all");
+
+      archiveNumbers.forEach(
+        function(number) {
+          addButton(
+            "ARCHIVE " + number,
+            number
+          );
+        }
+      );
+    }
+
+    function toggleLogArchive() {
+      const menu =
+        document.getElementById(
+          "logArchiveMenu"
+        );
+
+      const toggle =
+        document.getElementById(
+          "logArchiveToggle"
+        );
+
+      if (!menu) {
+        return;
+      }
+
+      const open =
+        menu.style.display === "block";
+
+      menu.style.display =
+        open
+          ? "none"
+          : "block";
+
+      if (toggle) {
+        toggle.textContent =
+          open
+            ? "[ LOG ARCHIVE ▼ ]"
+            : "[ LOG ARCHIVE ▲ ]";
+      }
+    }
+
+    function closeLogArchive() {
+      const menu =
+        document.getElementById(
+          "logArchiveMenu"
+        );
+
+      const toggle =
+        document.getElementById(
+          "logArchiveToggle"
+        );
+
+      if (menu) {
+        menu.style.display = "none";
+      }
+
+      if (toggle) {
+        toggle.textContent =
+          "[ LOG ARCHIVE ▼ ]";
+      }
+    }
+
+    window.handleDatabaseResponse =
+      function(data) {
+        if (window.oerReady) window.oerReady("database");
+        if (
+          data &&
+          typeof data.hitCount !==
+          "undefined"
+        ) {
+          if (typeof oerOdometer === "function") {
+            oerOdometer(document.getElementById("visitorCount"), data.hitCount);
+          } else {
+            document.getElementById("visitorCount").textContent = String(data.hitCount).padStart(7, "0");
+          }
+        }
+
+        if (
+          data &&
+          data.posts
+        ) {
+          allLogPosts = data.posts || [];
+          postsLoadedAt = Date.now();
+          buildLogArchiveMenu();
+          renderLogView(currentLogView);
+        }
+
+        if (data) {
+          const phrases =
+            data.allPrompts &&
+            data.allPrompts.length > 0
+              ? data.allPrompts
+              : (
+                  data.tickerMessage
+                    ? [data.tickerMessage]
+                    : []
+                );
+
+          if (phrases.length > 0) {
+            document.getElementById(
+              "alertTicker"
+            ).textContent =
+              phrases.join("  ***  ") +
+              "  ***  ";
+          }
+        }
+
+        const oldScript =
+          document.getElementById(
+            "jsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+      };
+
+    // Bulletin refresh without counting a visit (?posts=1): when a post
+    // is hidden (the Radar answer's "bv" changes) and when the visitor
+    // comes back to the tab.
+    let postsLoadedAt = 0;
+    let bulletinVersion = null;
+
+    window.handlePostsResponse = function(data) {
+      const s = document.getElementById("postsScript");
+      if (s) s.remove();
+      if (!data || !data.posts) return;
+      allLogPosts = data.posts;
+      postsLoadedAt = Date.now();
+      buildLogArchiveMenu();
+      if (currentLogView !== "current" && currentLogView !== "all" &&
+          !allLogPosts.some(function(p) { return String(p.archive) === String(currentLogView); })) {
+        currentLogView = "current";
+      }
+      renderLogView(currentLogView);
+    };
+
+    function loadPostsOnly() {
+      const old = document.getElementById("postsScript");
+      if (old) old.remove();
+      const script = document.createElement("script");
+      script.id = "postsScript";
+      script.src = API_URL + "?posts=1&callback=handlePostsResponse&_ts=" + Date.now();
+      document.body.appendChild(script);
+    }
+
+    function noteBulletinVersion(v) {
+      if (typeof v !== "string" || !v) return;
+      if (bulletinVersion !== null && v !== bulletinVersion) loadPostsOnly();
+      bulletinVersion = v;
+    }
+
+    document.addEventListener("visibilitychange", function() {
+      if (document.visibilityState === "visible" && postsLoadedAt &&
+          Date.now() - postsLoadedAt > 20000) {
+        loadPostsOnly();
+      }
+    });
+
+    function loadDatabaseData() {
+      const oldScript =
+        document.getElementById(
+          "jsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script =
+        document.createElement("script");
+
+      script.id = "jsonpScript";
+
+      script.src =
+        API_URL +
+        "?callback=handleDatabaseResponse&_ts=" +
+        Date.now();
+
+      document.body.appendChild(script);
+    }
+
+        /* =======================================================
+       RADAR (shared: HomeView.html and RadarView.html)
+       Included with include("RadarCommonJs") inside the page's
+       main script block. The page must define API_URL. Elements are
+       optional: a page without the Source Register just skips it.
+
+       NEVER use the less-than character in this file (or any file
+       included as script): Google reads included files as HTML and
+       turns it into "&lt;", which breaks the whole page script and
+       leaves the Radar at INITIALIZING. Write "b > a" instead.
+       tests\test_radar_pages.js checks this.
+       ======================================================= */
+
+    let radarRequestCounter = 0;
+    let radarRequestStartedAt = 0;   // 0 = no request on its way
+    const RADAR_REQUEST_GIVE_UP_MS = 20000;
+    // Load control (2026-11-06): no polling while the tab is hidden,
+    // and after failed requests wait 2.5 / 5 / 10 / 20 / 30 s.
+    const RADAR_ERROR_BACKOFF_MAX_MS = 30000;
+    let radarErrorCount = 0;
+    let radarRetryAt = 0;
+    let radarAudioContext = null;
+    let radarOscillator = null;
+    let radarGain = null;
+    let radarSoundEnabled = false;
+
+    /* =======================================================
+       RADAR
+       ======================================================= */
+
+    function initializeRadarAudio() {
+      if (radarAudioContext) {
+        return;
+      }
+
+      radarAudioContext =
+        new (
+          window.AudioContext ||
+          window.webkitAudioContext
+        )();
+
+      radarGain =
+        radarAudioContext.createGain();
+
+      radarGain.gain.value = 0;
+
+      radarGain.connect(
+        radarAudioContext.destination
+      );
+    }
+
+    function toggleRadarSound() {
+      initializeRadarAudio();
+
+      const button =
+        document.getElementById(
+          "radarSoundButton"
+        );
+
+      radarSoundEnabled =
+        !radarSoundEnabled;
+
+      if (radarSoundEnabled) {
+        radarAudioContext.resume()
+          .then(
+            function() {
+              startRadarSound();
+
+              button.textContent =
+                "SOUND: ON";
+
+              playRadarPing();
+            }
+          )
+          .catch(
+            function() {
+              radarSoundEnabled = false;
+
+              button.textContent =
+                "SOUND: OFF";
+            }
+          );
+      } else {
+        stopRadarSound();
+
+        button.textContent =
+          "SOUND: OFF";
+      }
+    }
+
+    function startRadarSound() {
+      if (radarOscillator) {
+        return;
+      }
+
+      radarOscillator =
+        radarAudioContext.createOscillator();
+
+      radarOscillator.type = "sine";
+      radarOscillator.frequency.value = 440;
+
+      radarOscillator.connect(radarGain);
+      radarOscillator.start();
+
+      updateRadarVolume();
+    }
+
+    function stopRadarSound() {
+      if (!radarOscillator) {
+        return;
+      }
+
+      radarGain.gain.setTargetAtTime(
+        0,
+        radarAudioContext.currentTime,
+        0.05
+      );
+
+      radarOscillator.stop(
+        radarAudioContext.currentTime + 0.1
+      );
+
+      radarOscillator = null;
+    }
+
+    function playRadarPing() {
+      if (
+        !radarSoundEnabled ||
+        !radarAudioContext
+      ) {
+        return;
+      }
+
+      const oscillator =
+        radarAudioContext.createOscillator();
+
+      const gain =
+        radarAudioContext.createGain();
+
+      const now =
+        radarAudioContext.currentTime;
+
+      oscillator.type = "sine";
+
+      oscillator.frequency.setValueAtTime(
+        900,
+        now
+      );
+
+      oscillator.frequency
+        .exponentialRampToValueAtTime(
+          300,
+          now + 0.18
+        );
+
+      gain.gain.setValueAtTime(
+        0.18,
+        now
+      );
+
+      gain.gain
+        .exponentialRampToValueAtTime(
+          0.001,
+          now + 0.18
+        );
+
+      oscillator.connect(gain);
+
+      gain.connect(
+        radarAudioContext.destination
+      );
+
+      oscillator.start(now);
+      oscillator.stop(now + 0.18);
+    }
+
+    function updateRadarVolume() {
+      if (
+        !radarGain ||
+        !radarAudioContext
+      ) {
+        return;
+      }
+
+      const volume =
+        Number(
+          document.getElementById(
+            "radarVolume"
+          ).value
+        ) / 100;
+
+      radarGain.gain.setTargetAtTime(
+        radarSoundEnabled
+          ? volume * 0.08
+          : 0,
+        radarAudioContext.currentTime,
+        0.03
+      );
+    }
+
+    function updateRadarBrightness() {
+      const screen =
+        document.querySelector(
+          ".radar-screen"
+        );
+
+      if (screen) {
+        screen.style.filter =
+          "brightness(" +
+          document.getElementById(
+            "radarBrightness"
+          ).value +
+          "%)";
+      }
+    }
+
+    function updateRadarSweepSpeed() {
+      const value =
+        document.getElementById(
+          "radarSweepSpeed"
+        ).value;
+
+      const sweep =
+        document.querySelector(
+          ".radar-sweep"
+        );
+
+      const display =
+        document.getElementById(
+          "radarSweepSpeedValue"
+        );
+
+      if (sweep) {
+        sweep.style.animationDuration =
+          value + "s";
+      }
+
+      if (display) {
+        display.textContent =
+          value + " SEC";
+      }
+    }
+
+    /* Source color identifies the system; severity sets the size. */
+    const RADAR_BLIP_SIZES = {
+      1: 9,
+      2: 11,
+      3: 13,
+      4: 16,
+      5: 20
+    };
+
+    function safeRadarColor_(color) {
+      return /^#[0-9A-Fa-f]{6}$/.test(String(color || ""))
+        ? color
+        : "#888888";
+    }
+
+    function styleRadarBlip_(blip, contact) {
+      const color =
+        safeRadarColor_(contact.sourceColor);
+
+      const size =
+        RADAR_BLIP_SIZES[
+          Math.round(Number(contact.radarSeverity))
+        ] || RADAR_BLIP_SIZES[1];
+
+      blip.style.width = size + "px";
+      blip.style.height = size + "px";
+      blip.style.background = color;
+      blip.style.boxShadow =
+        "0 0 6px " + color + ", 0 0 14px " + color;
+    }
+
+    let lastSourceRegisterJson_ = "";
+
+    /* Space weather colors the Radar's outline (null = normal green).
+       Set from the live poll; stays until the next check changes it. */
+    function applyRadarRing_(ring) {
+      const screen = document.querySelector(".radar-screen");
+
+      if (!screen || !screen.classList) {
+        return;
+      }
+
+      const status = ring && ring.status ? String(ring.status).toLowerCase() : "";
+      const wanted = ["watch", "elevated", "critical"].indexOf(status) !== -1 ? "ring-" + status : "";
+
+      ["ring-watch", "ring-elevated", "ring-critical"].forEach(
+        function(c) {
+          if (c !== wanted) {
+            screen.classList.remove(c);
+          }
+        }
+      );
+
+      if (wanted) {
+        screen.classList.add(wanted);
+        screen.title = String(ring.label || "");
+      } else {
+        screen.removeAttribute("title");
+      }
+    }
+
+    function renderSourceRegister_(sources) {
+      const json =
+        JSON.stringify(sources || null);
+
+      if (json === lastSourceRegisterJson_) {
+        return;  /* unchanged: keep the lamps (and their blink) as they are */
+      }
+
+      const panel =
+        document.getElementById("sourceRegister");
+
+      const count =
+        document.getElementById("sourceRegisterCount");
+
+      if (
+        !panel ||
+        !sources ||
+        !Array.isArray(sources.lights)
+      ) {
+        return;
+      }
+
+      lastSourceRegisterJson_ = json;
+
+      panel.innerHTML = "";
+
+      sources.lights.forEach(
+        function(item) {
+          const cell =
+            document.createElement("div");
+
+          const lamp =
+            document.createElement("span");
+
+          const label =
+            document.createElement("span");
+
+          const state =
+            String(item.light || "OFF");
+
+          const color =
+            safeRadarColor_(item.color);
+
+          let stateTag = null;
+
+          lamp.className = "source-lamp";
+          label.className = "source-register-label";
+          label.textContent = String(item.label || "");
+
+          if (state === "ON") {
+            cell.className = "source-register-cell light-on";
+            lamp.style.background = color;
+            lamp.style.borderColor = color;
+            lamp.style.boxShadow = "0 0 5px " + color;
+          } else if (state === "DOWN") {
+            cell.className = "source-register-cell light-down";
+            lamp.className += " lamp-down";
+            lamp.style.borderColor = color;
+            stateTag = document.createElement("span");
+            stateTag.className = "source-register-state";
+            stateTag.textContent = "DOWN";
+          } else if (state === "FUTURE") {
+            cell.className = "source-register-cell light-future";
+          } else {
+            cell.className = "source-register-cell light-off";
+          }
+
+          cell.appendChild(lamp);
+          cell.appendChild(label);
+
+          if (stateTag) {
+            cell.appendChild(stateTag);
+          }
+          panel.appendChild(cell);
+        }
+      );
+
+      if (count) {
+        count.textContent =
+          String(sources.on || 0).padStart(2, "0") +
+          "/" +
+          String(sources.registered || 0).padStart(2, "0") +
+          " LIVE";
+      }
+    }
+
+    /* ---------------------------------------------------------
+       STACKS (Radar uplift step 7)
+       Real contacts within radar_stack_radius (Radar units, 0-100)
+       of each other are drawn as one stack at the most severe
+       member, with a count badge. Display only: stored positions
+       and events are never changed or merged. Background contacts
+       never join a stack.
+       --------------------------------------------------------- */
+    const RADAR_DEFAULT_STACK_RADIUS = 2.5;
+
+    /* Stay-lit monitors (MonitorCore.js) write a new row each run that
+       overlaps the last one. Back-to-back rows of one condition (same
+       source + EventData ck) are shown as one contact: the newest. */
+    function radarEventDataOf_(contact) {
+      if (contact.eventDataParsed_ !== undefined) {
+        return contact.eventDataParsed_;
+      }
+      let d = null;
+      try {
+        d = typeof contact.eventData === "string" ? JSON.parse(contact.eventData || "null") : (contact.eventData || null);
+      } catch (error) {
+        d = null;
+      }
+      contact.eventDataParsed_ = d;
+      return d;
+    }
+
+    function radarIsStayLit_(contact) {
+      const d = radarEventDataOf_(contact);
+      return !!(d && d.stayLit);
+    }
+
+    function mergeRadarStayLit_(contacts) {
+      const newest = {};
+      const out = [];
+
+      (contacts || []).forEach(
+        function(contact) {
+          const d = radarEventDataOf_(contact);
+          if (!d || !d.ck) {
+            out.push(contact);
+            return;
+          }
+          const key = contact.sourceId + "|" + d.ck;
+          if (!newest[key] || Number(contact.birthAt) > Number(newest[key].birthAt)) {
+            newest[key] = contact;
+          }
+        }
+      );
+
+      Object.keys(newest).forEach(function(k) { out.push(newest[k]); });
+      return out;
+    }
+
+    function groupRadarContacts_(contacts, radius) {
+      contacts = mergeRadarStayLit_(contacts);
+      radius = Number(radius);
+
+      if (!Number.isFinite(radius) || 0 > radius) {
+        radius = RADAR_DEFAULT_STACK_RADIUS;
+      }
+
+      const background = [];
+      const real = [];
+
+      (contacts || []).forEach(
+        function(contact) {
+          if (contact.isBackground) {
+            background.push(contact);
+          } else {
+            real.push(contact);
+          }
+        }
+      );
+
+      /* Most severe first, then oldest: the first member of each
+         stack is the one drawn, so the worst event is never hidden. */
+      real.sort(
+        function(a, b) {
+          return (
+            (Number(b.radarSeverity) - Number(a.radarSeverity)) ||
+            (Number(a.birthAt) - Number(b.birthAt))
+          );
+        }
+      );
+
+      const stacks = [];
+
+      real.forEach(
+        function(contact) {
+          let home = null;
+
+          for (let i = 0; stacks.length > i; i++) {
+            const anchor = stacks[i].anchor;
+            const dx = Number(anchor.x) - Number(contact.x);
+            const dy = Number(anchor.y) - Number(contact.y);
+
+            if (radius >= Math.sqrt(dx * dx + dy * dy)) {
+              home = stacks[i];
+              break;
+            }
+          }
+
+          if (home) {
+            home.members.push(contact);
+          } else {
+            stacks.push({
+              anchor: contact,
+              members: [contact]
+            });
+          }
+        }
+      );
+
+      return {
+        stacks: stacks,
+        background: background
+      };
+    }
+
+    function radarContactLabel_(contact) {
+      return (
+        (contact.sourceLabel || "CONTACT") +
+        " // " +
+        (contact.sourceStatus || "UNKNOWN")
+      );
+    }
+
+    function radarStackTitle_(members) {
+      if (members.length === 1) {
+        return radarContactLabel_(members[0]);
+      }
+
+      const shown =
+        members
+          .slice(0, 4)
+          .map(radarContactLabel_)
+          .join(", ");
+
+      return (
+        members.length +
+        " CONTACTS: " +
+        shown +
+        (members.length > 4 ? ", ..." : "")
+      );
+    }
+
+    function radarBlipSize_(contact) {
+      return (
+        RADAR_BLIP_SIZES[
+          Math.round(Number(contact.radarSeverity))
+        ] || RADAR_BLIP_SIZES[1]
+      );
+    }
+
+    function radarInspectEnabled_() {
+      return (
+        typeof RADAR_INSPECT_ENABLED !== "undefined" &&
+        RADAR_INSPECT_ENABLED === true
+      );
+    }
+
+    function buildRadarBackgroundBlip_(contact) {
+      const blip =
+        document.createElement("div");
+
+      blip.className =
+        "radar-contact radar-contact-bg";
+
+      blip.style.left = contact.x + "%";
+      blip.style.top = contact.y + "%";
+      blip.title = "UNIDENTIFIED CONTACT";
+
+      return blip;
+    }
+
+    function buildRadarStackElement_(stack) {
+      const anchor = stack.anchor;
+      const members = stack.members;
+      const size = radarBlipSize_(anchor);
+      const color = safeRadarColor_(anchor.sourceColor);
+
+      const holder =
+        document.createElement("div");
+
+      holder.className = "radar-stack";
+      holder.style.left = anchor.x + "%";
+      holder.style.top = anchor.y + "%";
+      holder.style.zIndex = String(10 + Math.round(Number(anchor.radarSeverity) || 1));
+      /* Hover (mouse) or tap (homepage, touch) shows the details
+         card; the plain browser tooltip is only a fallback label. */
+      holder.setAttribute("aria-label", radarStackTitle_(members));
+      attachRadarHover_(holder, members);
+
+      /* CRITICAL: slow pulsing halo in the source color. */
+      if (Number(anchor.radarSeverity) >= 5) {
+        const halo =
+          document.createElement("div");
+
+        halo.className = "radar-halo";
+        halo.style.width = (size * 2.4) + "px";
+        halo.style.height = (size * 2.4) + "px";
+        halo.style.borderColor = color;
+        holder.appendChild(halo);
+      }
+
+      /* Several sources at one spot: a ring of their colors
+         (concentrated activity; says nothing about cause). */
+      const colors = [];
+
+      members.forEach(
+        function(member) {
+          const c = safeRadarColor_(member.sourceColor);
+
+          if (colors.indexOf(c) === -1) {
+            colors.push(c);
+          }
+        }
+      );
+
+      if (colors.length > 1) {
+        const ring =
+          document.createElement("div");
+
+        const step = 360 / colors.length;
+
+        ring.className = "radar-stack-ring";
+        ring.style.width = (size + 10) + "px";
+        ring.style.height = (size + 10) + "px";
+        ring.style.background =
+          "conic-gradient(" +
+          colors
+            .map(
+              function(c, i) {
+                return c + " " + (i * step) + "deg " + ((i + 1) * step) + "deg";
+              }
+            )
+            .join(", ") +
+          ")";
+        holder.appendChild(ring);
+      }
+
+      const blip =
+        document.createElement("div");
+
+      blip.className = "radar-contact" + (radarIsStayLit_(anchor) ? " stay-lit" : "");
+      styleRadarBlip_(blip, anchor);
+      holder.appendChild(blip);
+
+      if (members.length > 1) {
+        const badge =
+          document.createElement("div");
+
+        badge.className = "radar-stack-badge";
+        badge.style.left = (size / 2 + 3) + "px";
+        badge.style.top = (-size / 2 - 12) + "px";
+        badge.textContent = String(members.length);
+        holder.appendChild(badge);
+      }
+
+      if (radarInspectEnabled_()) {
+        holder.className += " inspectable";
+
+        holder.addEventListener(
+          "click",
+          function(event) {
+            openRadarDetail_(members, event);
+          }
+        );
+      }
+
+      return holder;
+    }
+
+    /* ---------------------------------------------------------
+       HOVER CARD (both Radars): the same details as the contact
+       card, following the pointer while it is over a contact.
+       On a touch screen the homepage shows it on a tap (the
+       standalone Radar opens the full card on a tap instead).
+       --------------------------------------------------------- */
+    const RADAR_HOVER_MAX_ENTRIES = 4;
+    let radarHoverCard_ = null;
+    let radarHoverMembers_ = null;
+
+    function getRadarHoverCard_() {
+      if (!radarHoverCard_) {
+        radarHoverCard_ = document.createElement("div");
+        radarHoverCard_.className = "radar-detail radar-hover-card";
+        radarHoverCard_.setAttribute("aria-hidden", "true");
+        document.body.appendChild(radarHoverCard_);
+      }
+
+      return radarHoverCard_;
+    }
+
+    function showRadarHover_(members, x, y) {
+      const card = getRadarHoverCard_();
+
+      if (radarHoverMembers_ !== members) {
+        radarHoverMembers_ = members;
+        card.innerHTML = "";
+
+        const top = document.createElement("div");
+        top.className = "radar-detail-top";
+        top.textContent =
+          members.length === 1
+            ? "=== CONTACT ==="
+            : "=== " + members.length + " CONTACTS ===";
+        card.appendChild(top);
+
+        members.slice(0, RADAR_HOVER_MAX_ENTRIES).forEach(
+          function(member) {
+            card.appendChild(buildRadarDetailEntry_(member));
+          }
+        );
+
+        if (members.length > RADAR_HOVER_MAX_ENTRIES || radarInspectEnabled_()) {
+          const more = document.createElement("div");
+          more.className = "radar-detail-signal";
+          more.textContent =
+            (members.length > RADAR_HOVER_MAX_ENTRIES
+              ? "+" + (members.length - RADAR_HOVER_MAX_ENTRIES) + " MORE // "
+              : "") +
+            (radarInspectEnabled_() ? "CLICK TO HOLD" : "FULL DETAIL ON THE RADAR CONSOLE");
+          card.appendChild(more);
+        }
+      }
+
+      card.style.display = "block";
+      placeRadarHover_(x, y);
+    }
+
+    function placeRadarHover_(x, y) {
+      const card = radarHoverCard_;
+
+      if (!card || card.style.display !== "block") {
+        return;
+      }
+
+      const w = card.offsetWidth;
+      const h = card.offsetHeight;
+      const gap = 16;
+
+      /* Right of and below the pointer; flipped when it would
+         leave the window. */
+      let left = x + gap;
+      let top = y + gap;
+
+      if (left + w + 8 > window.innerWidth) {
+        left = x - gap - w;
+      }
+
+      if (top + h + 8 > window.innerHeight) {
+        top = y - gap - h;
+      }
+
+      card.style.left = Math.max(8, left) + "px";
+      card.style.top = Math.max(8, top) + "px";
+    }
+
+    function hideRadarHover_() {
+      if (radarHoverCard_) {
+        radarHoverCard_.style.display = "none";
+      }
+
+      radarHoverMembers_ = null;
+    }
+
+    function attachRadarHover_(holder, members) {
+      holder.addEventListener("pointerenter", function(event) {
+        if (event.pointerType === "mouse") {
+          showRadarHover_(members, event.clientX, event.clientY);
+        }
+      });
+
+      holder.addEventListener("pointermove", function(event) {
+        if (event.pointerType === "mouse") {
+          placeRadarHover_(event.clientX, event.clientY);
+        }
+      });
+
+      holder.addEventListener("pointerleave", function(event) {
+        if (event.pointerType === "mouse") {
+          hideRadarHover_();
+        }
+      });
+
+      /* Touch on the homepage (no click card there): a tap shows
+         the card, a tap anywhere else hides it. */
+      holder.addEventListener("pointerup", function(event) {
+        if (event.pointerType !== "mouse" && !radarInspectEnabled_()) {
+          event.stopPropagation();
+          radarHoverMembers_ = null;
+          showRadarHover_(members, event.clientX, event.clientY);
+        }
+      });
+    }
+
+    document.addEventListener("pointerup", function(event) {
+      if (
+        event.pointerType !== "mouse" &&
+        radarHoverCard_ &&
+        !radarHoverCard_.contains(event.target)
+      ) {
+        hideRadarHover_();
+      }
+    });
+
+    /* Elements are kept between polls (keyed by their events), so
+       blinking, halos and the open detail card don't restart every
+       5 seconds. */
+    const radarDrawn_ = {};
+
+    /* Last live answer, so the timeline can return to live at once. */
+    let radarLastLiveData_ = null;
+
+    function renderRadarContacts_(container, data) {
+      const grouped =
+        groupRadarContacts_(
+          data.contacts,
+          data.stackRadius
+        );
+
+      const wanted = {};
+
+      grouped.background.forEach(
+        function(contact) {
+          wanted["bg:" + contact.id] = {
+            build: function() {
+              return buildRadarBackgroundBlip_(contact);
+            }
+          };
+        }
+      );
+
+      grouped.stacks.forEach(
+        function(stack) {
+          const key =
+            "st:" +
+            stack.members
+              .map(function(m) { return m.id; })
+              .join(",");
+
+          wanted[key] = {
+            build: function() {
+              return buildRadarStackElement_(stack);
+            }
+          };
+        }
+      );
+
+      Object.keys(radarDrawn_).forEach(
+        function(key) {
+          if (!wanted[key]) {
+            if (radarDrawn_[key].matches(":hover")) {
+              hideRadarHover_();
+            }
+            radarDrawn_[key].remove();
+            delete radarDrawn_[key];
+          }
+        }
+      );
+
+      Object.keys(wanted).forEach(
+        function(key) {
+          if (!radarDrawn_[key]) {
+            radarDrawn_[key] = wanted[key].build();
+            container.appendChild(radarDrawn_[key]);
+          }
+        }
+      );
+
+      return grouped;
+    }
+
+    function clearRadarContacts_() {
+      Object.keys(radarDrawn_).forEach(
+        function(key) {
+          radarDrawn_[key].remove();
+          delete radarDrawn_[key];
+        }
+      );
+    }
+
+    /* ---------------------------------------------------------
+       CONTACT DETAIL (standalone Radar only: the page sets
+       RADAR_INSPECT_ENABLED = true and has #radarDetail)
+       --------------------------------------------------------- */
+    let radarDetailIds_ = null;
+
+    function radarFixed_(value, places) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n.toFixed(places) : "--";
+    }
+
+    function radarSigned_(value, places) {
+      const n = Number(value);
+
+      if (!Number.isFinite(n)) {
+        return "--";
+      }
+
+      return (n > 0 ? "+" : "") + n.toFixed(places);
+    }
+
+    function radarWhole_(value) {
+      const n = Number(value);
+      return Number.isFinite(n) ? Math.round(n).toLocaleString("en-US") : "--";
+    }
+
+    function radarLocalTime_(ms) {
+      const n = Number(ms);
+
+      if (!Number.isFinite(n) || 0 >= n) {
+        return "--";
+      }
+
+      return new Date(n).toLocaleString(
+        [],
+        {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          timeZoneName: "short"
+        }
+      );
+    }
+
+    function radarEiaHour_(period) {
+      const m =
+        /^(\d{4}-\d{2}-\d{2})T(\d{2})$/.exec(String(period || ""));
+
+      return m ? m[1] + " " + m[2] + ":00 UTC" : String(period || "--");
+    }
+
+    /* Display-safe details per source (docs/radar-event-schema.md).
+       Internal fields are never shown. New monitors add a case. */
+    function radarDetailRows_(contact) {
+      let d = {};
+
+      try {
+        d = JSON.parse(contact.eventData || "{}") || {};
+      } catch (error) {
+        d = {};
+      }
+
+      const rows = [];
+      const add = function(label, value) {
+        if (value !== undefined && value !== null && value !== "" && value !== "--") {
+          rows.push([label, String(value)]);
+        }
+      };
+
+      if (contact.sourceId === "USGS") {
+        add("MAGNITUDE", radarFixed_(d.magnitude, 1));
+        add("PLACE", d.place);
+        add("DEPTH", Number.isFinite(Number(d.depthKm)) ? radarFixed_(d.depthKm, 1) + " KM" : "");
+        add("LOCATION", Number.isFinite(Number(d.latitude)) ? radarFixed_(d.latitude, 2) + ", " + radarFixed_(d.longitude, 2) : "");
+        add("SECTOR", d.sectorName);
+        add("NEAREST CITY", d.nearestCity ? d.nearestCity + (Number.isFinite(Number(d.distanceKm)) ? " (" + radarWhole_(d.distanceKm) + " KM)" : "") : "");
+        add("USGS EVENT", d.usgsEventId);
+      } else if (contact.sourceId === "EIA") {
+        add("SECTOR", d.sectorName);
+        add("EIA HOUR", d.reportingPeriod ? radarEiaHour_(d.reportingPeriod) : "");
+        add("ACTUAL DEMAND", Number.isFinite(Number(d.actualDemandMw)) ? radarWhole_(d.actualDemandMw) + " MW" : "");
+        add("FORECAST", Number.isFinite(Number(d.forecastDemandMw)) ? radarWhole_(d.forecastDemandMw) + " MW" : "");
+        add("DEVIATION", Number.isFinite(Number(d.demandDeviationPercent)) ? radarSigned_(d.demandDeviationPercent, 1) + "%" : "");
+        add("HOURLY RAMP", Number.isFinite(Number(d.hourlyRampPercent)) ? radarSigned_(d.hourlyRampPercent, 1) + "%" : "");
+        add("GRID HEALTH", Number.isFinite(Number(d.gridHealth)) ? radarWhole_(d.gridHealth) + "%" : "");
+      } else if (contact.sourceId === "TEMP") {
+        add("LOCATION", d.location);
+        add("TEMPERATURE", Number.isFinite(Number(d.currentTemperatureF)) ? radarFixed_(d.currentTemperatureF, 1) + " F" : "");
+        add("USUAL", Number.isFinite(Number(d.baselineTemperatureF)) ? radarFixed_(d.baselineTemperatureF, 1) + " F" : "");
+        add("DEVIATION", Number.isFinite(Number(d.deviationF)) ? radarSigned_(d.deviationF, 1) + " F" : "");
+        add("READING", d.reportingDate ? d.reportingDate + " " + String(d.reportingHour).padStart(2, "0") + ":00" + (d.reportingClock ? " (" + d.reportingClock + ")" : "") : "");
+      }
+
+      /* Monitoring Grid feeds: display-safe rows written by the server. */
+      if (Array.isArray(d.rows)) {
+        d.rows.forEach(
+          function(r) {
+            if (Array.isArray(r) && r.length >= 2) {
+              add(String(r[0]).toUpperCase(), r[1]);
+            }
+          }
+        );
+      }
+
+      add(d.stayLit ? "SINCE" : "OCCURRED", radarLocalTime_(contact.sourceEventAt));
+      add("RECORDED", radarLocalTime_(contact.createdAt));
+      add("CONTACT ID", contact.id);
+
+      return rows;
+    }
+
+    function buildRadarDetailEntry_(contact) {
+      const entry =
+        document.createElement("div");
+
+      entry.className = "radar-detail-entry";
+
+      const head =
+        document.createElement("div");
+
+      head.className = "radar-detail-head";
+
+      const lamp =
+        document.createElement("span");
+
+      const color = safeRadarColor_(contact.sourceColor);
+
+      lamp.className = "source-lamp";
+      lamp.style.background = color;
+      lamp.style.borderColor = color;
+
+      const name =
+        document.createElement("span");
+
+      name.textContent = radarContactLabel_(contact);
+
+      const sev =
+        document.createElement("span");
+
+      sev.className = "radar-detail-sev";
+      sev.textContent = "SEV " + (Math.round(Number(contact.radarSeverity)) || 1);
+
+      head.appendChild(lamp);
+      head.appendChild(name);
+      head.appendChild(sev);
+      entry.appendChild(head);
+
+      radarDetailRows_(contact).forEach(
+        function(row) {
+          const line =
+            document.createElement("div");
+
+          line.className = "radar-detail-row";
+
+          const label =
+            document.createElement("span");
+
+          label.className = "radar-detail-label";
+          label.textContent = row[0];
+
+          const value =
+            document.createElement("span");
+
+          value.className = "radar-detail-value";
+          value.textContent = row[1];
+
+          line.appendChild(label);
+          line.appendChild(value);
+          entry.appendChild(line);
+        }
+      );
+
+      return entry;
+    }
+
+    function openRadarDetail_(members, event) {
+      const card = document.getElementById("radarDetail");
+      const title = document.getElementById("radarDetailTitle");
+      const list = document.getElementById("radarDetailList");
+      const signal = document.getElementById("radarDetailSignal");
+
+      if (!card || !list) {
+        return;
+      }
+
+      if (event && event.stopPropagation) {
+        event.stopPropagation();
+      }
+
+      hideRadarHover_();
+
+      list.innerHTML = "";
+
+      members.forEach(
+        function(member) {
+          list.appendChild(buildRadarDetailEntry_(member));
+        }
+      );
+
+      if (title) {
+        title.textContent =
+          members.length === 1
+            ? "=== CONTACT DETAIL ==="
+            : "=== STACK // " + members.length + " CONTACTS ===";
+      }
+
+      const archived =
+        typeof radarDetailArchiveMode_ === "function" &&
+        radarDetailArchiveMode_();
+
+      if (signal) {
+        signal.textContent = archived ? "ARCHIVE RECORD" : "SIGNAL ACTIVE";
+        signal.className = "radar-detail-signal" + (archived ? " archive" : "");
+      }
+
+      radarDetailIds_ =
+        members.map(function(m) { return m.id; });
+
+      card.style.display = "block";
+
+      /* Next to the click, kept inside the window. */
+      const width = 340;
+      const margin = 12;
+      const vw = window.innerWidth || 1024;
+      const vh = window.innerHeight || 768;
+      let left = (event && event.clientX ? event.clientX : vw / 2) + 16;
+      let top = (event && event.clientY ? event.clientY : vh / 3) - 20;
+
+      if (left + width + margin > vw) {
+        left = Math.max(margin, (event && event.clientX ? event.clientX : vw) - width - 16);
+      }
+
+      const height = card.offsetHeight || 300;
+
+      if (top + height + margin > vh) {
+        top = Math.max(margin, vh - height - margin);
+      }
+
+      card.style.left = left + "px";
+      card.style.top = Math.max(margin, top) + "px";
+    }
+
+    function closeRadarDetail_() {
+      const card = document.getElementById("radarDetail");
+
+      if (card) {
+        card.style.display = "none";
+      }
+
+      radarDetailIds_ = null;
+    }
+
+    /* The card keeps what it showed; it just says when every
+       contact in it has left the live display. */
+    function updateRadarDetailSignal_(contacts) {
+      const signal = document.getElementById("radarDetailSignal");
+
+      if (!radarDetailIds_ || !signal) {
+        return;
+      }
+
+      const live = {};
+
+      (contacts || []).forEach(
+        function(c) {
+          live[c.id] = true;
+        }
+      );
+
+      const active =
+        radarDetailIds_.some(function(id) { return live[id]; });
+
+      signal.textContent = active ? "SIGNAL ACTIVE" : "SIGNAL ENDED";
+      signal.className = "radar-detail-signal" + (active ? "" : " ended");
+    }
+
+    if (
+      radarInspectEnabled_() &&
+      typeof document.addEventListener === "function"
+    ) {
+      document.addEventListener(
+        "keydown",
+        function(event) {
+          if (event.key === "Escape") {
+            closeRadarDetail_();
+          }
+        }
+      );
+
+      document.addEventListener(
+        "click",
+        function(event) {
+          const card = document.getElementById("radarDetail");
+
+          if (card && card.style.display === "block" && !card.contains(event.target)) {
+            closeRadarDetail_();
+          }
+        }
+      );
+    }
+
+    window.handleRadarResponse =
+      function(data) {
+        if (window.oerReady) window.oerReady("radar");
+        if (data) noteBulletinVersion(data.bv);
+        radarErrorCount = 0;
+        radarRetryAt = 0;
+
+        const radarContacts =
+          document.getElementById(
+            "radarContacts"
+          );
+
+        const radarStatus =
+          document.getElementById(
+            "radarStatus"
+          );
+
+        const consoleContacts =
+          document.getElementById(
+            "consoleContacts"
+          );
+
+        const consoleThreat =
+          document.getElementById(
+            "consoleThreat"
+          );
+
+        const consoleLastScan =
+          document.getElementById(
+            "consoleLastScan"
+          );
+
+        if (
+          !radarContacts ||
+          !radarStatus
+        ) {
+          return;
+        }
+
+        if (
+          !data ||
+          !data.contacts
+        ) {
+          clearRadarContacts_();
+
+          radarStatus.textContent =
+            "RADAR OFFLINE";
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "SYSTEM ERROR";
+          }
+
+          return;
+        }
+
+        if (data.sources) {
+          renderSourceRegister_(
+            data.sources
+          );
+        }
+
+        radarLastLiveData_ = data;
+
+        applyRadarRing_(data.ring);
+
+        /* Standalone timeline showing history: keep the lights and
+           last scan current, leave the drawing to the timeline. */
+        if (
+          typeof radarLiveSuspended_ === "function" &&
+          radarLiveSuspended_()
+        ) {
+          if (consoleLastScan) {
+            consoleLastScan.textContent =
+              new Date().toLocaleTimeString();
+          }
+
+          const staleScript =
+            document.getElementById("radarJsonpScript");
+
+          if (staleScript) {
+            staleScript.remove();
+          }
+
+          return;
+        }
+
+        renderRadarContacts_(
+          radarContacts,
+          data
+        );
+
+        updateRadarDetailSignal_(
+          data.contacts
+        );
+
+        /* Every event counts, including each one inside a stack. */
+        const count =
+          data.contacts.length;
+
+        if (consoleContacts) {
+          consoleContacts.textContent =
+            String(count)
+              .padStart(2, "0");
+        }
+
+        if (count > 0) {
+          radarStatus.textContent =
+            "SCANNING // " +
+            count +
+            " CONTACT" +
+            (
+              count === 1
+                ? ""
+                : "S"
+            );
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "CONTACT DETECTED";
+          }
+
+          playRadarPing();
+        } else {
+          /* Real events only since 2026-11-06 (background blips off). */
+          radarStatus.textContent =
+            "SCANNING // NO CONTACTS";
+
+          if (consoleThreat) {
+            consoleThreat.textContent =
+              "MONITORING";
+          }
+        }
+
+        if (consoleLastScan) {
+          consoleLastScan.textContent =
+            new Date()
+              .toLocaleTimeString();
+        }
+
+        const oldScript =
+          document.getElementById(
+            "radarJsonpScript"
+          );
+
+        if (oldScript) {
+          oldScript.remove();
+        }
+      };
+
+    function loadRadarData() {
+
+      // One request at a time. An answer can take longer than the
+      // 5 s poll; removing a request still on its way throws its
+      // answer away, so a slow server could leave the Radar at
+      // INITIALIZING forever (2026-11-06). Give up after 20 s.
+      if (
+        radarRequestStartedAt &&
+        RADAR_REQUEST_GIVE_UP_MS > Date.now() - radarRequestStartedAt
+      ) {
+        return;
+      }
+
+      radarRequestCounter++;
+
+      const oldScript =
+        document.getElementById(
+          "radarJsonpScript"
+        );
+
+      if (oldScript) {
+        oldScript.remove();
+      }
+
+      const script =
+        document.createElement("script");
+
+      script.id = "radarJsonpScript";
+
+      const startedAt = Date.now();
+      radarRequestStartedAt = startedAt;
+
+      const finished = function() {
+        if (radarRequestStartedAt === startedAt) {
+          radarRequestStartedAt = 0;
+        }
+      };
+
+      script.onload = finished;
+      script.onerror = function() {
+        finished();
+        radarErrorCount++;
+        radarRetryAt =
+          Date.now() +
+          Math.min(
+            RADAR_ERROR_BACKOFF_MAX_MS,
+            5000 * Math.pow(2, radarErrorCount - 1)
+          );
+      };
+
+      script.src =
+        API_URL +
+        "?radar=1" +
+        "&callback=handleRadarResponse" +
+        "&_request=" +
+        radarRequestCounter +
+        "&_ts=" +
+        Date.now();
+
+      document.body.appendChild(script);
+    }
+
+
+    // Both Radar pages start polling here. Quake blips last 4-12 s,
+    // so the visible rate was 2.5 s until 2026-11-08; 5 s since (load
+    // test: about 30 Apps Script runs at once is the account limit,
+    // and the Radar was 90% of all requests). A hidden tab makes no requests
+    // and catches up the moment it is shown again.
+    function startRadarPolling_(intervalMs) {
+
+      loadRadarData();
+
+      setInterval(function() {
+        if (document.hidden) {
+          return;
+        }
+
+        if (radarRetryAt > Date.now()) {
+          return;
+        }
+
+        loadRadarData();
+      }, intervalMs);
+
+      document.addEventListener("visibilitychange", function() {
+        if (!document.hidden && Date.now() >= radarRetryAt) {
+          loadRadarData();
+        }
+      });
+    }
+
+
+
+    /* =======================================================
+       PUBLIC LOG SUBMISSION
+       ======================================================= */
+
+    function submitPost() {
+      const handle =
+        document.getElementById(
+          "bbsHandle"
+        ).value.trim();
+
+      const message =
+        document.getElementById(
+          "bbsMsg"
+        ).value.trim();
+
+      if (
+        !handle ||
+        !message
+      ) {
+        const blank =
+          document.getElementById(!handle ? "bbsHandle" : "bbsMsg");
+        blank.placeholder = "FIELDS CANNOT BE BLANK.";
+        blank.focus();
+        return;
+      }
+
+      document.getElementById(
+        "bbsMsg"
+      ).value = "TRANSMITTING...";
+
+      const xhr =
+        new XMLHttpRequest();
+
+      xhr.open("POST", API_URL, true);
+
+      xhr.setRequestHeader(
+        "Content-Type",
+        "text/plain"
+      );
+
+      xhr.onreadystatechange =
+        function() {
+          if (xhr.readyState === 4) {
+            const msgField =
+              document.getElementById("bbsMsg");
+            document.getElementById(
+              "bbsHandle"
+            ).value = "";
+            msgField.value = "";
+            msgField.placeholder =
+              "LINE ENTRY TRANSMITTED.";
+            // Saving can take a few seconds: check again until the
+            // entry is in the log (gives up after ~15 s).
+            [1500, 4000, 8000, 15000].forEach(function(ms) {
+              setTimeout(function() {
+                const arrived = allLogPosts.some(function(post) {
+                  return (
+                    String(post.handle) === handle &&
+                    String(post.message) === message
+                  );
+                });
+                if (!arrived) {
+                  loadDatabaseData();
+                }
+              }, ms);
+            });
+            setTimeout(function() {
+              msgField.placeholder =
+                "TYPE MESSAGE DIRECTLY TO DATABASE...";
+            }, 15000);
+          }
+        };
+
+      xhr.send(
+        JSON.stringify({
+          handle: handle,
+          message: message
+        })
+      );
+    }
+
+    /* =======================================================
+       INITIALIZATION
+       ======================================================= */
+
+
+    // Start-up: the public log, network status, Monitoring Grid and
+    // Event Feed come in one request (?homestart=1). Any part missing
+    // from the answer, or the whole answer after 15 s, falls back to
+    // that part's own request.
+    function loadHomeStart_() {
+      const fallback = {
+        network: loadNetworkStatusData,
+        system: loadSystemStatusData,
+        events: loadEventFeedPreview
+      };
+      let answered = false;
+
+      const runFallback = function() {
+        if (answered) {
+          return;
+        }
+        answered = true;
+        Object.keys(fallback).forEach(function(k) { fallback[k](); });
+      };
+
+      window.handleHomeStartResponse = function(data) {
+        if (answered) {
+          return;
+        }
+        answered = true;
+        data = data || {};
+        const handlers = {
+          network: window.handleNetworkStatusResponse,
+          system: window.handleSystemStatusResponse,
+          events: window.handleEventFeedPreviewResponse
+        };
+        Object.keys(handlers).forEach(function(k) {
+          if (data[k]) {
+            try {
+              handlers[k](data[k]);
+              return;
+            } catch (error) {
+              console.log("homestart " + k + ": " + error);
+            }
+          }
+          fallback[k]();
+        });
+      };
+
+      const script = document.createElement("script");
+      script.id = "homeStartJsonpScript";
+      script.onerror = runFallback;
+      script.src =
+        API_URL +
+        "?homestart=1" +
+        "&callback=handleHomeStartResponse" +
+        "&_ts=" +
+        Date.now();
+      document.body.appendChild(script);
+      setTimeout(runFallback, 15000);
+    }
+    (function linkRadarConsole() {
+      const link =
+        document.getElementById("openRadarConsole");
+
+      if (link) {
+        link.href = "/radar/";
+      }
+    })();
+
+    loadRadarData();
+
+    (function initMonitorGrid() {
+      const cached = readGridCache_();
+
+      if (
+        cached &&
+        Array.isArray(cached.systems) &&
+        cached.systems.length > 0
+      ) {
+        renderOerSystemGrid_(cached);
+      } else {
+        buildGridSkeleton_(
+          GRID_SKELETON_COUNT
+        );
+      }
+    })();
+
+    // Own requests, not ?homestart=1: that one also counts a homepage visit.
+    loadNetworkStatusData();
+    loadSystemStatusData();
+    loadEventFeedPreview();
+
+    // Radar: 5 s while visible, nothing while the tab is hidden,
+    // backs off after errors (RadarCommonJs). The first Radar request
+    // was made above.
+    startRadarPolling_(5000);
+
+    // Hidden tabs skip these too; showing the tab refreshes them.
+    setInterval(function() {
+      if (!document.hidden) { loadSystemStatusData(); }
+    }, 60000);
+
+    setInterval(function() {
+      if (!document.hidden) { loadEventFeedPreview(); }
+    }, 30000);
+
+    document.addEventListener("visibilitychange", function() {
+      if (!document.hidden) {
+        loadSystemStatusData();
+        loadEventFeedPreview();
+      }
+    });
+  </script>
+
+  <style>
+    /* Odometer hit counter: one box per digit. */
+    .hit-counter { padding: 4px 6px; letter-spacing: 0; }
+    .hit-counter .odo {
+      display: inline-block;
+      width: 0.95em;
+      margin: 0 1px;
+      padding: 2px 0;
+      background: linear-gradient(#000 0%, #2a2a2a 45%, #000 55%, #000 100%);
+      border: 1px solid #555;
+      color: #fff;
+      text-align: center;
+    }
+    .music-toggle {
+      margin-left: 6px;
+      padding: 1px 6px;
+      background: #222;
+      border: 2px outset #888;
+      color: #ccc;
+      font: bold 10px "Courier New", Courier, monospace;
+      letter-spacing: 1px;
+      cursor: pointer;
+      vertical-align: middle;
+    }
+    .music-toggle[aria-pressed="true"] { border-style: inset; color: #00ff00; }
+  </style>
+  <script>
+    // Hit counter as odometer digits.
+    function oerOdometer(box, value) {
+      var digits = String(value).padStart(7, "0");
+      box.textContent = "";
+      digits.split("").forEach(function (d) {
+        var s = document.createElement("span");
+        s.className = "odo";
+        s.textContent = d;
+        box.appendChild(s);
+      });
+      box.setAttribute("aria-label", digits);
+    }
+    if (document.getElementById("visitorCount")) oerOdometer(document.getElementById("visitorCount"), 0);
+
+    // Background music: a quiet synth drone made in the browser (no
+    // audio file). Off on every visit; only the button turns it on.
+    (function () {
+      var button = document.getElementById("musicToggle");
+      if (!button || !(window.AudioContext || window.webkitAudioContext)) {
+        if (button) button.style.display = "none";
+        return;
+      }
+      var ctx = null, master = null, voices = [], blipTimer = null;
+
+      function start() {
+        ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+        if (ctx.state === "suspended") ctx.resume();
+        master = ctx.createGain();
+        master.gain.value = 0;
+        master.gain.linearRampToValueAtTime(0.05, ctx.currentTime + 2.5);
+        var filter = ctx.createBiquadFilter();
+        filter.type = "lowpass";
+        filter.frequency.value = 700;
+        var lfo = ctx.createOscillator();
+        var lfoGain = ctx.createGain();
+        lfo.frequency.value = 0.07;
+        lfoGain.gain.value = 300;
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start();
+        filter.connect(master);
+        master.connect(ctx.destination);
+        voices = [lfo];
+        [55, 82.41, 110, 130.81].forEach(function (hz, i) {
+          var o = ctx.createOscillator();
+          var g = ctx.createGain();
+          o.type = i === 0 ? "sine" : "sawtooth";
+          o.frequency.value = hz;
+          o.detune.value = (i % 2 ? 6 : -6);
+          g.gain.value = i === 0 ? 0.6 : 0.12;
+          o.connect(g);
+          g.connect(filter);
+          o.start();
+          voices.push(o);
+        });
+        // A faint radar-style ping every few seconds.
+        blipTimer = setInterval(function () {
+          var o = ctx.createOscillator();
+          var g = ctx.createGain();
+          o.type = "sine";
+          o.frequency.value = 1320;
+          g.gain.setValueAtTime(0.0001, ctx.currentTime);
+          g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
+          g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 1.2);
+          o.connect(g);
+          g.connect(master);
+          o.start();
+          o.stop(ctx.currentTime + 1.3);
+        }, 6500);
+      }
+
+      function stop() {
+        clearInterval(blipTimer);
+        if (master) {
+          var m = master, vs = voices;
+          m.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.6);
+          setTimeout(function () {
+            vs.forEach(function (v) { try { v.stop(); } catch (e) {} });
+            m.disconnect();
+          }, 700);
+        }
+        master = null;
+        voices = [];
+      }
+
+      button.addEventListener("click", function () {
+        var on = button.getAttribute("aria-pressed") !== "true";
+        button.setAttribute("aria-pressed", on ? "true" : "false");
+        button.innerHTML = on ? "&#9834; MUSIC: ON" : "&#9834; MUSIC: OFF";
+        if (on) start(); else stop();
+      });
+    })();
+  </script>
+
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>

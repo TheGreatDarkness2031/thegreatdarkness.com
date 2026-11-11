@@ -16,7 +16,9 @@
   // NEW! on the group while any item in it is new (2026-11-08).
   var MENU = [
     ["HOME", "/home/"],
+    ["WATCH FLOOR", "/floor/", "2026-12-11"],
     ["RADAR", "/radar/"],
+    ["SCHEDULE", "/schedule/", "2026-12-11"],
     ["MONITORS", [
       ["SEISMIC", "/monitor/quake/"],
       ["TEMPERATURE", "/monitor/temp/"],
@@ -35,6 +37,7 @@
       ["WATCH LOG", "/watch/"],
       ["MAINTENANCE LOG", "/maintenance/"],
       ["DOCUMENT REGISTER", "/maintenance/?view=register", "2026-12-11"],
+      ["ENGINEERING PROJECTS", "/maintenance/?view=projects", "2026-12-11"],
       ["RSS CHANNEL", "/feed/", "2026-12-08"]
     ]],
     ["RESOURCES", [

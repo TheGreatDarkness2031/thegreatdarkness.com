@@ -5,7 +5,7 @@
 <script src="/assets/config.js"></script>
 <script>window.OER_NO_FRAME = true;
   // Connecting screen waits for these (console.js), up to 12 s.
-  window.OER_CONNECT_WAIT = [["database", "PUBLIC LOG"], ["system", "MONITORING GRID"], ["radar", "RADAR"], ["events", "EVENT FEED"]];</script>
+  window.OER_CONNECT_WAIT = [["database", "PUBLIC LOG"]];</script>
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
@@ -1969,6 +1969,14 @@
     vertical-align: middle;
   }
   .xml-button:hover, .xml-button:focus { background: #ff7f2a; }
+
+  /* OER FACILITY DIRECTORY (2026-11-11): the doors to the rooms behind the homepage. */
+  .facility-directory { border-color: #666666; box-shadow: 5px 5px 0 #2a2a2a, 0 0 0 1px #111111; }
+  .facility-directory::before, .facility-directory::after { border-color: #999999 !important; }
+  .facility-directory .late-addendum-inner { border-color: #222222; }
+  .door { flex-direction: column; gap: 4px; min-height: 64px; }
+  .door small { font: normal 11px "Courier New", monospace; color: #9a9a9a; text-decoration: none; letter-spacing: 1px; }
+  .page-shell > .oer-term-link { margin-top: 0; }
 </style>
 </head>
 
@@ -1984,12 +1992,7 @@
   </div>
 
   <main class="page-shell">
-    <div class="no-power-row">
-      <img
-        src="/assets/img/no-power-icons-hd.png"
-        alt="No power, no signal, no fuel, no light"
-      >
-    </div>
+    
     <section class="oer-header">
       <div class="oer-header-inner">
 
@@ -2092,6 +2095,75 @@
       </div>
     </section>
 
+    <section class="late-addendum facility-directory">
+      <div class="late-addendum-inner">
+        <div class="retained-resources-title">=== OER FACILITY DIRECTORY ===</div>
+        <div class="resource-nav door-nav">
+          <a href="/floor/" class="resource-box door"><span>WATCH FLOOR</span><small>RADAR // MONITORS // EVENT FEED</small></a>
+          <a href="/schedule/" class="resource-box door"><span>WATCH SCHEDULE</span><small>CREWS // ROSTER // ROTATION</small></a>
+          <a href="/maintenance/?view=projects" class="resource-box door"><span>ENGINEERING</span><small>PROJECTS // RECORDS // DRAWINGS</small></a>
+          <a href="/hr/" class="resource-box door"><span>PERSONNEL OFFICE</span><small>DIRECTORY // FORMS // HANDBOOK</small></a>
+        </div>
+      </div>
+    </section>
+
+    <nav class="main-nav">
+
+
+      <a
+        href="/whatisit/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="merch-box"
+      >
+        <span class="merch-text">
+          WHAT IT IS
+        </span>
+      </a>
+
+
+
+      <a
+        href="/arcade/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="merch-box"
+      >
+        <span class="merch-text">
+          FUN - FOR NOW
+        </span>
+      </a>
+
+
+      <a
+        href="/merch/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="merch-box"
+      >
+        <span class="merch-text">
+          GET THE MERCH
+        </span>
+      </a>
+
+      <a
+        href="/share/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="merch-box"
+      >
+        <span class="merch-text">
+          SHARE
+        </span>
+      </a>
+
+    </nav>
+
+    <section class="oer-term-link">
+      <!-- Support link (Ko-fi). The NEXUS terminal link is on the LEGACY RECORD line above. -->
+      <a class="oer-support-link" href="https://ko-fi.com/thegreatdarkness" target="_blank" rel="noopener noreferrer">&gt; SUPPORT CONTINUED OPERATIONS<span class="dim">ko-fi.com/thegreatdarkness // keep the network online</span></a>
+    </section>
+
     <div
       class="original-system-record"
       tabindex="0"
@@ -2102,254 +2174,15 @@
       SYSTEM RECORD: 1998
     </div>
 
-    <section class="system-status">
-      <div class="system-status-inner">
+    
 
-        SYSTEM STATUS:
-        <span class="status-online">ONLINE</span>
+    
 
-        <span class="status-separator">|</span>
+    
 
-        PUBLIC LOG:
-        <span class="status-online">ACTIVE</span>
+    
 
-        <span class="status-separator">|</span>
-
-        RADAR:
-        <span class="status-online">ACTIVE</span>
-
-        <span class="status-separator">|</span>
-
-        COUNTDOWN:
-        <span class="status-online">RUNNING</span>
-
-        <span class="status-separator">|</span>
-
-        ARCHIVE:
-        <span class="status-offline">OFFLINE</span>
-
-      </div>
-    </section>
-
-    <section class="radar-section">
-
-      <div class="radar-title">
-        === OER RADAR MONITOR ===
-      </div>
-
-      <div class="radar-console-layout">
-
-        <div class="radar-screen">
-          <div class="radar-grid"></div>
-          <div class="radar-crosshair horizontal"></div>
-          <div class="radar-crosshair vertical"></div>
-          <div class="radar-sweep"></div>
-          <div id="radarContacts"></div>
-          <div class="radar-center"></div>
-        </div>
-
-        <div class="radar-console compact-console">
-
-          <div class="console-header">
-            === OER RADAR CONSOLE ===
-          </div>
-
-          <div class="compact-row">
-            <button
-              id="radarSoundButton"
-              class="sound-button compact-sound"
-              type="button"
-              onclick="toggleRadarSound()"
-            >
-              SOUND: OFF
-            </button>
-
-            <span class="console-label compact-label">VOL</span>
-
-            <input
-              id="radarVolume"
-              class="console-slider"
-              type="range"
-              min="0"
-              max="100"
-              value="35"
-              oninput="updateRadarVolume()"
-            >
-          </div>
-
-          <div class="compact-row">
-            <span class="console-label compact-label">BRIGHT</span>
-
-            <input
-              id="radarBrightness"
-              class="console-slider"
-              type="range"
-              min="30"
-              max="150"
-              value="100"
-              oninput="updateRadarBrightness()"
-            >
-
-            <span class="console-label compact-label">SWEEP</span>
-
-            <input
-              id="radarSweepSpeed"
-              class="console-slider"
-              type="range"
-              min="5"
-              max="15"
-              value="10"
-              oninput="updateRadarSweepSpeed()"
-            >
-
-            <span
-              id="radarSweepSpeedValue"
-              class="console-value"
-            >
-              10 SEC
-            </span>
-          </div>
-
-          <div class="compact-readouts">
-            <div>
-              <span class="console-label">CONTACTS</span>
-              <span
-                id="consoleContacts"
-                class="console-value"
-              >
-                00
-              </span>
-            </div>
-
-            <div>
-              <span class="console-label">THREAT STATUS</span>
-              <span
-                id="consoleThreat"
-                class="console-value console-warning"
-              >
-                MONITORING
-              </span>
-            </div>
-
-            <div>
-              <span class="console-label">LAST SCAN</span>
-              <span
-                id="consoleLastScan"
-                class="console-value"
-              >
-                --
-              </span>
-            </div>
-          </div>
-
-          <a
-            id="openRadarConsole"
-            class="sound-button open-radar-button"
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            OPEN RADAR CONSOLE
-          </a>
-
-        </div>
-
-      </div>
-
-      <div
-        class="radar-status"
-        id="radarStatus"
-      >
-        INITIALIZING RADAR...
-      </div>
-
-      <!-- Color key: which Radar color belongs to which source.
-           Filled by the shared Radar code (RadarCommonJs). -->
-      <div class="source-register-panel home-register">
-
-        <div class="source-register-header">
-          <span>=== SOURCES ===</span>
-          <span id="sourceRegisterCount">--</span>
-        </div>
-
-        <div
-          id="sourceRegister"
-          class="source-register"
-        ></div>
-
-      </div>
-
-    </section>
-
-    <section class="event-feed-preview">
-      <div class="event-feed-preview-inner">
-
-        <div class="event-feed-preview-title">
-          === OER EVENT FEED ===
-        </div>
-
-        <div class="event-feed-preview-note">
-          AUTOMATED MONITOR REPORTS // CURRENT EVENTS // NEWEST FIRST
-        </div>
-
-        <div
-          id="eventFeedPreviewList"
-          class="event-preview-list"
-        >
-          <div class="event-preview-empty">
-            RETRIEVING CURRENT EVENT REPORTS...
-          </div>
-        </div>
-
-        <a
-          href="/events/"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="event-feed-access"
-        >
-          [ ACCESS LIVE OER EVENT FEED ]
-        </a>
-
-      </div>
-    </section>
-
-    <section class="oer-monitor-section">
-      <div class="oer-monitor-inner">
-
-        <div class="oer-monitor-title">
-          === OPERATIONAL EVENT REGISTER / MONITORING GRID ===
-        </div>
-
-        <div
-          id="oerMonitorGrid"
-          class="oer-monitor-grid"
-        ></div>
-
-      </div>
-    </section>
-
-    <section class="retro-info">
-      <div class="retro-info-inner">
-
-        <div class="retro-info-title">
-          === NETWORK / EXTERNAL REFERENCE SYSTEMS ===
-        </div>
-
-        <div class="network-status-note">
-          ORIGINAL REFERENCE: 1998
-          <br>
-          CURRENT STATUS CHECK: 2026
-          <br>
-          NETWORKS MONITORED:
-          <span id="networkStatusCount">--</span>
-        </div>
-
-        <div id="networkStatusRows">
-          LOADING NETWORK STATUS...
-        </div>
-
-      </div>
-    </section>
+    
 
     <section class="bbs-container">
 
@@ -2409,57 +2242,7 @@
 
     </section>
 
-    <nav class="main-nav">
-
-
-      <a
-        href="/whatisit/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          WHAT IT IS
-        </span>
-      </a>
-
-
-
-      <a
-        href="/arcade/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          FUN - FOR NOW
-        </span>
-      </a>
-
-
-      <a
-        href="/merch/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          GET THE MERCH
-        </span>
-      </a>
-
-      <a
-        href="/share/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          SHARE
-        </span>
-      </a>
-
-    </nav>
+    
 
     <section class="system-info-section">
       <div class="system-info-inner">
@@ -2592,10 +2375,7 @@
       .oer-term-link a.oer-support-link { padding: 12px 12px; font-size: 14px; }
     </style>
 
-    <section class="oer-term-link">
-      <!-- Support link (Ko-fi). The NEXUS terminal link is on the LEGACY RECORD line above. -->
-      <a class="oer-support-link" href="https://ko-fi.com/thegreatdarkness" target="_blank" rel="noopener noreferrer">&gt; SUPPORT CONTINUED OPERATIONS<span class="dim">ko-fi.com/thegreatdarkness // keep the network online</span></a>
-    </section>
+    
 
     <section class="counter-footer">
 
@@ -5916,46 +5696,8 @@
       }
     })();
 
-    loadRadarData();
-
-    (function initMonitorGrid() {
-      const cached = readGridCache_();
-
-      if (
-        cached &&
-        Array.isArray(cached.systems) &&
-        cached.systems.length > 0
-      ) {
-        renderOerSystemGrid_(cached);
-      } else {
-        buildGridSkeleton_(
-          GRID_SKELETON_COUNT
-        );
-      }
-    })();
-
-    loadHomeStart_();
-
-    // Radar: 5 s while visible, nothing while the tab is hidden,
-    // backs off after errors (RadarCommonJs). The first Radar request
-    // was made above.
-    startRadarPolling_(5000);
-
-    // Hidden tabs skip these too; showing the tab refreshes them.
-    setInterval(function() {
-      if (!document.hidden) { loadSystemStatusData(); }
-    }, 60000);
-
-    setInterval(function() {
-      if (!document.hidden) { loadEventFeedPreview(); }
-    }, 30000);
-
-    document.addEventListener("visibilitychange", function() {
-      if (!document.hidden) {
-        loadSystemStatusData();
-        loadEventFeedPreview();
-      }
-    });
+    // The Radar, Monitoring Grid and Event Feed moved to /floor/ (2026-11-11).
+    loadDatabaseData();
   </script>
 
   <style>
