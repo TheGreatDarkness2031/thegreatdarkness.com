@@ -2314,11 +2314,27 @@
       let d = {};
       try { d = JSON.parse(contact.eventData || "{}") || {}; } catch (e) { d = {}; }
       const rows = Array.isArray(d.rows) ? d.rows : [];
-      const first = d.label || (rows[0] && rows[0][1]) || contact.eventType || "";
-      const more = rows
+      const num = function(v) { const n = Number(v); return Number.isFinite(n) ? n : null; };
+      const extra = [];
+
+      /* Monitors that send labelled rows use them; the older three
+         (earthquake, temperature, power grid) send named fields. */
+      let first = d.label || "";
+      if (!first && d.sectorName) first = "SECTOR " + d.sector + " // " + d.sectorName;
+      if (!first && num(d.magnitude) !== null) first = "M" + num(d.magnitude).toFixed(1) + (d.place ? " // " + d.place : "");
+      if (!first && d.location) first = d.location;
+      if (!first && rows[0]) first = rows[0][1];
+      if (!first) first = String(contact.eventType || "").replace(/_/g, " ");
+
+      const pct = num(d.demandDeviationPercent);
+      if (pct !== null) extra.push("DEMAND " + (pct > 0 ? "+" : "") + pct.toFixed(1) + "% VS FORECAST");
+      const dev = num(d.deviationF);
+      if (dev !== null) extra.push((dev > 0 ? "+" : "") + dev.toFixed(1) + " F FROM NORMAL");
+
+      const more = extra.concat(rows
         .filter(function(r) { return r && String(r[1]) !== String(first); })
         .slice(0, 2)
-        .map(function(r) { return String(r[1]); })
+        .map(function(r) { return String(r[1]); }))
         .join(" // ");
       return { what: String(first).toUpperCase(), sub: more.toUpperCase() };
     }
