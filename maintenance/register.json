@@ -65,7 +65,7 @@
       ["K", "2022-08-15", "400 Gb spine."],
       ["L", "2025-11-03", "800 Gb core links."]
     ]},
-    { "no": "NET-002", "series": "NETWORK", "title": "WIDE AREA NETWORK: SITE A, SITE B, NODES N1-N8", "revs": [
+    { "no": "NET-002", "series": "NETWORK", "title": "WIDE AREA NETWORK (INTER-SITE)", "revs": [
       ["A", "1997-02-06", "Initial issue. T1 (1.5 Mb/s) links to nodes N1-N8 for acceptance testing."],
       ["B", "1997-10-13", "Regional link test configuration."],
       ["C", "1998-06-01", "ATM WAN. T1 pairs to N1-N8."],
