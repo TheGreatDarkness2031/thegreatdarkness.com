@@ -1007,7 +1007,7 @@
         <span>MINES <b id="hudMines">0</b></span>
         <span id="hudLevel">EASY</span>
         <span>TIME <b id="hudTime">0:00</b></span>
-        <span>LIVES <b id="hudLives">3</b></span>
+        <span style="display:none">LIVES <b id="hudLives">1</b></span>
       </div>
 
       <canvas id="gameCanvas" width="432" height="432"></canvas>
@@ -1895,7 +1895,7 @@
       startTime = 0;
       endTime = 0;
       explodedAt = -1;
-      lives = 3;
+      lives = 1;
       hitMines = {};
       score = 0;
       pendingHighScore = false;
@@ -1999,9 +1999,10 @@
     }
 
 
-    // Three lives (owner, 2026-11-10): a mine that is dug is marked (red,
-    // flagged) and costs a life; the third mine ends the game.
-    var lives = 3;
+    // One life again (owner, 2026-11-10, after a day with three): the first
+    // mine dug ends the game. With more lives a dug mine is marked (red,
+    // flagged) and costs a life. The LIVES counter is hidden at 1.
+    var lives = 1;
     var hitMines = {};
 
     function hitMine(i) {

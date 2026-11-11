@@ -658,6 +658,11 @@
           .withSuccessHandler(
             function(scores) {
 
+              // Kept so the game can tell at once whether a final
+              // score makes the board (no server wait at game over).
+              window.oerBoardScores = window.oerBoardScores || {};
+              window.oerBoardScores[gameName] = scores || [];
+
               leaderboard.innerHTML = "";
 
 
@@ -2205,8 +2210,39 @@
 
       window.meteorWon = !!won;
 
+      // The board loaded on the start screen answers at once when the
+      // score beats a listed score (or the board is empty). Otherwise
+      // GAME OVER shows at once and the server is still asked, in case
+      // the board has open places; a yes then opens the name box.
+      var loaded =
+        (window.oerBoardScores || {})[GAME_NAME];
+
+      var shownAlready = false;
+
+      if (loaded) {
+
+        var lowest =
+          loaded.length ? Number(loaded[loaded.length - 1].score) : -1;
+
+        if (!loaded.length || score > lowest) {
+          pendingHighScore = true;
+          showHighScoreScreen(GAME_NAME, score);
+          return;
+        }
+
+        showGameOverScreen();
+        shownAlready = true;
+      }
+
+      var finalScore = score;
+
       google.script.run
         .withSuccessHandler(function(qualifies) {
+
+          // A new game started meanwhile: leave it alone.
+          if (gameStarted || pendingHighScore || score !== finalScore) {
+            return;
+          }
 
           if (qualifies) {
 
@@ -2217,7 +2253,7 @@
               score
             );
 
-          } else {
+          } else if (!shownAlready) {
 
             showGameOverScreen();
 
@@ -2226,7 +2262,9 @@
         })
         .withFailureHandler(function() {
 
-          showGameOverScreen();
+          if (!shownAlready && !gameStarted) {
+            showGameOverScreen();
+          }
 
         })
         .qualifiesForHighScore(
@@ -2539,9 +2577,37 @@
     }
 
 
-    function gameLoop() {
+    // Steady game clock (2026-11-10): the game moves in 60 steps a
+    // second whatever the screen does. A busy or slow browser runs extra
+    // steps to catch up (at most 5 a frame) instead of slowing the whole
+    // game down; a 120 Hz screen no longer doubles its speed.
+    var STEP_MS = 1000 / 60;
+    var lastFrameAt = 0;
+    var stepBank = 0;
 
-      update();
+    function gameLoop(now) {
+
+      now = typeof now === "number" ? now : performance.now();
+
+      if (!lastFrameAt) {
+        lastFrameAt = now;
+      }
+
+      stepBank += Math.min(now - lastFrameAt, 250);
+      lastFrameAt = now;
+
+      var steps = 0;
+
+      while (stepBank >= STEP_MS && steps < 5) {
+        update();
+        stepBank -= STEP_MS;
+        steps++;
+      }
+
+      if (steps === 5) {
+        stepBank = 0;
+      }
+
       draw();
 
       requestAnimationFrame(gameLoop);
