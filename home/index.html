@@ -4211,6 +4211,7 @@
           data.posts
         ) {
           allLogPosts = data.posts || [];
+          postsLoadedAt = Date.now();
           buildLogArchiveMenu();
           renderLogView(currentLogView);
         }
@@ -4244,6 +4245,48 @@
           oldScript.remove();
         }
       };
+
+    // Bulletin refresh without counting a visit (?posts=1): when a post
+    // is hidden (the Radar answer's "bv" changes) and when the visitor
+    // comes back to the tab.
+    let postsLoadedAt = 0;
+    let bulletinVersion = null;
+
+    window.handlePostsResponse = function(data) {
+      const s = document.getElementById("postsScript");
+      if (s) s.remove();
+      if (!data || !data.posts) return;
+      allLogPosts = data.posts;
+      postsLoadedAt = Date.now();
+      buildLogArchiveMenu();
+      if (currentLogView !== "current" && currentLogView !== "all" &&
+          !allLogPosts.some(function(p) { return String(p.archive) === String(currentLogView); })) {
+        currentLogView = "current";
+      }
+      renderLogView(currentLogView);
+    };
+
+    function loadPostsOnly() {
+      const old = document.getElementById("postsScript");
+      if (old) old.remove();
+      const script = document.createElement("script");
+      script.id = "postsScript";
+      script.src = API_URL + "?posts=1&callback=handlePostsResponse&_ts=" + Date.now();
+      document.body.appendChild(script);
+    }
+
+    function noteBulletinVersion(v) {
+      if (typeof v !== "string" || !v) return;
+      if (bulletinVersion !== null && v !== bulletinVersion) loadPostsOnly();
+      bulletinVersion = v;
+    }
+
+    document.addEventListener("visibilitychange", function() {
+      if (document.visibilityState === "visible" && postsLoadedAt &&
+          Date.now() - postsLoadedAt > 20000) {
+        loadPostsOnly();
+      }
+    });
 
     function loadDatabaseData() {
       const oldScript =
@@ -5448,6 +5491,7 @@
 
     window.handleRadarResponse =
       function(data) {
+        if (data) noteBulletinVersion(data.bv);
         radarErrorCount = 0;
         radarRetryAt = 0;
 
