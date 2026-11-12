@@ -6,24 +6,19 @@
    the 1998 touches below without the frame.
 
    1998 touches: a connecting screen on the first page of a session,
-   footer badges with a last-modified line, NEW! tags in the rail, a
+   footer badges with a last-modified line, a
    Windows-style dialog when the data service fails, and an applet
    loading box while a page's first data arrives (gsr.js reports calls).
    No less-than characters in this file (pages may inline it later). */
 (function () {
-  // [label, address, "NEW!" shown until this date (optional)], or
-  // [label, [items]] for a group: closed unless the page is inside it,
-  // NEW! on the group while any item in it is new (2026-11-08).
+  // [label, address], or [label, [items]] for a group: closed unless the
+  // page is inside it. NEW! tags removed 2026-11-11 (owner).
   var MENU = [
     ["HOME", "/home/"],
-    ["WATCH FLOOR", "/floor/", "2026-12-11"],
-    ["SCHEDULE", "/schedule/", "2026-12-11"],
-    ["ENGINEERING", [
-      ["PROJECTS", "/maintenance/?view=projects", "2026-12-11"],
-      ["MAINTENANCE LOG", "/maintenance/"],
-      ["DOCUMENTS", "/maintenance/?view=register", "2026-12-11"]
-    ]],
-    ["PERSONNEL", "/hr/", "2026-12-09"],
+    ["WATCH FLOOR", "/floor/"],
+    ["SCHEDULE", "/schedule/"],
+    ["ENGINEERING", "/maintenance/?view=projects"],
+    ["PERSONNEL", "/hr/"],
     ["RADAR", "/radar/"],
     ["MONITORS", [
       ["SEISMIC", "/monitor/quake/"],
@@ -36,19 +31,19 @@
       ["NETWORK", "/monitor/netout/"],
       ["GPS / NAV", "/monitor/gps/"],
       ["AI INCIDENT", "/monitor/aiinc/"],
-      ["NEAR-EARTH", "/monitor/neo/", "2026-12-08"]
+      ["NEAR-EARTH", "/monitor/neo/"]
     ]],
     ["RECORDS", [
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
-      ["RSS CHANNEL", "/feed/", "2026-12-08"]
+      ["RSS CHANNEL", "/feed/"]
     ]],
     ["RESOURCES", [
       ["TOOLS", "/tools/"],
       ["WELLNESS", "/wellness/"]
     ]],
     ["PROFILE", "/profile/"],
-    ["TERMINAL", "/terminal/", "2026-12-08"],
+    ["TERMINAL", "/terminal/"],
     ["ARCADE", "/arcade/"]
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
@@ -73,7 +68,12 @@
     // for the same page lights on every other view.
     var q = href.indexOf("?");
     if (q >= 0) {
-      return p === href.slice(0, q) && location.search.indexOf(href.slice(q + 1)) >= 0;
+      var base = href.slice(0, q);
+      // The only entry for that page (ENGINEERING): lights on every view.
+      var alone = MENU.filter(function (item) { return typeof item[1] === "string" && item[1].split("?")[0] === base; }).length === 1 &&
+        !MENU.some(function (item) { return typeof item[1] !== "string" && item[1].some(function (s) { return s[1].split("?")[0] === base; }); });
+      if (alone) return p === base;
+      return p === base && location.search.indexOf(href.slice(q + 1)) >= 0;
     }
     var shadowed = MENU.some(function (item) {
       return (Array.isArray(item[1]) ? item[1] : [item]).some(function (s) {
@@ -94,9 +94,6 @@
     }
   };
 
-  function isNew(until) {
-    return !!until && Date.parse(until + "T00:00:00Z") > Date.now();
-  }
 
   function menuList() {
     var ul = el("ul", "oerc-menu");
@@ -105,7 +102,6 @@
       if (typeof item[1] === "string") {
         var a = el("a", "oerc-item" + (here(item[1]) ? " oerc-here" : ""), item[0]);
         a.href = item[1];
-        if (isNew(item[2])) a.appendChild(el("span", "oerc-new", "NEW!"));
         li.appendChild(a);
       } else {
         var open = item[1].some(function (s) { return here(s[1]); });
@@ -113,7 +109,6 @@
         if (open) d.open = true;
         var summary = el("summary", "oerc-item", item[0]);
         var right = el("span", "oerc-right");
-        if (item[1].some(function (s) { return isNew(s[2]); })) right.appendChild(el("span", "oerc-new", "NEW!"));
         right.appendChild(el("span", "oerc-sign"));
         summary.appendChild(right);
         d.appendChild(summary);
@@ -122,7 +117,6 @@
           var sl = el("li");
           var a = el("a", "oerc-subitem" + (here(s[1]) ? " oerc-here" : ""), s[0]);
           a.href = s[1];
-          if (isNew(s[2])) a.appendChild(el("span", "oerc-new", "NEW!"));
           sl.appendChild(a);
           sub.appendChild(sl);
         });

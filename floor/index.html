@@ -1997,9 +1997,9 @@
   /* Each room fills the box: the old homepage widths and margins are dropped. */
   #floorPane .floor-room { width: 100%; max-width: none; margin: 0; box-sizing: border-box; border: 0; box-shadow: none; padding: 0; background: none; }
 
-  /* WATCH WALL on computers: the Radar (scope + console) on the left, the
-     Monitoring Grid and Event Feed stacked on the right, all on screen at
-     once; a long panel scrolls inside itself. */
+  /* WATCH WALL on computers (owner 2026-11-11): Event Feed on the left, the
+     Radar (scope + console) beside it, the Monitoring Grid in a strip under
+     both, all on screen at once; a long panel scrolls inside itself. */
   @media (min-width: 901px) {
     #floorPane .radar-section.on {
       display: grid; grid-template-columns: auto minmax(230px, 290px); column-gap: 14px; align-items: start;
@@ -2017,7 +2017,16 @@
   /* Wide enough for the whole wall side by side (narrower screens stack
      the panels and the box scrolls). */
   @media (min-width: 1200px) {
-    #floorPane.wall { display: grid; grid-template-columns: auto minmax(340px, 1fr); grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "radar grid" "radar feed"; gap: 12px 16px; }
+    #floorPane.wall { display: grid; grid-template-columns: minmax(320px, 1fr) auto; grid-template-rows: minmax(0, 1fr) auto; grid-template-areas: "feed radar" "grid grid"; gap: 12px 16px; }
+    #floorPane.wall .oer-monitor-inner { padding: 6px 8px 8px; }
+    #floorPane.wall .oer-monitor-title { margin-bottom: 6px; padding-bottom: 5px; }
+    #floorPane.wall .oer-monitor-grid { grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 5px; }
+    #floorPane.wall .oer-monitor-cell.spare { display: none; }
+    #floorPane.wall .oer-monitor-cell { min-height: 0; padding: 4px 3px; }
+    #floorPane.wall .oer-monitor-name { min-height: 22px; font-size: 0.52rem; }
+    #floorPane.wall .oer-monitor-value { margin: 3px 0 2px; font-size: 0.95rem; }
+    #floorPane.wall .oer-monitor-id { margin-bottom: 2px; }
+    #floorPane.wall .radar-screen { width: min(calc(100vh - 420px), 36vw, 600px); min-width: 220px; }
     .office { max-width: 1640px; }
     #floorPane.wall > .radar-section { grid-area: radar; }
     #floorPane.wall > .oer-monitor-section { grid-area: grid; }
@@ -2539,7 +2548,8 @@
           isActive
             ? " active"
             : ""
-        );
+        ) +
+        (/^EXPANSION/i.test(nameText) ? " spare" : "");
 
       if (isActive) {
         cell.href =

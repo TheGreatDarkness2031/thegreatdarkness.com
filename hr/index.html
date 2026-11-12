@@ -328,7 +328,7 @@ table.rack td { padding: 6px 8px; }
   }
   function yearSelect(current, onChange, min) {
     var s = el("select");
-    years().forEach(function (y) {
+    years().slice().sort(function (a, b) { return b - a; }).forEach(function (y) {
       if (min && y < min) return;
       var o = el("option", null, String(y));
       o.value = y;
