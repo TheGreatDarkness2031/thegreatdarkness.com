@@ -2772,6 +2772,7 @@
 
     window.handleRadarResponse =
       function(data) {
+        noteRadarAnswerForPolling_(data);
         radarErrorCount = 0;
         radarRetryAt = 0;
 
@@ -2981,6 +2982,59 @@
     }
 
 
+    // Adaptive polling (2026-11-12): every 5 s while the Radar is
+    // changing; after 6 unchanged answers (30 s) every 10 s, after 14
+    // (about 2 min) every 15 s. Any change, or showing the tab again,
+    // goes straight back to 5 s. Contacts last minutes, so nothing is
+    // missed; quiet periods cost Apps Script about half the requests.
+    const RADAR_QUIET_STEPS = [[0, 1], [6, 2], [14, 3]];  // [unchanged answers, x the base interval]
+    let radarQuietCount = 0;
+    let radarLastSignature = "";
+    let radarLastPollAt = 0;
+
+    function noteRadarAnswerForPolling_(data) {
+      let signature = "";
+      try {
+        signature = JSON.stringify([
+          // Stay-lit monitors rewrite a contact with a new id each run and
+          // equal contacts can swap places: compare by the steady key
+          // (eventData.ck) in a fixed order.
+          ((data && data.contacts) || []).map(function(c) {
+            let key = c.id;
+            try {
+              const ed = typeof c.eventData === "string" ? JSON.parse(c.eventData) : c.eventData;
+              if (ed && ed.ck) key = ed.ck;
+            } catch (error) {
+              // no steady key: the id is used
+            }
+            return JSON.stringify([key, c.radarSeverity, c.sourceStatus, c.x, c.y]);
+          }).sort(),
+          (data && data.ring) || null,
+          ((data && data.sources && data.sources.lights) || []).map(function(l) {
+            return [l.id, l.light];
+          }),
+          (data && data.bv) || ""
+        ]);
+      } catch (error) {
+        signature = String(Date.now());
+      }
+      if (signature === radarLastSignature) {
+        radarQuietCount++;
+      } else {
+        radarQuietCount = 0;
+        radarLastSignature = signature;
+      }
+    }
+
+    function radarPollEveryMs_(baseMs) {
+      let times = 1;
+      RADAR_QUIET_STEPS.forEach(function(step) {
+        if (radarQuietCount >= step[0]) times = step[1];
+      });
+      return baseMs * times;
+    }
+
+
     // Both Radar pages start polling here. Quake blips last 4-12 s,
     // so the visible rate was 2.5 s until 2026-11-08; 5 s since (load
     // test: about 30 Apps Script runs at once is the account limit,
@@ -2988,8 +3042,10 @@
     // and catches up the moment it is shown again.
     function startRadarPolling_(intervalMs) {
 
+      radarLastPollAt = Date.now();
       loadRadarData();
 
+      // Ticks every base interval; a quiet Radar skips ticks.
       setInterval(function() {
         if (document.hidden) {
           return;
@@ -2999,11 +3055,18 @@
           return;
         }
 
+        if (radarPollEveryMs_(intervalMs) - 500 > Date.now() - radarLastPollAt) {
+          return;
+        }
+
+        radarLastPollAt = Date.now();
         loadRadarData();
       }, intervalMs);
 
       document.addEventListener("visibilitychange", function() {
         if (!document.hidden && Date.now() >= radarRetryAt) {
+          radarQuietCount = 0;
+          radarLastPollAt = Date.now();
           loadRadarData();
         }
       });
