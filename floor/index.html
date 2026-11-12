@@ -2020,6 +2020,10 @@
     #floorPane.wall { display: grid; grid-template-columns: auto minmax(320px, 1fr); grid-template-areas: "radar feed" "grid grid"; gap: 16px 18px; align-items: stretch; }
     #floorPane.wall .oer-monitor-cell.spare { display: none; }
     #floorPane.wall .oer-monitor-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+    /* Source lights in the narrow wall column: 2 across so names fit (2026-11-12; 3 across cut them to "EART..."). */
+    #floorPane.wall .source-register { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
+    #floorPane.wall .source-register-cell { font-size: 0.72rem; letter-spacing: 0.5px; gap: 6px; padding: 4px 6px; }
+    #floorPane.wall .source-lamp { width: 11px; height: 11px; }
     #floorPane.wall .radar-screen { width: min(32vw, 620px); min-width: 300px; }
     /* The feed is as tall as the Radar beside it and scrolls inside itself. */
     #floorPane.wall > .event-feed-preview { contain: size; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
@@ -2699,14 +2703,18 @@
         return "--";
       }
 
-      var reportingDate =
-        new Date(
-          date.getTime() -
-          5 *
-          60 *
-          60 *
-          1000
-        );
+      // Facility time (America/Chicago) since 2026-11-12; this was a fixed
+      // UTC-5 clock, an hour ahead of the facility in winter.
+      var reportingDate = (function (d) {
+        try {
+          var p = {};
+          new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+            .formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+          return new Date(Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute));
+        } catch (e) {
+          return new Date(d.getTime() - 6 * 3600000);
+        }
+      })(date);
 
       var month =
         String(

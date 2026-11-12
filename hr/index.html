@@ -126,6 +126,13 @@ dl.fields dd { margin: 0; color: #eee; }
 .photos img { width: 110px; height: 110px; object-fit: cover; border: 1px solid #666; display: block; margin-bottom: 4px; }
 .back { display: inline-block; margin-bottom: 14px; color: var(--green); font-size: 0.75rem; letter-spacing: 1px; text-decoration: none; }
 .back:hover { text-decoration: underline; }
+.biolink { display: inline-block; margin-top: 14px; color: var(--green); font-size: 0.8rem; letter-spacing: 1px; text-decoration: none; }
+.biolink:hover { text-decoration: underline; }
+.bio { display: grid; grid-template-columns: 220px 1fr; gap: 22px; align-items: start; }
+.bio .portrait { width: 220px; height: 220px; object-fit: cover; border: 2px solid #777; display: block; }
+.bio .who { font-size: 1.05rem; letter-spacing: 2px; color: #fff; margin: 0 0 4px; }
+.bio .post { font-size: 0.75rem; letter-spacing: 1px; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
+.bio .text { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.7; color: #e6e6e6; margin: 0; max-width: 62ch; }
 
 /* org chart */
 .org { font-size: 0.78rem; }
@@ -219,6 +226,8 @@ table.rack td { padding: 6px 8px; }
 @media (max-width: 700px) {
   .file { grid-template-columns: 1fr; }
   .file .portrait { width: 160px; height: 160px; }
+  .bio { grid-template-columns: 1fr; }
+  .bio .portrait { width: 160px; height: 160px; }
   dl.fields { grid-template-columns: 120px 1fr; }
   table.dir .wide { display: none; }
   table.dir td, table.dir th { padding-left: 5px; padding-right: 5px; }
@@ -477,7 +486,13 @@ table.rack td { padding: 6px 8px; }
     row(p.dept === "NX" ? "CONTRACT START" : "DATE OF HIRE", date(p.hire));
     row("STATUS", active(p) ? "ACTIVE" : "SEPARATED " + date(p.sep));
     row("CONTACT", "ON FILE");
-    file.appendChild(dl);
+    var right = el("div");
+    right.appendChild(dl);
+    var bl = el("a", "biolink", "[ PUBLIC BIO ]");
+    bl.href = "?id=" + encodeURIComponent(p.id) + "&bio=1";
+    bl.setAttribute("data-go", "");
+    right.appendChild(bl);
+    file.appendChild(right);
     pane.appendChild(file);
 
     var mine = HR.badges.filter(function (b) { return b.emp === p.id; }).sort(function (a, b) { return a.issue < b.issue ? -1 : 1; });
@@ -524,6 +539,40 @@ table.rack td { padding: 6px 8px; }
     });
     sec2.appendChild(ph);
     pane.appendChild(sec2);
+  }
+
+  // ---------------- PUBLIC BIO (bios.json, webtoolspersonnelmake_bios.js) ----------------
+  var biosData = null, biosLoading = false;
+  function renderBio(id) {
+    var p = byId[id];
+    var back = el("a", "back", "<< RETURN TO PERSONNEL FILE");
+    back.href = "?id=" + encodeURIComponent(id || "");
+    back.setAttribute("data-go", "");
+    pane.appendChild(back);
+    if (!p) { pane.appendChild(el("h2", null, "RECORD NOT FOUND")); return; }
+    pane.appendChild(el("h2", null, "STAFF PROFILE // " + p.id));
+    pane.appendChild(el("p", "note", "OPERATIONAL EVENT REGISTER // PERSONNEL OFFICE // PUBLIC BIO"));
+    var box = el("div", "bio");
+    box.appendChild(photo(p, latestPhoto(p), "portrait"));
+    var right = el("div");
+    right.appendChild(el("p", "who", (p.hon ? p.hon + " " : "") + p.name.toUpperCase()));
+    right.appendChild(el("p", "post", p.title.toUpperCase() + " // " + (p.dept === "NX" ? "NEXUS // " : "") + p.unit.toUpperCase() +
+      " // " + (active(p) ? "SINCE " + date(p.hire) : date(p.hire) + " - " + date(p.sep))));
+    var text = el("p", "text", "LOADING PROFILE...");
+    right.appendChild(text);
+    box.appendChild(right);
+    pane.appendChild(box);
+    function fill() {
+      var b = biosData && biosData.bios && biosData.bios[p.id];
+      text.textContent = b || "NO PUBLIC PROFILE ON FILE.";
+    }
+    if (biosData) { fill(); return; }
+    if (biosLoading) return;
+    biosLoading = true;
+    fetch("/hr/bios.json", { cache: "no-cache" }).then(function (r) { return r.json(); }).then(function (d) {
+      biosData = d; biosLoading = false;
+      if (params().bio) render();
+    }).catch(function () { biosLoading = false; text.textContent = "PROFILE UNAVAILABLE. RETRY LATER."; });
   }
 
   // ---------------- ORGANIZATION ----------------
@@ -636,7 +685,8 @@ table.rack td { padding: 6px 8px; }
       var v = a.getAttribute("data-view");
       a.classList.toggle("on", v === view || (view === "file" && v === "directory"));
     });
-    if (view === "file") renderFile(q.id);
+    if (view === "file" && q.bio) renderBio(q.id);
+    else if (view === "file") renderFile(q.id);
     else if (view === "org") renderOrg(year);
     else if (view === "wall") renderWall(year);
     else if (window.HR_VIEWS && HR_VIEWS[view]) HR_VIEWS[view](pane, { el: el, go: go, yearSelect: yearSelect, onStaff: onStaff, shown: shown, people: HR.people, year: year });

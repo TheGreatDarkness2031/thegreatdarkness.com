@@ -447,6 +447,13 @@
     .register-table td.reg-date { width: 78px; }
     .register-table td.reg-file { width: 64px; text-align: center; }
     .register-table tr.superseded td { color: #777777; text-decoration: line-through; }
+    .syslog-ranges { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 4px 2px; }
+    .syslog-ranges button.on { background: #000080; color: #ffffff; }
+    .syslog-table td.sys-time { width: 128px; white-space: nowrap; }
+    .syslog-table td.sys-system { width: 120px; }
+    .syslog-table td.sys-level { width: 52px; text-align: center; font-weight: bold; }
+    .syslog-table tr.warn td.sys-level { color: #b36b00; }
+    body.oer-night .syslog-table tr.warn td.sys-level { color: #ffaa33; }
     .register-table tr.superseded td.reg-file { text-decoration: none; }
     .register-table tr.current td.reg-rev { font-weight: bold; }
     .register-table tr.doc-start td { border-top: 1px solid #808080; }
@@ -617,6 +624,7 @@
         <button type="button" class="view-tab" data-view="projects" role="tab">PROJECTS</button>
         <button type="button" class="view-tab active" data-view="records" role="tab">MAINTENANCE LOG</button>
         <button type="button" class="view-tab" data-view="register" role="tab">DOCUMENT REGISTER</button>
+        <button type="button" class="view-tab" data-view="syslog" role="tab">SYSTEM LOG</button>
         <a class="view-link" href="/terminal/">NEXUS TERMINAL</a>
       </div>
       <span class="office-switch"><span data-oer-daynight="maintenance" data-default="day"></span></span>
@@ -938,6 +946,35 @@
             <div class="record-placeholder">
               SELECT A DOCUMENT FROM THE REGISTER TO DISPLAY ITS REVISION HISTORY.
             </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div id="syslogPane" class="view-pane" hidden>
+
+        <div class="filter-panel bevel-outset">
+          <div class="filter-title">
+            SYSTEM LOG // AUTOMATED ENTRIES // FACILITY TIME
+          </div>
+          <div class="syslog-ranges">
+            <button type="button" data-range="24H">24 HOURS</button>
+            <button type="button" data-range="7D" class="on">7 DAYS</button>
+            <button type="button" data-range="30D">30 DAYS</button>
+            <button type="button" data-range="90D">90 DAYS</button>
+          </div>
+        </div>
+
+        <div id="sysStatus" class="status-line bevel-inset">
+          RETRIEVING SYSTEM LOG...
+        </div>
+
+        <div class="bevel-inset">
+          <div class="index-title">
+            SYSTEM LOG // FEEDS, RECORDS, DAILY CHECKS
+          </div>
+          <div id="sysList" class="record-list register-list">
+            <div class="record-empty">RETRIEVING SYSTEM LOG...</div>
           </div>
         </div>
 
@@ -2312,7 +2349,7 @@ function exitMaintenanceLog() {
   // /tools/document/; without one the revision is on paper only.
   (function () {
     var tabs = document.querySelectorAll(".view-tab");
-    var panes = { records: document.getElementById("recordsPane"), register: document.getElementById("registerPane"), projects: document.getElementById("projectsPane") };
+    var panes = { records: document.getElementById("recordsPane"), register: document.getElementById("registerPane"), projects: document.getElementById("projectsPane"), syslog: document.getElementById("syslogPane") };
     var modeLabel = document.getElementById("displayMode");
     var el = {
       search: document.getElementById("regSearch"),
@@ -2337,13 +2374,14 @@ function exitMaintenanceLog() {
       for (var i = 0; i < tabs.length; i++) {
         tabs[i].classList.toggle("active", tabs[i].getAttribute("data-view") === name);
       }
-      modeLabel.textContent = name === "register" ? "REGISTER VIEW" : name === "projects" ? "PROJECT VIEW" : "INDEX VIEW";
+      modeLabel.textContent = name === "register" ? "REGISTER VIEW" : name === "projects" ? "PROJECT VIEW" : name === "syslog" ? "SYSTEM LOG VIEW" : "INDEX VIEW";
       var url = new URL(location.href);
-      if (name === "register" || name === "projects") url.searchParams.set("view", name); else url.searchParams.delete("view");
+      if (name === "register" || name === "projects" || name === "syslog") url.searchParams.set("view", name); else url.searchParams.delete("view");
       history.replaceState(null, "", url.pathname + url.search);
       if (window.oerRefreshMenu) window.oerRefreshMenu();
       if (name === "register") load();
       if (name === "projects" && window.oerLoadProjects) window.oerLoadProjects();
+      if (name === "syslog" && window.oerLoadSyslog) window.oerLoadSyslog();
     }
 
     function load() {
@@ -2455,7 +2493,7 @@ function exitMaintenanceLog() {
     });
 
     var startView = new URLSearchParams(location.search).get("view");
-    if (startView === "register" || startView === "projects") showView(startView);
+    if (startView === "register" || startView === "projects" || startView === "syslog") showView(startView);
   })();
   </script>
 
@@ -2598,6 +2636,50 @@ function exitMaintenanceLog() {
   })();
   </script>
 
+<script>
+  // SYSTEM LOG view (2026-11-12): SystemLog.js getSystemLog(range), newest
+  // first. Entries are written by the site's own machinery (feed watch,
+  // nightly backup, daily system check).
+  (function () {
+    var list = document.getElementById("sysList");
+    var status = document.getElementById("sysStatus");
+    var buttons = document.querySelectorAll(".syslog-ranges button");
+    var range = "7D", loaded = {}, busy = false;
+    function esc(s) {
+      return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+    }
+    function draw(r) {
+      var rows = (r && r.entries) || [];
+      status.textContent = "SYSTEM LOG: ONLINE | RANGE: " + r.range + " | ENTRIES: " + rows.length + " | NEWEST FIRST";
+      if (!rows.length) {
+        list.innerHTML = '<div class="record-empty">NO SYSTEM ENTRIES IN THIS RANGE. ALL FEEDS AND RECORDS NOMINAL.</div>';
+        return;
+      }
+      list.innerHTML = '<table class="record-table register-table syslog-table"><thead><tr><th>TIME</th><th>SYSTEM</th><th>LEVEL</th><th>ENTRY</th></tr></thead><tbody>' +
+        rows.map(function (e) {
+          return '<tr class="' + (e.level === "WARN" ? "warn" : "") + '"><td class="sys-time">' + esc(e.time) + '</td><td class="sys-system">' + esc(e.system) +
+            '</td><td class="sys-level">' + esc(e.level) + '</td><td>' + esc(e.message) + '</td></tr>';
+        }).join("") + "</tbody></table>";
+    }
+    function load(r) {
+      range = r || range;
+      Array.prototype.forEach.call(buttons, function (b) { b.classList.toggle("on", b.getAttribute("data-range") === range); });
+      if (loaded[range]) { draw(loaded[range]); return; }
+      if (busy) return;
+      busy = true;
+      status.textContent = "RETRIEVING SYSTEM LOG...";
+      google.script.run
+        .withSuccessHandler(function (res) { busy = false; if (res && res.success) { loaded[res.range] = res; if (res.range === range) draw(res); } else { status.textContent = "SYSTEM LOG UNAVAILABLE. RETRY LATER."; } })
+        .withFailureHandler(function () { busy = false; status.textContent = "SYSTEM LOG UNAVAILABLE. RETRY LATER."; })
+        .getSystemLog(range);
+    }
+    Array.prototype.forEach.call(buttons, function (b) {
+      b.addEventListener("click", function () { load(b.getAttribute("data-range")); });
+    });
+    window.oerLoadSyslog = function () { load(); };
+    if (new URLSearchParams(location.search).get("view") === "syslog") load();
+  })();
+</script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>

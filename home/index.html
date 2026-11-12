@@ -2409,13 +2409,7 @@
       </div>
 
       <div class="webring-links">
-        [ PLAN ]
-        &nbsp; |
-        &nbsp;
-        [ PREPARE ]
-        &nbsp; |
-        &nbsp;
-        [ ADAPT ]
+        PLAN &nbsp;//&nbsp; PREPARE &nbsp;//&nbsp; ADAPT
       </div>
 
       <div class="webring-node">
@@ -2839,14 +2833,18 @@
         return "--";
       }
 
-      var reportingDate =
-        new Date(
-          date.getTime() -
-          5 *
-          60 *
-          60 *
-          1000
-        );
+      // Facility time (America/Chicago) since 2026-11-12; this was a fixed
+      // UTC-5 clock, an hour ahead of the facility in winter.
+      var reportingDate = (function (d) {
+        try {
+          var p = {};
+          new Intl.DateTimeFormat("en-US", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" })
+            .formatToParts(d).forEach(function (x) { p[x.type] = x.value; });
+          return new Date(Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute));
+        } catch (e) {
+          return new Date(d.getTime() - 6 * 3600000);
+        }
+      })(date);
 
       var month =
         String(

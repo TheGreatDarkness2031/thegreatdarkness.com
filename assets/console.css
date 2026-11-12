@@ -178,6 +178,9 @@ body.oerc #docReturnBottom { display: none !important; }
   .oerc-bar-mid { font-size: 11px; letter-spacing: 1px; }
   .oerc-clock { font-size: 10px; letter-spacing: 1px; }
   .oerc-banner { font-size: 8px; letter-spacing: 1px; gap: 14px; }
+  /* Phones: the bottom bar keeps the session clock and the notice; the
+     node name made it overflow at both edges (2026-11-12). */
+  .oerc-banner-bottom > span:first-child { display: none; }
 }
 @media (max-width: 480px) {
   .oerc-clock { display: none; }

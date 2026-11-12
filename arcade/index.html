@@ -21,6 +21,7 @@
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
 <script src="/assets/nav.js"></script>
+<script src="/assets/gsr.js"></script>
   <base target="_top">
 
   <meta name="viewport"
@@ -871,6 +872,77 @@
 
     }
 
+    /* ==========================================
+       CABINET GRID (2026-11-12): two cabinets a
+       row on computers, one on phones; each shows
+       its current #1 (getArcadeLeaders).
+       ========================================== */
+
+    .game-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      width: min(900px, calc(100vw - 32px));
+      margin-left: calc(50% - min(450px, 50vw - 16px));
+    }
+
+    .game-cabinet {
+      display: flex;
+      flex-direction: column;
+      min-height: 150px;
+      padding: 18px 18px 14px;
+      border-top: 6px solid #2a2a2a;
+    }
+
+    .game-cabinet:hover {
+      border-top-color: #00aa00;
+    }
+
+    .cabinet-foot {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 12px;
+      border-top: 1px dashed #333;
+    }
+
+    .cabinet-leader {
+      color: #777;
+      font-size: .72rem;
+      letter-spacing: 1px;
+      line-height: 1.4;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .cabinet-leader b {
+      color: #ffff00;
+      font-weight: bold;
+    }
+
+    .game-cabinet .cabinet-play {
+      position: static;
+      transform: none;
+      flex: 0 0 auto;
+    }
+
+    @media (max-width: 600px) {
+      .game-list {
+        grid-template-columns: 1fr;
+        width: 100%;
+        margin-left: 0;
+        gap: 11px;
+      }
+
+      .game-cabinet {
+        min-height: 0;
+        padding: 14px 14px 12px;
+      }
+    }
   </style>
 
 </head>
@@ -949,6 +1021,7 @@
       <!-- GAME 01 -->
 
       <a class="game-cabinet"
+         data-game="AlienRun"
          href="/arcade/alienrun/"
          target="_top">
 
@@ -964,8 +1037,9 @@
           RUN. JUMP. SURVIVE.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -974,6 +1048,7 @@
       <!-- GAME 02 -->
 
       <a class="game-cabinet"
+         data-game="AlienInvaders"
          href="/arcade/alieninvaders/"
          target="_top">
 
@@ -989,8 +1064,9 @@
           THEY'RE COMING.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -999,6 +1075,7 @@
       <!-- GAME 03 -->
 
       <a class="game-cabinet"
+         data-game="DarknessBreakout"
          href="/arcade/breakout/"
          target="_top">
 
@@ -1014,8 +1091,9 @@
           BREAK EVERYTHING.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1024,6 +1102,7 @@
       <!-- GAME 04 -->
 
       <a class="game-cabinet"
+         data-game="Snake"
          href="/arcade/snake/"
          target="_top">
 
@@ -1039,8 +1118,9 @@
           DON'T HIT YOURSELF.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1049,6 +1129,7 @@
       <!-- GAME 05 -->
 
       <a class="game-cabinet"
+         data-game="DarknessDodge"
          href="/arcade/dodge/"
          target="_top">
 
@@ -1064,8 +1145,9 @@
           DON'T GET HIT.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1074,6 +1156,7 @@
       <!-- GAME 06 -->
 
       <a class="game-cabinet"
+         data-game="Pong"
          href="/arcade/pong/"
          target="_top">
 
@@ -1089,8 +1172,9 @@
           YOU KNOW PONG.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1099,6 +1183,7 @@
       <!-- GAME 07 -->
 
       <a class="game-cabinet"
+         data-game="MeteorMiner"
          href="/arcade/meteorminer/"
          target="_top">
 
@@ -1114,8 +1199,9 @@
           MINE OR DIE.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1124,6 +1210,7 @@
       <!-- GAME 08 -->
 
       <a class="game-cabinet"
+         data-game="SectorSweep"
          href="/arcade/sectorsweep/"
          target="_top">
 
@@ -1139,8 +1226,9 @@
           MIND THE NUMBERS.
         </div>
 
-        <div class="cabinet-play">
-          PLAY &gt;
+        <div class="cabinet-foot">
+          <div class="cabinet-leader">TOP SCORE // --</div>
+          <div class="cabinet-play">PLAY &gt;</div>
         </div>
 
       </a>
@@ -1278,6 +1366,31 @@
   </script>
 
 
+  <script>
+    // Each cabinet's current #1 (Scores.js getArcadeLeaders, one call).
+    (function () {
+      function show(leaders) {
+        Array.prototype.forEach.call(document.querySelectorAll(".game-cabinet[data-game]"), function (cab) {
+          var box = cab.querySelector(".cabinet-leader");
+          var top = leaders && leaders[cab.getAttribute("data-game")];
+          if (!box) return;
+          box.textContent = "";
+          if (!top) { box.textContent = "TOP SCORE // NONE YET"; return; }
+          box.appendChild(document.createTextNode("#1 "));
+          var b = document.createElement("b");
+          b.textContent = String(top.name || "").toUpperCase();
+          box.appendChild(b);
+          box.appendChild(document.createTextNode(" // " + Number(top.score || 0).toLocaleString("en-US")));
+        });
+      }
+      try {
+        google.script.run
+          .withSuccessHandler(function (r) { if (r && r.success) show(r.leaders); })
+          .withFailureHandler(function () {})
+          .getArcadeLeaders();
+      } catch (e) {}
+    })();
+  </script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>
