@@ -23,6 +23,7 @@
 <title>OER Watch Log Archive - Text-Only Version</title>
 <script src="/assets/config.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/logs-local.js"></script>
 <style>
   body { max-width: 760px; margin: 12px auto; padding: 0 10px; background: #ffffff; color: #000000; font: 16px/1.4 "Times New Roman", Times, serif; }
   a { color: #0000ee; }
@@ -61,8 +62,7 @@
     return a;
   }
 
-  google.script.run
-    .withSuccessHandler(function (data) {
+  function show(data) {
       if (!data || !data.success) {
         document.getElementById("status").textContent = (data && data.message) || "The watch log is not available.";
         return;
@@ -104,11 +104,25 @@
       if (data.hasPrevious) pages.appendChild(link("<< Previous page", shown, data.page - 1));
       if (data.hasPrevious && data.hasNext) pages.appendChild(document.createTextNode(" | "));
       if (data.hasNext) pages.appendChild(link("Next page >>", shown, data.page + 1));
-    })
-    .withFailureHandler(function () {
-      document.getElementById("status").textContent = "The watch log is not responding. Please try again later.";
-    })
-    .getWatchLogPage({ year: year, page: page, pageSize: PAGE_SIZE });
+  }
+
+  // Published copy first (/data/watch/, rebuilt by the publish workflow);
+  // Apps Script only when that copy can't be read.
+  function askAppsScript() {
+    google.script.run
+      .withSuccessHandler(show)
+      .withFailureHandler(function () {
+        document.getElementById("status").textContent = "The watch log is not responding. Please try again later.";
+      })
+      .getWatchLogPage({ year: year, page: page, pageSize: PAGE_SIZE });
+  }
+
+  var request = { year: year, page: page, pageSize: PAGE_SIZE };
+  if (window.oerLocalLogs) {
+    window.oerLocalLogs.watchLog(request).then(function (data) { if (data) show(data); else askAppsScript(); });
+  } else {
+    askAppsScript();
+  }
 </script>
 
 <script src="/assets/notice.js" defer></script>
