@@ -1452,7 +1452,7 @@
         maintenanceElements.yearSelect;
 
       var years =
-        data.years || [];
+        (data.years || []).slice().sort(function(a, b) { return Number(b) - Number(a); });
 
       var wanted =
         years.concat(["ALL"]).join(",");

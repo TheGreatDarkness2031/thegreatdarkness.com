@@ -1414,7 +1414,7 @@
         return;
       }
 
-      years.forEach(
+      years.slice().sort(function(a, b) { return Number(b.year) - Number(a.year); }).forEach(
         function(yearEntry) {
 
           var option =

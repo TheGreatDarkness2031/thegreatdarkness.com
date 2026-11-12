@@ -467,7 +467,7 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
     ms.setAttribute("aria-label", "Month");
     ys.setAttribute("aria-label", "Year");
     MONTHS.forEach(function (n, i) { var o = el("option", null, n); o.value = i; ms.appendChild(o); });
-    for (var yy = 1998; yy <= 2031; yy++) { var o = el("option", null, String(yy)); o.value = yy; ys.appendChild(o); }
+    for (var yy = 2031; yy >= 1998; yy--) { var o = el("option", null, String(yy)); o.value = yy; ys.appendChild(o); }
     ms.value = m;
     ys.value = y;
     function jump() { go(monthHref(+ys.value, +ms.value)); }
