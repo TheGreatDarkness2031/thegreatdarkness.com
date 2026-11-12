@@ -8,6 +8,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/monitor-time.js"></script>
 
 <meta charset="UTF-8">
 <!-- OER-META -->
@@ -440,6 +441,7 @@ function loadMonitor(range) {
                 return;
             }
             latest = result;
+            oerMonitorTime.useZone(result.timeZone);
             applyPageText(result.page);
             render(result);
         })
@@ -684,10 +686,8 @@ function drawGraph(points) {
     g.textAlign = "center";
     for (var j = 0; j <= 4; j++) {
         var t = t0 + (t1 - t0) * j / 4;
-        var d = new Date(t);
-        var label = latest.range <= 24
-            ? String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0")
-            : String(d.getMonth() + 1).padStart(2, "0") + "/" + String(d.getDate()).padStart(2, "0");
+        var stamp = oerMonitorTime(t);  // facility time (assets/monitor-time.js)
+        var label = latest.range <= 24 ? stamp.slice(11, 16) : stamp.slice(5, 7) + "/" + stamp.slice(8, 10);
         g.fillText(label, x(t), height - 10);
     }
 
@@ -746,9 +746,8 @@ document.getElementById("monitorGraph").addEventListener("mousemove", function(e
     }
 
     var p = best.gp.p;
-    var t = new Date(p.t);
     tip.textContent =
-        t.toLocaleString([], { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }) +
+        oerMonitorTime(p.t) +
         " // " + p.v + " // " + p.s;
     tip.style.display = "block";
     tip.style.left = Math.min(best.gp.x + 18, rect.width - 200) + "px";

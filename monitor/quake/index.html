@@ -8,6 +8,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/monitor-time.js"></script>
 
 <meta charset="UTF-8">
 <!-- OER-META -->
@@ -135,6 +136,13 @@ body {
     font-size: 12px;
     letter-spacing: 1px;
     line-height: 1.8;
+}
+
+.status-data {
+    margin-top: 10px;
+    color: #888888;
+    font-size: 11px;
+    letter-spacing: 1px;
 }
 
 
@@ -466,6 +474,11 @@ canvas {
             EVENTS / LAST 24 HOURS: --
         </div>
 
+        <div
+            id="statusData"
+            class="status-data"
+        ></div>
+
     </div>
 
 
@@ -741,14 +754,22 @@ function updateQuakeStatus(result) {
             );
     }
 
-    statusDetails.textContent =
-        details;
+    oerMonitorTime.useZone(result.timeZone);
+
+    statusDetails.innerHTML = "";
+    details.split("\n").forEach(function(line) {
+        var div = document.createElement("div");
+        div.textContent = line;
+        statusDetails.appendChild(div);
+    });
+
+    document.getElementById("statusData").textContent =
+        oerMonitorTime.line(result);
 
     showMessage(
-        "SEISMIC STATUS UPDATED // " +
-        formatFixedUtc5DateTime(
-            result.timestamp
-        )
+        Number(result.eventCount || 0) + " EVENTS // LAST " +
+        Number(result.windowHours || 24) + " HOURS" +
+        (isFinite(highestMagnitude) ? " // STRONGEST M" + highestMagnitude.toFixed(1) : "")
     );
 }
 
@@ -787,11 +808,6 @@ function loadQuakeHistory(
         );
     }
 
-    showMessage(
-        "LOADING " +
-        range +
-        " SEISMIC HISTORY..."
-    );
 
     google.script.run
         .withSuccessHandler(function(result) {
@@ -823,19 +839,7 @@ function loadQuakeHistory(
                 result.data || []
             );
 
-            showMessage(
-                "HISTORY LOADED // " +
-                result.count +
-                " EVENT" +
-                (
-                    result.count === 1
-                        ? ""
-                        : "S"
-                ) +
-                " // RANGE: " +
-                range
-            );
-
+        
         })
         .withFailureHandler(function(error) {
 
@@ -1599,7 +1603,6 @@ function showQuakeGraphTooltip_(
                 event.timestamp
             )
         ) +
-        " UTC-5" +
         "</div>" +
 
         "<div class=\"quake-tooltip-status\" " +
@@ -2170,127 +2173,28 @@ function getStatusColor(status) {
 
 function formatFixedUtc5DateTime(value) {
 
-    if (!value) {
-        return "--";
-    }
-
-    var date =
-        new Date(value);
-
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
-        return String(value);
-    }
-
-    var shifted =
-        new Date(
-            date.getTime() -
-            5 *
-            60 *
-            60 *
-            1000
-        );
-
-    function format(number) {
-
-        return String(number)
-            .padStart(
-                2,
-                "0"
-            );
-    }
-
-    return (
-
-        format(
-            shifted.getUTCMonth() + 1
-        ) +
-
-        "/" +
-
-        format(
-            shifted.getUTCDate()
-        ) +
-
-        "/" +
-
-        shifted.getUTCFullYear() +
-
-        " " +
-
-        format(
-            shifted.getUTCHours()
-        ) +
-
-        ":" +
-
-        format(
-            shifted.getUTCMinutes()
-        )
-
-    );
+    // Facility time, YYYY-MM-DD HH:MM (assets/monitor-time.js).
+    return oerMonitorTime(value);
 }
 
 
 function formatQuakeGraphDate(value) {
 
-    if (!value) {
+    // Axis labels in facility time (assets/monitor-time.js).
+    var text = value ? oerMonitorTime(value) : "";
+    if (!text || text === "--" || !/^\d{4}-/.test(text)) {
         return "";
     }
 
-    var date =
-        new Date(value);
-
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
-        return "";
+    if (currentRange === "24H") {
+        return text.slice(11, 13) + ":00";
     }
 
-    var shifted =
-        new Date(
-            date.getTime() -
-            5 *
-            60 *
-            60 *
-            1000
-        );
-
-    if (
-        currentRange === "24H"
-    ) {
-
-        return String(
-            shifted.getUTCHours()
-        )
-            .padStart(
-                2,
-                "0"
-            ) +
-            ":00";
+    if (currentRange === "7D" || currentRange === "30D" || currentRange === "1Y") {
+        return Number(text.slice(5, 7)) + "/" + Number(text.slice(8, 10));
     }
 
-    if (
-        currentRange === "7D" ||
-        currentRange === "30D" ||
-        currentRange === "1Y"
-    ) {
-
-        return (
-            shifted.getUTCMonth() + 1
-        ) +
-        "/" +
-        shifted.getUTCDate();
-    }
-
-    return String(
-        shifted.getUTCFullYear()
-    );
+    return text.slice(0, 4);
 }
 
 

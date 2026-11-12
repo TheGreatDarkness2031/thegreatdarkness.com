@@ -8,6 +8,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/monitor-time.js"></script>
 
 <meta charset="UTF-8">
 <!-- OER-META -->
@@ -329,6 +330,98 @@ body {
    DATA LEGEND
    ============================================================ */
 
+.status-data {
+    margin-top: 10px;
+    color: #888888;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+/* ---- History ---- */
+.range-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.range-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 8px 14px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.range-button:hover,
+.range-button.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.graph-wrapper {
+    position: relative;
+    border: 1px solid #ffffff;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 260px;
+}
+
+.graph-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    padding: 6px 8px;
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #cccccc;
+    font-size: 10px;
+    line-height: 1.5;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ---- Status change log ---- */
+.event-list {
+    border: 1px inset #ffffff;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.event-row {
+    padding: 10px;
+    border-bottom: 1px dashed #444444;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.event-row:last-child {
+    border-bottom: none;
+}
+
+.event-time {
+    color: #888888;
+}
+
+.event-detail {
+    color: #bbbbbb;
+}
+
 .legend-panel {
     border: 2px solid #ffffff;
     padding: 18px;
@@ -461,6 +554,11 @@ body {
             REPORTING SECTORS: --
         </div>
 
+        <div
+            id="statusData"
+            class="status-data"
+        ></div>
+
     </div>
 
 
@@ -485,6 +583,27 @@ body {
 
     </div>
 
+
+    <div class="sector-panel">
+        <div class="section-title">HISTORY</div>
+
+        <div class="range-controls">
+            <button class="range-button active" data-range="24H" onclick="loadGridHistory('24H')">24 HOURS</button>
+            <button class="range-button" data-range="7D" onclick="loadGridHistory('7D')">7 DAYS</button>
+            <button class="range-button" data-range="30D" onclick="loadGridHistory('30D')">30 DAYS</button>
+        </div>
+
+        <div class="graph-wrapper">
+            <div class="graph-title">CALCULATED GRID HEALTH (%)</div>
+            <canvas id="monitorGraph"></canvas>
+            <div id="graphTooltip" class="graph-tooltip"></div>
+        </div>
+    </div>
+
+    <div class="sector-panel">
+        <div class="section-title">STATUS CHANGE LOG</div>
+        <div id="eventList" class="event-list">LOADING...</div>
+    </div>
 
     <div class="legend-panel">
 
@@ -591,6 +710,11 @@ function loadPowerGridRealStatus() {
 
 function updatePowerGridRealView(result) {
 
+    oerMonitorTime.useZone(result.timeZone);
+
+    document.getElementById("statusData").textContent =
+        oerMonitorTime.line(result);
+
     var healthElement =
         document.getElementById(
             "overallHealth"
@@ -645,19 +769,14 @@ function updatePowerGridRealView(result) {
                 status
             );
 
-        detailsElement.textContent =
+        setDetailLines(detailsElement, [
             "REPORTING SECTORS: " +
-            Number(
-                result.reportingSectors || 0
-            ) +
-            " // AVG DEMAND DEVIATION: " +
-            formatPercent(
-                result.averageDemandDeviation
-            ) +
-            " // LAST UPDATE: " +
-            formatDateTime(
-                result.timestamp
-            );
+                Number(result.reportingSectors || 0) +
+                " OF " +
+                Number(result.totalSectors || 0),
+            "AVG DEMAND DEVIATION: " +
+                formatPercent(result.averageDemandDeviation)
+        ]);
 
         if (result.overallState === "RETAINED") {
 
@@ -666,8 +785,7 @@ function updatePowerGridRealView(result) {
                 "RETAINING LAST VALID STATUS: " +
                 formatReportingDateTime(
                     result.lastValidAt
-                ) +
-                " UTC"
+                )
             );
 
         } else if (
@@ -686,7 +804,11 @@ function updatePowerGridRealView(result) {
         } else {
 
             showMessage(
-                "REAL EIA GRID DATA ACTIVE."
+                Number(result.reportingSectors || 0) +
+                " OF " +
+                Number(result.totalSectors || 0) +
+                " SECTORS REPORTING // AVG DEMAND DEVIATION " +
+                formatPercent(result.averageDemandDeviation)
             );
         }
 
@@ -714,8 +836,7 @@ function updatePowerGridRealView(result) {
                     ? " // LAST VALID: " +
                       formatReportingDateTime(
                           result.lastValidAt
-                      ) +
-                      " UTC"
+                      )
                     : ""
             );
 
@@ -1059,37 +1180,8 @@ function getFreshnessClass_(
 // UTC, same format as TempView (MM/DD/YYYY HH:MM).
 function formatReportingDateTime(value) {
 
-    if (!value) {
-        return "--";
-    }
-
-    var date =
-        new Date(value);
-
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
-        return String(value);
-    }
-
-    function format(number) {
-        return String(number)
-            .padStart(2, "0");
-    }
-
-    return (
-        format(date.getUTCMonth() + 1) +
-        "/" +
-        format(date.getUTCDate()) +
-        "/" +
-        date.getUTCFullYear() +
-        " " +
-        format(date.getUTCHours()) +
-        ":" +
-        format(date.getUTCMinutes())
-    );
+    // Facility time, YYYY-MM-DD HH:MM (assets/monitor-time.js).
+    return oerMonitorTime(value);
 }
 
 function formatMw(value) {
@@ -1132,22 +1224,8 @@ function formatPercent(value) {
 
 function formatDateTime(value) {
 
-    if (!value) {
-        return "--";
-    }
-
-    var date =
-        new Date(value);
-
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
-        return "--";
-    }
-
-    return date.toLocaleString();
+    // Facility time, YYYY-MM-DD HH:MM (assets/monitor-time.js).
+    return oerMonitorTime(value);
 }
 
 
@@ -1205,7 +1283,222 @@ function closePowerGridRealView() {
    INITIALIZATION
    ============================================================ */
 
+
+/* ============================================================
+   HISTORY (same graph and log as the Monitoring Grid pages;
+   PowerGridRealHistory.js, recorded from 2026-11-12)
+   ============================================================ */
+
+var currentRange = "24H";
+var gridHistory = null;
+var graphPoints = [];
+
+var STATUS_COLORS = {
+    NOMINAL: "#00ff00",
+    WATCH: "#ffff00",
+    ELEVATED: "#ff9900",
+    CRITICAL: "#ff0000",
+    DEGRADED: "#888888",
+    STANDBY: "#888888"
+};
+
+function setDetailLines(element, lines) {
+    element.innerHTML = "";
+    lines.forEach(function(line) {
+        var div = document.createElement("div");
+        div.textContent = line;
+        element.appendChild(div);
+    });
+}
+
+function loadGridHistory(range) {
+
+    currentRange = range || currentRange;
+
+    Array.prototype.forEach.call(document.querySelectorAll(".range-button"), function(b) {
+        b.className = "range-button" + (b.getAttribute("data-range") === currentRange ? " active" : "");
+    });
+
+    google.script.run
+        .withSuccessHandler(function(result) {
+            if (!result || !result.success) {
+                return;
+            }
+            oerMonitorTime.useZone(result.timeZone);
+            gridHistory = { range: result.range, points: result.history.points, changes: result.history.changes };
+            renderLog(gridHistory.changes);
+            drawGraph(gridHistory.points);
+        })
+        .withFailureHandler(function(error) {
+            showMessage("GRID HISTORY ERROR: " + getErrorMessage(error));
+        })
+        .getPowerGridRealHistory(currentRange);
+}
+
+function renderLog(changes) {
+
+    var list = document.getElementById("eventList");
+    list.innerHTML = "";
+
+    if (!changes || !changes.length) {
+        var none = document.createElement("div");
+        none.className = "event-row";
+        none.textContent = "NO STATUS CHANGES IN THE KEPT HISTORY.";
+        list.appendChild(none);
+        return;
+    }
+
+    changes.forEach(function(c) {
+        var row = document.createElement("div");
+        row.className = "event-row";
+
+        var time = document.createElement("div");
+        time.className = "event-time";
+        time.textContent = c.time;
+
+        var status = document.createElement("div");
+        var shown = c.dataStatus === "DEGRADED" ? "DEGRADED" : c.status;
+        status.className = getStatusClass(shown);
+        status.textContent = "STATUS: " + shown;
+
+        var detail = document.createElement("div");
+        detail.className = "event-detail";
+        detail.textContent = c.summary;
+
+        row.appendChild(time);
+        row.appendChild(status);
+        row.appendChild(detail);
+        list.appendChild(row);
+    });
+}
+
+function drawGraph(points) {
+
+    var canvas = document.getElementById("monitorGraph");
+    var width = Math.max(300, canvas.parentElement.clientWidth - 24);
+    var height = 260;
+    var ratio = window.devicePixelRatio || 1;
+
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.height = height + "px";
+
+    var g = canvas.getContext("2d");
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    g.clearRect(0, 0, width, height);
+    g.font = "10px Courier New";
+
+    graphPoints = [];
+
+    var good = points.filter(function(p) { return p.v !== null && p.d !== "DEGRADED"; });
+
+    if (!good.length) {
+        g.fillStyle = "#888888";
+        g.textAlign = "center";
+        g.fillText("NO READINGS IN THIS RANGE YET", width / 2, height / 2);
+        return;
+    }
+
+    var left = 46, right = width - 12, top = 12, bottom = height - 28;
+    var t0 = Date.now() - gridHistory.range * 3600000;
+    var t1 = Date.now();
+    var maxV = 100;
+    var minV = 0;
+
+    var x = function(t) { return left + (t - t0) / (t1 - t0) * (right - left); };
+    var y = function(v) { return bottom - (v - minV) / (maxV - minV) * (bottom - top); };
+
+    /* grid */
+    g.strokeStyle = "#333333";
+    g.fillStyle = "#888888";
+    g.lineWidth = 1;
+    g.textAlign = "right";
+    for (var i = 0; i <= 4; i++) {
+        var v = minV + (maxV - minV) * i / 4;
+        var gy = y(v);
+        g.beginPath(); g.moveTo(left, gy); g.lineTo(right, gy); g.stroke();
+        g.fillText(maxV < 10 ? v.toFixed(1) : String(Math.round(v)), left - 6, gy + 3);
+    }
+
+    g.textAlign = "center";
+    for (var j = 0; j <= 4; j++) {
+        var t = t0 + (t1 - t0) * j / 4;
+        var stamp = oerMonitorTime(t);
+        var label = gridHistory.range <= 24 ? stamp.slice(11, 16) : stamp.slice(5, 7) + "/" + stamp.slice(8, 10);
+        g.fillText(label, x(t), height - 10);
+    }
+
+    /* line (breaks over missing data) */
+    g.strokeStyle = "#ffffff";
+    g.lineWidth = 1.5;
+    g.beginPath();
+    var drawing = false;
+    var lastT = null;
+    var gapMs = Math.max(3, gridHistory.range / 8) * 3600000;
+
+    points.forEach(function(p) {
+        if (p.v === null || p.d === "DEGRADED") {
+            drawing = false;
+            return;
+        }
+        var px = x(p.t), py = y(p.v);
+        if (!drawing || (lastT !== null && p.t - lastT > gapMs)) {
+            g.moveTo(px, py);
+        } else {
+            g.lineTo(px, py);
+        }
+        drawing = true;
+        lastT = p.t;
+    });
+    g.stroke();
+
+    /* points in status colors */
+    good.forEach(function(p) {
+        var px = x(p.t), py = y(p.v);
+        g.fillStyle = STATUS_COLORS[p.s] || "#ffffff";
+        g.beginPath();
+        g.arc(px, py, good.length > 200 ? 1.6 : 2.6, 0, Math.PI * 2);
+        g.fill();
+        graphPoints.push({ x: px, y: py, p: p });
+    });
+}
+
+document.getElementById("monitorGraph").addEventListener("mousemove", function(event) {
+
+    var tip = document.getElementById("graphTooltip");
+    var rect = this.getBoundingClientRect();
+    var mx = event.clientX - rect.left;
+    var best = null;
+
+    graphPoints.forEach(function(gp) {
+        var d = Math.abs(gp.x - mx);
+        if (!best || d < best.d) best = { d: d, gp: gp };
+    });
+
+    if (!best || best.d > 12) {
+        tip.style.display = "none";
+        return;
+    }
+
+    var p = best.gp.p;
+    tip.textContent =
+        oerMonitorTime(p.t) +
+        " // " + p.v + "% // " + p.s;
+    tip.style.display = "block";
+    tip.style.left = Math.min(best.gp.x + 18, rect.width - 200) + "px";
+    tip.style.top = (best.gp.y + 30) + "px";
+});
+
+document.getElementById("monitorGraph").addEventListener("mouseleave", function() {
+    document.getElementById("graphTooltip").style.display = "none";
+});
+
+window.addEventListener("resize", function() {
+    if (gridHistory) drawGraph(gridHistory.points);
+});
+
 loadPowerGridRealStatus();
+loadGridHistory("24H");
 
 
 /* ============================================================
@@ -1213,7 +1506,10 @@ loadPowerGridRealStatus();
    ============================================================ */
 
 setInterval(
-    loadPowerGridRealStatus,
+    function() {
+        loadPowerGridRealStatus();
+        loadGridHistory(currentRange);
+    },
     300000
 );
 

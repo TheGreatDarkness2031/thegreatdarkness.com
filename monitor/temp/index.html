@@ -8,6 +8,7 @@
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 <script src="/assets/gsr.js"></script>
+<script src="/assets/monitor-time.js"></script>
 
 <meta charset="UTF-8">
 <!-- OER-META -->
@@ -107,6 +108,13 @@ body {
     margin-top: 12px;
     font-size: 12px;
     letter-spacing: 2px;
+}
+
+.status-data {
+    margin-top: 10px;
+    color: #888888;
+    font-size: 11px;
+    letter-spacing: 1px;
 }
 
 .status-nominal {
@@ -446,6 +454,11 @@ canvas {
             REPORTING LOCATIONS: --
         </div>
 
+        <div
+            id="statusData"
+            class="status-data"
+        ></div>
+
     </div>
 
 
@@ -670,22 +683,30 @@ function updateTempStatus(result) {
             deviation
         );
 
+    oerMonitorTime.useZone(result.timeZone);
+
+    var totalLocations =
+        (result.locations || []).length;
+
     locationsElement.textContent =
         "REPORTING LOCATIONS: " +
         Number(
             result.reportingLocations || 0
-        );
+        ) +
+        (totalLocations ? " OF " + totalLocations : "");
+
+    document.getElementById("statusData").textContent =
+        oerMonitorTime.line(result);
 
     buildCityCards(
         result.locations || []
     );
 
     showMessage(
-        "DISPLAY SUMMARY: " +
-        formatReportingDateTime(
-            result.reportingTime
-        ) +
-        " // REPORTING CLOCK: UTC-5"
+        Number(result.reportingLocations || 0) +
+        (totalLocations ? " OF " + totalLocations : "") +
+        " LOCATIONS REPORTING // NETWORK DEVIATION " +
+        formatDeviation(deviation)
     );
 }
 
@@ -988,11 +1009,6 @@ function loadHistory(
         );
     }
 
-    showMessage(
-        "LOADING " +
-        range +
-        " TEMPERATURE HISTORY..."
-    );
 
     google.script.run
         .withSuccessHandler(function(result) {
@@ -1016,21 +1032,7 @@ function loadHistory(
                 result
             );
 
-            showMessage(
-                "HISTORY LOADED // " +
-                result.count +
-                " DATA POINT" +
-                (
-                    result.count === 1
-                        ? ""
-                        : "S"
-                ) +
-                " // RESOLUTION: " +
-                String(
-                    result.resolution
-                ).toUpperCase()
-            );
-
+        
         })
         .withFailureHandler(function(error) {
 
@@ -1973,54 +1975,20 @@ function formatDeviation(value) {
 
 function formatReportingDateTime(value) {
 
+    // Report hours are kept on the UTC-5 reporting clock; the real
+    // instant is 5 hours later. Shown in facility time, YYYY-MM-DD HH:MM
+    // (assets/monitor-time.js).
     if (!value) {
         return "--";
     }
 
-    var date =
-        new Date(value);
+    var millis = new Date(value).getTime();
 
-    if (
-        isNaN(
-            date.getTime()
-        )
-    ) {
+    if (isNaN(millis)) {
         return String(value);
     }
 
-    function format(number) {
-        return String(number)
-            .padStart(2, "0");
-    }
-
-    return (
-
-        format(
-            date.getUTCMonth() + 1
-        ) +
-
-        "/" +
-
-        format(
-            date.getUTCDate()
-        ) +
-
-        "/" +
-
-        date.getUTCFullYear() +
-
-        " " +
-
-        format(
-            date.getUTCHours()
-        ) +
-
-        ":" +
-
-        format(
-            date.getUTCMinutes()
-        )
-    );
+    return oerMonitorTime(millis + 5 * 60 * 60 * 1000);
 }
 
 
