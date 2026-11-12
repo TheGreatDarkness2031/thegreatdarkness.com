@@ -393,7 +393,9 @@ canvas {
 <script>
 
 var MONITOR_PREFIX = "aiinc";
-var MONITOR_PAGE = {"title":"AI INCIDENT MONITOR","subtitle":"THE GREAT DARKNESS // AI SERVICE OBSERVATION","statusLabel":"PROVIDERS OPERATING NORMALLY","metricLabel":"PROVIDERS OPERATING NORMALLY","itemsTitle":"PROVIDERS","footer":"PUBLIC PROVIDER STATUS PAGES","color":"#A3E635"};
+// Page text (MonitorFeeds.js) and title color (Config column J) arrive with
+// every answer; nothing about the monitor is typed into this page.
+var MONITOR_PAGE = {};
 
 var currentRange = "24H";
 var latest = null;
@@ -438,6 +440,7 @@ function loadMonitor(range) {
                 return;
             }
             latest = result;
+            applyPageText(result.page);
             render(result);
         })
         .withFailureHandler(function(error) {
@@ -713,23 +716,27 @@ document.getElementById("monitorGraph").addEventListener("mouseleave", function(
 
 /* ---------- start ---------- */
 
-setText("pageTitle", MONITOR_PAGE.title);
-
-/* Title in the monitor's Source Register color (Config column J). */
-(function() {
-    var color = String(MONITOR_PAGE.color || "");
-    var el = document.getElementById("pageTitle");
-    if (el && /^#[0-9a-f]{6}$/i.test(color)) {
-        var n = parseInt(color.slice(1), 16);
-        el.style.color = color;
-        el.style.textShadow = "0 0 8px rgba(" + (n >> 16 & 255) + ", " + (n >> 8 & 255) + ", " + (n & 255) + ", 0.4)";
-    }
-})();
-setText("pageSubtitle", MONITOR_PAGE.subtitle);
-setText("statusLabel", MONITOR_PAGE.statusLabel);
-setText("itemsTitle", MONITOR_PAGE.itemsTitle);
-setText("graphTitle", MONITOR_PAGE.metricLabel);
-setText("footer", MONITOR_PAGE.footer);
+function applyPageText(page) {
+    if (!page) return;
+    MONITOR_PAGE = page;
+    setText("pageTitle", MONITOR_PAGE.title);
+    
+    /* Title in the monitor's Source Register color (Config column J). */
+    (function() {
+        var color = String(MONITOR_PAGE.color || "");
+        var el = document.getElementById("pageTitle");
+        if (el && /^#[0-9a-f]{6}$/i.test(color)) {
+            var n = parseInt(color.slice(1), 16);
+            el.style.color = color;
+            el.style.textShadow = "0 0 8px rgba(" + (n >> 16 & 255) + ", " + (n >> 8 & 255) + ", " + (n & 255) + ", 0.4)";
+        }
+    })();
+    setText("pageSubtitle", MONITOR_PAGE.subtitle);
+    setText("statusLabel", MONITOR_PAGE.statusLabel);
+    setText("itemsTitle", MONITOR_PAGE.itemsTitle);
+    setText("graphTitle", MONITOR_PAGE.metricLabel);
+    setText("footer", MONITOR_PAGE.footer);
+}
 
 window.addEventListener("resize", function() {
     if (latest && latest.history) drawGraph(latest.history.points);
