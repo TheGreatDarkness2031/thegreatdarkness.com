@@ -630,7 +630,7 @@ table.rack td { padding: 6px 8px; }
   function render() {
     var q = params();
     var view = q.id ? "file" : (q.view || "directory");
-    var year = Math.max(1990, Math.min(THIS_YEAR, parseInt(q.year, 10) || 1998));
+    var year = Math.max(1990, Math.min(THIS_YEAR, parseInt(q.year, 10) || THIS_YEAR));
     pane.textContent = "";
     Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
       var v = a.getAttribute("data-view");
