@@ -43,7 +43,6 @@
       ["WELLNESS", "/wellness/"]
     ]],
     ["PROFILE", "/profile/"],
-    ["TERMINAL", "/terminal/"],
     ["ARCADE", "/arcade/"]
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
@@ -60,6 +59,8 @@
 
   function here(href) {
     var p = location.pathname;
+    // The NEXUS terminal is part of Engineering (owner 2026-11-11).
+    if (p.indexOf("/terminal/") === 0) return href.indexOf("/maintenance/") === 0;
     // Wellness documents open in the shared viewer: light WELLNESS, not TOOLS.
     if (p.indexOf("/tools/document/") === 0 && /[?&]doc=WL_/i.test(location.search)) {
       return href === "/wellness/";

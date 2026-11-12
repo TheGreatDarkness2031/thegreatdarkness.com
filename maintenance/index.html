@@ -562,6 +562,10 @@
     .office-nav .view-tab::after { content: " ]"; }
     .office-nav .view-tab:hover { text-decoration: underline; }
     .office-nav .view-tab.active { color: #000; background: #7fd18b; }
+    .office-nav .view-link { margin: 0 2px; padding: 1px 2px; color: #7fd18b; font-size: 13px; letter-spacing: 1px; text-decoration: none; }
+    .office-nav .view-link::before { content: "[ "; }
+    .office-nav .view-link::after { content: " ]"; }
+    .office-nav .view-link:hover { text-decoration: underline; }
     .office-switch { position: absolute; right: 0; top: 0; }
     .window-content.desk { padding: 12px 14px 14px; background: #050505; border: 2px solid #888888; box-shadow: inset 0 0 0 4px #050505, inset 0 0 0 5px #444; }
     .view-pane { border-top: 0; padding-top: 0; }
@@ -613,6 +617,7 @@
         <button type="button" class="view-tab" data-view="projects" role="tab">PROJECTS</button>
         <button type="button" class="view-tab active" data-view="records" role="tab">MAINTENANCE LOG</button>
         <button type="button" class="view-tab" data-view="register" role="tab">DOCUMENT REGISTER</button>
+        <a class="view-link" href="/terminal/">NEXUS TERMINAL</a>
       </div>
       <span class="office-switch"><span data-oer-daynight="maintenance" data-default="day"></span></span>
     </div>

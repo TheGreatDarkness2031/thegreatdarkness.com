@@ -24,7 +24,7 @@
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
-<title>NEXUS // Terminal</title>
+<title>OER // Engineering</title>
 <style>
   html, body { margin: 0; background: #000; color: #00ff00; font-family: "Courier New", Courier, monospace; }
   body { padding: 16px 8px 28px; box-sizing: border-box; min-height: 100vh; }
@@ -136,18 +136,46 @@
 <style>
   /* Standalone screen: the terminal fills the window between the frame's bars. */
   .oer-term-section { max-width: 980px; margin: 0 auto; }
-  .oer-term-screen { height: calc(100vh - 150px); min-height: 300px; }
+  /* Engineering room plate + links (owner 2026-11-11: the terminal lives in Engineering). */
+  .door { text-align: center; margin: 0 0 6px; }
+  .door-plate { display: inline-block; padding: 6px 26px 5px; background: linear-gradient(#2c2c2c, #151515); border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000; }
+  .door-room { color: #9a9a9a; font-size: 11px; letter-spacing: 4px; }
+  .door-name { color: #ececec; font-size: 20px; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+  .door-hours { color: #8a8a8a; font-size: 10px; letter-spacing: 2px; }
+  .office-nav { text-align: center; margin: 0 0 8px; }
+  .office-nav a { margin: 0 2px; padding: 1px 2px; color: #7fd18b; font-size: 13px; letter-spacing: 1px; text-decoration: none; }
+  .office-nav a::before { content: "[ "; }
+  .office-nav a::after { content: " ]"; }
+  .office-nav a:hover { text-decoration: underline; }
+  .office-nav a.on { color: #000; background: #7fd18b; }
+  @media (max-width: 600px) { .door-hours { display: none; } .office-nav a { font-size: 11px; } }
+  .oer-term-screen { height: calc(100vh - 245px); min-height: 260px; }
   @media (pointer: coarse) {
-    .oer-term-screen { height: calc(100vh - 170px); min-height: 280px; }
+    .oer-term-screen { height: calc(100vh - 265px); min-height: 240px; }
   }
   /* Short windows (a phone held sideways): the 280-300 px floor made the
      page 19 px taller than the window. Fill what is there instead. */
   @media (max-height: 480px) {
     .oer-term-screen { height: calc(100vh - 140px); min-height: 160px; }
+    .door { display: none; }
   }
 </style>
 </head>
 <body>
+
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">BUILDING 2 // NEXUS ENGINEERING RECORDS</div>
+      <div class="door-name">ENGINEERING</div>
+      <div class="door-hours">SYSTEM DEVELOPMENT / OPERATIONS ARCHIVE // NEXUS ORIGIN THROUGH CURRENT OPERATIONS</div>
+    </div>
+  </div>
+  <nav class="office-nav">
+    <a href="/maintenance/?view=projects">PROJECTS</a>
+    <a href="/maintenance/">MAINTENANCE LOG</a>
+    <a href="/maintenance/?view=register">DOCUMENT REGISTER</a>
+    <a class="on" href="/terminal/">NEXUS TERMINAL</a>
+  </nav>
 
     <section class="oer-term-section">
       <div class="oer-term-title">
