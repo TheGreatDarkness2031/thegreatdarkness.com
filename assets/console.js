@@ -400,7 +400,7 @@
 
   // ---- OER seal watermark: record and document screens only ----
   // (not Profile: it already shows the seal itself)
-  var SEAL_PAGES = ["/tools/", "/watch/", "/maintenance/"];
+  var SEAL_PAGES = ["/tools/document/", "/watch/", "/maintenance/"];
   function sealMark() {
     if (!framed) return;
     var p = location.pathname;

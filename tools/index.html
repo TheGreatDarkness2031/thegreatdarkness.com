@@ -4,9 +4,11 @@
 <head>
 <meta name="robots" content="noindex">
 <script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 <!-- OER-META -->
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -23,659 +25,150 @@
 <meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
 <meta name="twitter:card" content="summary_large_image">
 <!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OER // Tools / Training</title>
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<style>
+:root { --body-gray: #c4c4c4; --muted: #8a8a8a; --line: #4a4a4a; --green: #7fd18b; }
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #101010; color: var(--body-gray); font-family: "Courier New", Courier, monospace; }
+body { padding: 10px 12px 12px; }
 
-    <title>The Great Darkness - Tools / Training</title>
+/* Resource room (2026-11-12): same room look as /schedule/ and /hr/:
+   a plate, bracket links, the homepage box, documents on a rack list. */
+.office { width: 95%; max-width: 1000px; margin: 0 auto; }
+.door { text-align: center; margin: 0 0 8px; }
+.door-plate {
+  display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+  border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+}
+.door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+.door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+.door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 1.9; margin: 0 0 8px; }
+.office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+.office-nav a:hover { text-decoration: underline; }
+.office-nav a.on { color: #000; background: var(--green); }
+.desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+.pane { padding: 10px 16px 12px; border: 1px inset #888888; }
+.pane h2 {
+  margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
+  color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
+}
+.pane h2::before { content: "=== "; }
+.pane h2::after { content: " ==="; }
+.pane h3 { margin: 12px 0 0; padding: 0 8px; color: #9a9a9a; font-size: 0.68rem; font-weight: normal; letter-spacing: 3px; }
+.pane h3::before { content: "-- "; }
+.pane h3::after { content: " --"; }
+.note { color: var(--muted); font-size: 0.7rem; letter-spacing: 1px; line-height: 1.6; margin: 0 0 6px; text-align: center; }
+.rack-section[hidden] { display: none; }
 
-    <style>
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            font-family: "Courier New", Courier, monospace;
-            text-align: center;
-            padding: 10px;
-            padding-top: 60px;
-            margin: 0;
-            overflow-x: hidden;
-        }
+/* rack list: form code, title + one line, pages, open */
+.rack-row, .rack-head { display: grid; grid-template-columns: 62px minmax(0, 1fr) 46px 74px; gap: 12px; align-items: center; padding: 6px 8px; }
+.rack-head { border-bottom: 1px solid var(--line); color: #ffffff; font-size: 0.68rem; letter-spacing: 1px; }
+.rack-head span:nth-child(3) { text-align: right; }
+.rack-row { border-bottom: 1px solid #262626; color: inherit; text-decoration: none; }
+.rack-row:hover { background: #0b1a0b; }
+.rack-row:hover .open { text-decoration: underline; }
+.rack-row .code { color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; }
+.rack-row .what b { display: block; color: #eeeeee; font-size: 0.8rem; letter-spacing: 1px; }
+.rack-row .what i { display: block; color: var(--muted); font-size: 0.7rem; font-style: normal; line-height: 1.4; margin-top: 2px; }
+.rack-row .pp { color: var(--muted); font-size: 0.66rem; letter-spacing: 1px; text-align: right; }
+.rack-row .open { color: var(--green); font-size: 0.72rem; letter-spacing: 1px; text-align: right; white-space: nowrap; }
+.sign { margin: 10px 0 0; text-align: center; color: #5a5a5a; font-size: 0.62rem; letter-spacing: 2px; line-height: 1.6; }
 
-        .marquee-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            background: #111111;
-            border-bottom: 2px solid #ffffff;
-            padding: 6px 0;
-            box-sizing: border-box;
-            z-index: 9999;
-        }
-
-        marquee {
-            font-weight: bold;
-            font-size: 1.1rem;
-            letter-spacing: 2px;
-            color: #ffffff;
-        }
-
-        h1 {
-            font-size: 7vw;
-            font-family: "Impact", Arial Black, sans-serif;
-            letter-spacing: 2px;
-            text-shadow: 2px 2px 0px #444444;
-            margin-top: 20px;
-            margin-bottom: 10px;
-            line-height: 1.2;
-            animation: blinker 1.8s steps(2, start) infinite;
-        }
-
-        @keyframes blinker {
-            50% {
-                opacity: 0.2;
-            }
-        }
-
-        .subtitle {
-            color: #888888;
-            font-size: 0.85rem;
-            letter-spacing: 2px;
-            margin-bottom: 30px;
-        }
-
-        .section {
-            width: 95%;
-            max-width: 550px;
-            margin: 0 auto 30px auto;
-            border: 2px solid #ffffff;
-            background: #050505;
-            padding: 15px;
-            box-sizing: border-box;
-            text-align: left;
-        }
-
-        .section-header {
-            font-weight: bold;
-            text-align: center;
-            border-bottom: 2px dashed #ffffff;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            letter-spacing: 2px;
-            font-size: 1rem;
-        }
-
-        .resource {
-            display: block;
-            background: #222222;
-            border: 3px outset #aaaaaa;
-            padding: 13px 12px;
-            margin: 10px 0;
-            text-decoration: none;
-            color: #ffffff;
-            box-shadow: 3px 3px 0px #555555;
-            box-sizing: border-box;
-            cursor: pointer;
-        }
-
-        .resource:hover {
-            background: #333333;
-        }
-
-        .resource:active {
-            border-style: inset;
-            box-shadow: none;
-        }
-
-        .resource-title {
-            display: block;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-bottom: 4px;
-        }
-
-        .resource-description {
-            display: block;
-            color: #999999;
-            font-size: 0.75rem;
-            line-height: 1.4;
-        }
-
-        .pdf-label {
-            display: block;
-            color: #ffffff;
-            font-size: 0.7rem;
-            margin-top: 6px;
-            letter-spacing: 1px;
-        }
-
-        .back-button {
-            display: inline-block;
-            background: #222222;
-            border: 3px outset #aaaaaa;
-            padding: 12px 30px;
-            margin: 5px 0 35px 0;
-            text-decoration: none;
-            color: #ffffff;
-            font-weight: bold;
-            box-shadow: 4px 4px 0px #555555;
-        }
-
-        .back-button:hover {
-            background: #333333;
-        }
-
-        .warning {
-            width: 95%;
-            max-width: 550px;
-            margin: 0 auto 30px auto;
-            padding: 12px;
-            border: 1px dashed #888888;
-            box-sizing: border-box;
-            color: #888888;
-            font-size: 0.72rem;
-            line-height: 1.5;
-        }
-
-        .footer {
-            margin-top: 40px;
-            padding-bottom: 25px;
-            color: #666666;
-            font-size: 0.7rem;
-        }
-
-        @media (min-width: 480px) {
-            body {
-                padding-top: 70px;
-            }
-
-            h1 {
-                font-size: 3.2rem;
-                letter-spacing: 3px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .section-header {
-                font-size: 1.1rem;
-            }
-
-            .resource-title {
-                font-size: 1.05rem;
-            }
-
-            .resource-description {
-                font-size: 0.8rem;
-            }
-        }
-    </style>
-
+@media (max-width: 720px) {
+  .pane { padding: 12px 10px 16px; }
+  .door-plate { padding: 10px 16px 9px; }
+  .door-name { font-size: 1.05rem; letter-spacing: 4px; }
+  .rack-head { display: none; }
+  .rack-row { grid-template-columns: minmax(0, 1fr) auto; gap: 3px 10px; padding: 8px 4px; }
+  .rack-row .code { grid-column: 1 / -1; font-size: 0.64rem; }
+  .rack-row .what { grid-column: 1; }
+  .rack-row .pp { display: none; }
+  .rack-row .open { grid-column: 2; grid-row: 2; align-self: start; }
+}
+</style>
 </head>
 
 <body>
-
-    <div class="marquee-wrapper">
-        <marquee scrollamount="4">
-            THE GREAT DARKNESS // TOOLS &amp; TRAINING // KNOWLEDGE IS PREPARATION...
-        </marquee>
+<div class="office">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">PUBLIC ACCESS // RESOURCE ROOM</div>
+      <div class="door-name">TOOLS / TRAINING</div>
+      <div class="door-hours">YOU MAY NOT ALWAYS HAVE POWER. OR INTERNET.</div>
     </div>
-
-    <h1>TOOLS / TRAINING</h1>
-
-    <div class="subtitle">
-        PRACTICAL INFORMATION FOR WHEN YOU NEED IT
-    </div>
-
-    <div class="warning">
-        DOWNLOAD IT. PRINT IT. KEEP IT.<br>
-        YOU MAY NOT ALWAYS HAVE POWER. OR INTERNET.
-    </div>
-
-    <!-- ==================== TOOLS ==================== -->
-
-    <div class="section">
-
-        <div class="section-header">
-            === TOOLS ===
-        </div>
-
-        <a
-            href="/tools/document/?doc=TL_ECL"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                HOUSEHOLD READINESS CHECKLIST
-            </span>
-
-            <span class="resource-description">
-                Start here. The whole plan on two pages, with a pointer to the sheet that covers each part.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TL_WNC"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                WATER &amp; FOOD CALCULATOR
-            </span>
-
-            <span class="resource-description">
-                Work out how much water and food your household needs for 3 days, 2 weeks or longer.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TL_HEK"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                HOME EMERGENCY KIT
-            </span>
-
-            <span class="resource-description">
-                What to keep at home to get through two weeks without power, water or stores.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TL_BOC"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                GO-BAG CHECKLIST
-            </span>
-
-            <span class="resource-description">
-                What to pack in a bag you can grab in minutes, with an inventory and rotation record.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TL_WEP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                SEVERE WEATHER REFERENCE
-            </span>
-
-            <span class="resource-description">
-                Watches and warnings, and what to do before, during and after each kind of severe weather.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-    </div>
-
-    <!-- ==================== DOCUMENTS ==================== -->
-
-    <div class="section">
-
-        <div class="section-header">
-            === DOCUMENTS ===
-        </div>
-
-        <a
-            href="/tools/document/?doc=DC_ECS"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                EMERGENCY CONTACT SHEET
-            </span>
-
-            <span class="resource-description">
-                Every number you'd need if your phone were lost, dead or broken.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=DC_FEP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                FAMILY EMERGENCY PLAN
-            </span>
-
-            <span class="resource-description">
-                Meeting places, who does what, and how your household finds each other.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=DC_HIS"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                HOUSEHOLD INFORMATION SHEET
-            </span>
-
-            <span class="resource-description">
-                Shutoffs, home systems, insurance and bills: what someone else would need to run your home.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=DC_MIS"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                MEDICAL INFORMATION SHEET
-            </span>
-
-            <span class="resource-description">
-                One per person: conditions, medications, allergies and care contacts.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=DC_IDC"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                IMPORTANT DOCUMENTS CHECKLIST
-            </span>
-
-            <span class="resource-description">
-                The papers you'd need after a disaster, and where each one is kept.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=DC_EIS"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                SUPPLY INVENTORY &amp; ROTATION LOG
-            </span>
-
-            <span class="resource-description">
-                Track stored water, food and supplies, and when each needs replacing.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-    </div>
-
-    <!-- ==================== TRAINING ==================== -->
-
-    <div class="section">
-
-        <div class="section-header">
-            === TRAINING ===
-        </div>
-
-        <a
-            href="/tools/document/?doc=TR_FS"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                FIRE STARTING
-            </span>
-
-            <span class="resource-description">
-                Building, lighting and putting out a fire safely, and choosing good firewood.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_WP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                WATER PURIFICATION
-            </span>
-
-            <span class="resource-description">
-                Boiling, disinfecting and filtering water, and storing it safely.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_SB"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                SHELTER &amp; STAYING WARM
-            </span>
-
-            <span class="resource-description">
-                Staying warm and dry at home without power, stranded in a car, or outdoors.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_NAV"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                NAVIGATION
-            </span>
-
-            <span class="resource-description">
-                Reading maps, using a compass, and finding your way without a phone.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_FAB"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                FIRST AID BASICS
-            </span>
-
-            <span class="resource-description">
-                What to do in the first minutes until help arrives: life threats first, then common injuries.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_CWP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                COOKING WITHOUT POWER
-            </span>
-
-            <span class="resource-description">
-                Safe ways to cook during an outage, and food safety when the fridge is off.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_PC"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                POWER &amp; CHARGING
-            </span>
-
-            <span class="resource-description">
-                Keeping phones, lights, radios and medical devices running, with a backup power worksheet.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_RC"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                RADIO &amp; COMMUNICATIONS
-            </span>
-
-            <span class="resource-description">
-                Weather radio, two-way radios and staying in touch when phones fail.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_VEP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                VEHICLE EMERGENCY PREP
-            </span>
-
-            <span class="resource-description">
-                A car kit, winter driving, getting stuck, and evacuating by car.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-        <a
-            href="/tools/document/?doc=TR_HEP"
-            class="resource"
-            target="_blank"
-            rel="noopener noreferrer"
-        >
-            <span class="resource-title">
-                HOME SYSTEMS &amp; SAFETY
-            </span>
-
-            <span class="resource-description">
-                Utility shutoffs, alarms, extinguishers, a fire escape plan, and protecting the house.
-            </span>
-
-            <span class="pdf-label">
-                [ PDF / PRINTABLE ]
-            </span>
-        </a>
-
-    </div>
-
-<a
-        href="/home/"
-        class="back-button"
-    >
-        &lt;&lt; BACK TO MAIN
-    </a>
-
-    <div class="footer">
-        THE GREAT DARKNESS<br>
-        PREPARE BEFORE YOU NEED TO.
-    </div>
-
+  </div>
+  <nav class="office-nav" id="tabs">
+    <a href="?view=tools" data-view="tools">[ TOOLS ]</a>
+    <a href="?view=documents" data-view="documents">[ DOCUMENTS ]</a>
+    <a href="?view=training" data-view="training">[ TRAINING ]</a>
+  </nav>
+  <div class="desk"><div class="pane">
+    <section class="rack-section" data-view="tools">
+      <h2>TOOLS</h2>
+      <p class="note">DOWNLOAD IT. PRINT IT. KEEP IT. START WITH TL-01: IT POINTS TO THE SHEET THAT COVERS EACH PART.</p>
+      <div class="rack-head"><span>FORM</span><span>TITLE</span><span>SIZE</span><span></span></div>
+      <a class="rack-row" href="/tools/document/?doc=TL_ECL"><span class="code">TL-01</span><span class="what"><b>HOUSEHOLD READINESS CHECKLIST</b><i>Start here. The whole plan on two pages, with a pointer to the sheet that covers each part.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TL_WNC"><span class="code">TL-02</span><span class="what"><b>WATER &amp; FOOD CALCULATOR</b><i>Work out how much water and food your household needs for 3 days, 2 weeks or longer.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TL_HEK"><span class="code">TL-03</span><span class="what"><b>HOME EMERGENCY KIT</b><i>What to keep at home to get through two weeks without power, water or stores.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TL_BOC"><span class="code">TL-04</span><span class="what"><b>GO-BAG CHECKLIST</b><i>What to pack in a bag you can grab in minutes, with an inventory and rotation record.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TL_WEP"><span class="code">TL-05</span><span class="what"><b>SEVERE WEATHER REFERENCE</b><i>Watches and warnings, and what to do before, during and after each kind of severe weather.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+    </section>
+    <section class="rack-section" data-view="documents">
+      <h2>DOCUMENTS</h2>
+      <p class="note">FILL-IN SHEETS. PRINT ONE, FILL IT IN BY HAND, KEEP IT WITH YOUR KIT.</p>
+      <div class="rack-head"><span>FORM</span><span>TITLE</span><span>SIZE</span><span></span></div>
+      <a class="rack-row" href="/tools/document/?doc=DC_ECS"><span class="code">DC-01</span><span class="what"><b>EMERGENCY CONTACT SHEET</b><i>Every number you'd need if your phone were lost, dead or broken.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=DC_FEP"><span class="code">DC-02</span><span class="what"><b>FAMILY EMERGENCY PLAN</b><i>Meeting places, who does what, and how your household finds each other.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=DC_HIS"><span class="code">DC-03</span><span class="what"><b>HOUSEHOLD INFORMATION SHEET</b><i>Shutoffs, home systems, insurance and bills: what someone else would need to run your home.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=DC_MIS"><span class="code">DC-04</span><span class="what"><b>MEDICAL INFORMATION SHEET</b><i>One per person: conditions, medications, allergies and care contacts.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=DC_IDC"><span class="code">DC-05</span><span class="what"><b>IMPORTANT DOCUMENTS CHECKLIST</b><i>The papers you'd need after a disaster, and where each one is kept.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=DC_EIS"><span class="code">DC-06</span><span class="what"><b>SUPPLY INVENTORY &amp; ROTATION LOG</b><i>Track stored water, food and supplies, and when each needs replacing.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+    </section>
+    <section class="rack-section" data-view="training">
+      <h2>TRAINING</h2>
+      <p class="note">READ THEM NOW. PRACTICE WHAT YOU CAN BEFORE YOU NEED IT.</p>
+      <div class="rack-head"><span>FORM</span><span>TITLE</span><span>SIZE</span><span></span></div>
+      <a class="rack-row" href="/tools/document/?doc=TR_FS"><span class="code">TR-01</span><span class="what"><b>FIRE STARTING</b><i>Building, lighting and putting out a fire safely, and choosing good firewood.</i></span><span class="pp">4 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_WP"><span class="code">TR-02</span><span class="what"><b>WATER PURIFICATION</b><i>Boiling, disinfecting and filtering water, and storing it safely.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_SB"><span class="code">TR-03</span><span class="what"><b>SHELTER &amp; STAYING WARM</b><i>Staying warm and dry at home without power, stranded in a car, or outdoors.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_NAV"><span class="code">TR-04</span><span class="what"><b>NAVIGATION</b><i>Reading maps, using a compass, and finding your way without a phone.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_FAB"><span class="code">TR-05</span><span class="what"><b>FIRST AID BASICS</b><i>What to do in the first minutes until help arrives: life threats first, then common injuries.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_CWP"><span class="code">TR-06</span><span class="what"><b>COOKING WITHOUT POWER</b><i>Safe ways to cook during an outage, and food safety when the fridge is off.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_PC"><span class="code">TR-07</span><span class="what"><b>POWER &amp; CHARGING</b><i>Keeping phones, lights, radios and medical devices running, with a backup power worksheet.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_RC"><span class="code">TR-08</span><span class="what"><b>RADIO &amp; COMMUNICATIONS</b><i>Weather radio, two-way radios and staying in touch when phones fail.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_VEP"><span class="code">TR-09</span><span class="what"><b>VEHICLE EMERGENCY PREP</b><i>A car kit, winter driving, getting stuck, and evacuating by car.</i></span><span class="pp">2 PP</span><span class="open">[ OPEN ]</span></a>
+      <a class="rack-row" href="/tools/document/?doc=TR_HEP"><span class="code">TR-10</span><span class="what"><b>HOME SYSTEMS &amp; SAFETY</b><i>Utility shutoffs, alarms, extinguishers, a fire escape plan, and protecting the house.</i></span><span class="pp">3 PP</span><span class="open">[ OPEN ]</span></a>
+    </section>
+  </div></div>
+  <p class="sign">THE GREAT DARKNESS<br>PREPARE BEFORE YOU NEED TO.</p>
+</div>
+<script>
+  // One rack at a time (?view=tools|documents|training); without script all show.
+  (function () {
+    var tabs = document.querySelectorAll("#tabs a");
+    var racks = document.querySelectorAll(".rack-section");
+    function show(view) {
+      var found = false;
+      for (var i = 0; i < racks.length; i++) if (racks[i].getAttribute("data-view") === view) found = true;
+      if (!found) view = racks[0].getAttribute("data-view");
+      for (var j = 0; j < racks.length; j++) racks[j].hidden = racks[j].getAttribute("data-view") !== view;
+      for (var k = 0; k < tabs.length; k++) tabs[k].className = tabs[k].getAttribute("data-view") === view ? "on" : "";
+      return view;
+    }
+    show(new URLSearchParams(location.search).get("view") || "");
+    for (var n = 0; n < tabs.length; n++) {
+      tabs[n].addEventListener("click", function (e) {
+        e.preventDefault();
+        var v = show(this.getAttribute("data-view"));
+        history.replaceState(null, "", "?view=" + v);
+        if (window.oerRefreshMenu) window.oerRefreshMenu();
+      });
+    }
+  })();
+</script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>
