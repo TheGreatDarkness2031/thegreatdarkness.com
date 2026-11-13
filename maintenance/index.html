@@ -838,15 +838,6 @@
           </div>
         </div>
 
-        <div class="record-view bevel-inset">
-          <div id="regViewTitle" class="record-view-title">DOCUMENT VIEW</div>
-          <div id="regViewBody" class="record-view-body">
-            <div class="record-placeholder">
-              SELECT A DOCUMENT FROM THE REGISTER TO DISPLAY ITS REVISION HISTORY.
-            </div>
-          </div>
-        </div>
-
       </div>
 
       <div id="syslogPane" class="view-pane" hidden>
@@ -890,15 +881,6 @@
           </div>
           <div id="prjList" class="record-list register-list">
             <div class="record-empty">RETRIEVING PROJECT STATUS...</div>
-          </div>
-        </div>
-
-        <div class="record-view bevel-inset">
-          <div id="prjViewTitle" class="record-view-title">PROJECT VIEW</div>
-          <div id="prjViewBody" class="record-view-body">
-            <div class="record-placeholder">
-              SELECT A PROJECT TO DISPLAY ITS FULL ENGINEERING FILE.
-            </div>
           </div>
         </div>
 
@@ -2226,9 +2208,7 @@ function exitMaintenanceLog() {
       show: document.getElementById("regShow"),
       clear: document.getElementById("regClear"),
       status: document.getElementById("regStatus"),
-      list: document.getElementById("regList"),
-      title: document.getElementById("regViewTitle"),
-      body: document.getElementById("regViewBody")
+      list: document.getElementById("regList")
     };
     var docs = null, loading = false, selected = "";
 
@@ -2285,51 +2265,18 @@ function exitMaintenanceLog() {
         : "PAPER";
     }
 
-    function render() {
-      var q = el.search.value.trim().toLowerCase();
-      var series = el.series.value, currentOnly = el.show.value === "current";
-      var rows = [], docCount = 0, revCount = 0;
-      docs.forEach(function (d) {
-        if (series && d.series !== series) return;
-        var last = d.revs.length - 1, first = true;
-        // Newest revision first within each document.
-        d.revs.map(function (r, i) { return [r, i]; }).reverse().forEach(function (pair) {
-          var r = pair[0], i = pair[1];
-          if (currentOnly && i !== last) return;
-          var hay = (d.no + " " + d.title + " " + r[0] + " " + r[1] + " " + r[2]).toLowerCase();
-          if (q && hay.indexOf(q) === -1) return;
-          if (first) docCount++;
-          revCount++;
-          rows.push('<tr data-no="' + esc(d.no) + '" class="' + (i === last ? "current" : "superseded") +
-            (first ? " doc-start" : "") + (d.no === selected ? " selected" : "") + '">' +
-            '<td class="reg-no record-id">' + esc(d.no) + '</td>' +
-            '<td class="reg-rev">' + esc(r[0]) + '</td>' +
-            '<td class="reg-date">' + esc(r[1]) + '</td>' +
-            '<td title="' + esc(d.title + ": " + r[2]) + '">' + esc(d.title) + '</td>' +
-            '<td class="reg-file">' + fileCell(r) + '</td></tr>');
-          first = false;
-        });
-      });
-      el.status.classList.remove("error");
-      el.status.textContent = docCount + " DOCUMENT(S), " + revCount + " REVISION(S) LISTED. SUPERSEDED REVISIONS RETAINED.";
-      el.list.innerHTML = rows.length
-        ? '<table class="record-table register-table"><thead><tr><th class="reg-no" style="width:86px">DOC NO</th>' +
-          '<th style="width:34px">REV</th><th style="width:78px">DATE</th><th>TITLE</th><th class="reg-file" style="width:64px">FILE</th></tr></thead><tbody>' +
-          rows.join("") + '</tbody></table>'
-        : '<div class="record-empty">NO DOCUMENTS MATCH THE CURRENT CONTROLS.</div>';
+    // Sort (owner 2026-11-13): DOC NO keeps each document's revisions together
+    // (newest first); REV / DATE / TITLE list every revision on its own.
+    var sortKey = "no", sortDir = 1, openKey = "";
+    function arrow(k) { return k === sortKey ? (sortDir > 0 ? " &#9650;" : " &#9660;") : ""; }
+    function th(k, label, extra) {
+      return '<th data-sort="' + k + '" class="sortable' + (extra ? " " + extra : "") + '"' + '>' + label + arrow(k) + '</th>';
     }
-
-    function showDoc(no) {
-      var d = docs.filter(function (x) { return x.no === no; })[0];
-      if (!d) return;
-      selected = no;
-      var trs = el.list.querySelectorAll("tbody tr");
-      for (var i = 0; i < trs.length; i++) trs[i].classList.toggle("selected", trs[i].getAttribute("data-no") === no);
+    function historyBox(d) {
       var last = d.revs.length - 1;
-      el.title.textContent = d.no + " // " + d.title;
-      el.body.innerHTML =
+      return '<div class="inline-view">' +
+        '<div class="inline-view-title">' + esc(d.no) + ' // ' + esc(d.title) + '</div>' +
         '<table class="record-view-meta">' +
-        '<tr><td class="record-view-label">DOCUMENT:</td><td>' + esc(d.no) + '</td></tr>' +
         '<tr><td class="record-view-label">SERIES:</td><td>' + esc(d.series) + '</td></tr>' +
         '<tr><td class="record-view-label">CURRENT REV:</td><td>' + esc(d.revs[last][0]) + ' (' + esc(d.revs[last][1]) + ')</td></tr>' +
         '</table><div class="record-entry-divider"></div>' +
@@ -2342,8 +2289,60 @@ function exitMaintenanceLog() {
             '<td class="reg-change">' + esc(r[2]) + '</td>' +
             '<td class="reg-status">' + (cur ? "CURRENT" : "SUPERSEDED") + '</td>' +
             '<td class="reg-status">' + fileCell(r) + '</td></tr>';
-        }).join("") + '</table>';
+        }).join("") + '</table></div>';
     }
+
+    function render() {
+      var q = el.search.value.trim().toLowerCase();
+      var series = el.series.value, currentOnly = el.show.value === "current";
+      var items = [], docCount = 0;
+      docs.forEach(function (d, di) {
+        if (series && d.series !== series) return;
+        var last = d.revs.length - 1, any = false;
+        d.revs.forEach(function (r, i) {
+          if (currentOnly && i !== last) return;
+          var hay = (d.no + " " + d.title + " " + r[0] + " " + r[1] + " " + r[2]).toLowerCase();
+          if (q && hay.indexOf(q) === -1) return;
+          any = true;
+          items.push({ d: d, r: r, i: i, di: di, current: i === last });
+        });
+        if (any) docCount++;
+      });
+      var grouped = sortKey === "no";
+      items.sort(function (a, b) {
+        var x, y;
+        if (grouped) { x = a.di; y = b.di; if (x === y) return b.i - a.i; }
+        else if (sortKey === "rev") { x = a.r[0]; y = b.r[0]; }
+        else if (sortKey === "date") { x = a.r[1]; y = b.r[1]; }
+        else { x = a.d.title; y = b.d.title; }
+        if (x === y) { x = a.r[1]; y = b.r[1]; if (x === y) return 0; return x < y ? -1 : 1; }
+        return (x < y ? -1 : 1) * sortDir;
+      });
+      var rows = [], prev = null;
+      items.forEach(function (it) {
+        var key = it.d.no + "|" + it.r[0];
+        var start = grouped && prev !== it.d.no;
+        prev = it.d.no;
+        rows.push('<tr data-no="' + esc(it.d.no) + '" data-key="' + esc(key) + '" class="' + (it.current ? "current" : "superseded") +
+          (start ? " doc-start" : "") + (key === openKey ? " selected" : "") + '">' +
+          '<td class="reg-no record-id">' + esc(it.d.no) + '</td>' +
+          '<td class="reg-rev">' + esc(it.r[0]) + '</td>' +
+          '<td class="reg-date">' + esc(it.r[1]) + '</td>' +
+          '<td title="' + esc(it.d.title + ": " + it.r[2]) + '">' + esc(it.d.title) + '</td>' +
+          '<td class="reg-file">' + fileCell(it.r) + '</td></tr>');
+        if (key === openKey) rows.push('<tr class="inline-row"><td colspan="5">' + historyBox(it.d) + '</td></tr>');
+      });
+      el.status.classList.remove("error");
+      el.status.textContent = docCount + " DOCUMENT(S), " + items.length + " REVISION(S) LISTED. SUPERSEDED REVISIONS RETAINED. SELECT A ROW FOR ITS HISTORY.";
+      el.list.innerHTML = rows.length
+        ? '<table class="record-table register-table"><thead><tr>' + th("no", "DOC NO", "reg-no") +
+          th("rev", "REV") + th("date", "DATE") + th("title", "TITLE") + '<th class="reg-file" style="width:64px">FILE</th></tr></thead><tbody>' +
+          rows.join("") + '</tbody></table>'
+        : '<div class="record-empty">NO DOCUMENTS MATCH THE CURRENT CONTROLS.</div>';
+      var cols = el.list.querySelectorAll("thead th");
+      if (cols.length) { cols[0].style.width = "86px"; cols[1].style.width = "44px"; cols[2].style.width = "88px"; }
+    }
+
 
     for (var i = 0; i < tabs.length; i++) {
       tabs[i].addEventListener("click", function () { showView(this.getAttribute("data-view")); });
@@ -2357,8 +2356,21 @@ function exitMaintenanceLog() {
     });
     el.list.addEventListener("click", function (e) {
       if (e.target.closest("a")) return;
-      var tr = e.target.closest("tr[data-no]");
-      if (tr) showDoc(tr.getAttribute("data-no"));
+      var h = e.target.closest("th[data-sort]");
+      if (h) {
+        var k = h.getAttribute("data-sort");
+        if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = k === "date" ? -1 : 1; }
+        render();
+        return;
+      }
+      if (e.target.closest(".inline-row")) return;
+      var tr = e.target.closest("tr[data-key]");
+      if (!tr) return;
+      var key = tr.getAttribute("data-key");
+      openKey = openKey === key ? "" : key;
+      render();
+      var row = el.list.querySelector('tr[data-key="' + key.replace(/"/g, '\\"') + '"]');
+      if (openKey && row) row.scrollIntoView({ block: "nearest" });
     });
 
     var startView = new URLSearchParams(location.search).get("view");
@@ -2393,6 +2405,34 @@ function exitMaintenanceLog() {
       .mfilters { grid-template-columns: 1fr; }
       .mf-search { grid-column: auto; }
     }
+
+    /* Register + projects: sortable headers, details under the row (2026-11-13) */
+    #regList, #prjList { height: auto; max-height: none; overflow: visible; }
+    th.sortable { cursor: pointer; user-select: none; }
+    th.sortable:hover { text-decoration: underline; }
+    #regList thead th, #prjList thead th { position: sticky; top: 0; z-index: 1; }
+    tr.inline-row > td { padding: 0 !important; background: #eeeeee; }
+    .inline-view { margin: 4px 6px 10px 18px; padding: 8px 10px; border: 2px solid #000080; background: #ffffff;
+      font-family: "Courier New", Courier, monospace; font-size: 11px; line-height: 1.5; white-space: normal; }
+    .inline-view-title { background: #000080; color: #ffffff; font-weight: bold; padding: 3px 6px; margin: -8px -10px 8px; letter-spacing: 1px; }
+    .inline-scroll { max-height: 60vh; overflow-y: auto; }
+    .inline-view td { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; word-wrap: break-word; }
+    .inline-view .prj-date { white-space: nowrap !important; width: 96px; }
+    @media (max-width: 600px) {
+      .prj-table > thead > tr > th:nth-child(n+5), .prj-table > tbody > tr > td:nth-child(n+5) { display: none; }
+      .prj-table, #regList .register-table { table-layout: auto; }
+      #regList .register-table > thead > tr > th { width: auto !important; }
+      #regList .register-table > tbody > tr > td:nth-child(4) { white-space: normal; }
+      .prj-table > thead > tr > th { width: auto !important; }
+      .prj-table > tbody > tr > td:nth-child(2) { white-space: normal; }
+      .inline-view { margin: 4px 0 8px; padding: 6px; }
+      .inline-view-title { margin: -6px -6px 6px; }
+      .inline-view .prj-date { width: 76px; }
+      .reg-history td:nth-child(4) { display: none; }
+    }
+    body.oer-night tr.inline-row > td { background: #111111; }
+    body.oer-night .inline-view { background: #000000; color: #cccccc; border-color: #3a7a3a; }
+    body.oer-night .inline-view-title { background: #1a3a1a; }
 </style>
   <script>
   // ENGINEERING PROJECTS view (rebuilt 2026-11-13): the project list is
@@ -2405,9 +2445,7 @@ function exitMaintenanceLog() {
     var loaded = false, projects = [], selected = "";
     var els = {
       status: document.getElementById("prjStatus"),
-      list: document.getElementById("prjList"),
-      title: document.getElementById("prjViewTitle"),
-      body: document.getElementById("prjViewBody")
+      list: document.getElementById("prjList")
     };
     function esc(s) {
       return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
@@ -2447,33 +2485,22 @@ function exitMaintenanceLog() {
       projects.sort(function (a, b) { return a.opened < b.opened ? 1 : a.opened > b.opened ? -1 : 0; });
     }
 
-    function render() {
-      var tally = {};
-      projects.forEach(function (p) { var k = word(p.outcome); tally[k] = (tally[k] || 0) + 1; });
-      els.status.classList.remove("error");
-      els.status.textContent = projects.length + " PROJECTS // " + (tally.COMPLETE || 0) + " COMPLETE // " +
-        (tally.CLOSED || 0) + " CLOSED // " + (tally.ONGOING || 0) + " ONGOING. SELECT A PROJECT FOR ITS FULL FILE.";
-      els.list.innerHTML = '<table class="record-table register-table prj-table"><thead><tr>' +
-        '<th style="width:78px">PROJECT</th><th>TITLE</th><th style="width:90px">OUTCOME</th>' +
-        '<th style="width:84px">OPENED</th><th style="width:84px">CLOSED</th><th style="width:58px">ENTRIES</th></tr></thead><tbody>' +
-        projects.map(function (p) {
-          return '<tr data-code="' + p.code + '"' + (p.code === selected ? ' class="selected"' : '') + '>' +
-            '<td class="record-id">' + p.code + '</td><td title="' + esc(p.scope) + '">' + esc(p.title) + '</td>' +
-            '<td class="prj-status prj-' + word(p.outcome) + '">' + esc(word(p.outcome)) + '</td>' +
-            '<td>' + p.opened + '</td><td>' + (p.outcome === "ONGOING" ? "--" : p.last) + '</td><td>' + p.rows.length + '</td></tr>';
-        }).join("") + '</tbody></table>';
+    var sortKey = "opened", sortDir = -1;
+    function arrow(k) { return k === sortKey ? (sortDir > 0 ? " &#9650;" : " &#9660;") : ""; }
+    function th(k, label, w) {
+      return '<th data-sort="' + k + '" class="sortable"' + (w ? ' style="width:' + w + '"' : '') + '>' + label + arrow(k) + '</th>';
     }
-
-    function show(code) {
-      var p = projects.filter(function (x) { return x.code === code; })[0];
-      if (!p) return;
-      selected = code;
-      var trs = els.list.querySelectorAll("tbody tr");
-      for (var i = 0; i < trs.length; i++) trs[i].classList.toggle("selected", trs[i].getAttribute("data-code") === code);
+    function value(p, k) {
+      if (k === "outcome") return word(p.outcome);
+      if (k === "closed") return p.outcome === "ONGOING" ? "9999" : p.last;
+      if (k === "entries") return p.rows.length;
+      return p[k];
+    }
+    function fileBox(p) {
       var people = {};
       p.rows.forEach(function (r) { if (r.author) people[r.author] = 1; });
-      els.title.textContent = p.code + " // " + p.title;
-      els.body.innerHTML =
+      return '<div class="inline-view">' +
+        '<div class="inline-view-title">' + p.code + ' // ' + esc(p.title) + '</div>' +
         '<table class="record-view-meta">' +
         '<tr><td class="record-view-label">SCOPE:</td><td>' + esc(p.scope) + '</td></tr>' +
         '<tr><td class="record-view-label">OUTCOME:</td><td class="prj-' + word(p.outcome) + '"><b>' + esc(p.outcome) + '</b></td></tr>' +
@@ -2484,12 +2511,34 @@ function exitMaintenanceLog() {
         '<tr><td class="record-view-label">FILE:</td><td>' + p.rows.length + ' ENTRIES BY ' + Object.keys(people).length + ' PERSON(S)</td></tr>' +
         '</table><div class="record-entry-divider"></div>' +
         '<div class="record-view-label" style="margin-bottom:6px">PROJECT FILE (OLDEST FIRST)</div>' +
-        '<table class="prj-entries">' +
+        '<div class="inline-scroll"><table class="prj-entries">' +
         p.rows.map(function (r) {
           return '<tr><td class="prj-date">' + r.date + '<br>ML-' + esc(String(r.id).padStart(6, "0")) + '</td><td><b>' + esc(r.system) +
             '</b> // ' + esc(r.action) + ' // ' + esc(r.author) + '<br>' + esc(r.entry) + '</td></tr>';
-        }).join("") + '</table>';
-      els.body.scrollTop = 0;
+        }).join("") + '</table></div></div>';
+    }
+
+    function render() {
+      var tally = {};
+      projects.forEach(function (p) { var k = word(p.outcome); tally[k] = (tally[k] || 0) + 1; });
+      projects.sort(function (a, b) {
+        var x = value(a, sortKey), y = value(b, sortKey);
+        if (x === y) { x = a.opened; y = b.opened; }
+        return (x < y ? -1 : x > y ? 1 : 0) * sortDir;
+      });
+      els.status.classList.remove("error");
+      els.status.textContent = projects.length + " PROJECTS // " + (tally.COMPLETE || 0) + " COMPLETE // " +
+        (tally.CLOSED || 0) + " CLOSED // " + (tally.ONGOING || 0) + " ONGOING. SELECT A PROJECT FOR ITS FULL FILE.";
+      els.list.innerHTML = '<table class="record-table register-table prj-table"><thead><tr>' +
+        th("code", "PROJECT", "86px") + th("title", "TITLE") + th("outcome", "OUTCOME", "100px") +
+        th("opened", "OPENED", "92px") + th("closed", "CLOSED", "92px") + th("entries", "ENTRIES", "76px") + '</tr></thead><tbody>' +
+        projects.map(function (p) {
+          return '<tr data-code="' + p.code + '"' + (p.code === selected ? ' class="selected"' : '') + '>' +
+            '<td class="record-id">' + p.code + '</td><td title="' + esc(p.scope) + '">' + esc(p.title) + '</td>' +
+            '<td class="prj-status prj-' + word(p.outcome) + '">' + esc(word(p.outcome)) + '</td>' +
+            '<td>' + p.opened + '</td><td>' + (p.outcome === "ONGOING" ? "--" : p.last) + '</td><td>' + p.rows.length + '</td></tr>' +
+            (p.code === selected ? '<tr class="inline-row"><td colspan="6">' + fileBox(p) + '</td></tr>' : '');
+        }).join("") + '</tbody></table>';
     }
 
     function fail() {
@@ -2513,8 +2562,21 @@ function exitMaintenanceLog() {
         .catch(fail);
     };
     els.list.addEventListener("click", function (e) {
+      var h = e.target.closest("th[data-sort]");
+      if (h) {
+        var k = h.getAttribute("data-sort");
+        if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = k === "opened" || k === "closed" || k === "entries" ? -1 : 1; }
+        render();
+        return;
+      }
+      if (e.target.closest(".inline-row")) return;
       var tr = e.target.closest("tr[data-code]");
-      if (tr) show(tr.getAttribute("data-code"));
+      if (!tr) return;
+      var code = tr.getAttribute("data-code");
+      selected = selected === code ? "" : code;
+      render();
+      var row = els.list.querySelector('tr[data-code="' + code + '"]');
+      if (selected && row) row.scrollIntoView({ block: "nearest" });
     });
     // Opened straight at ?view=projects: the tab switcher ran before this script.
     if (new URLSearchParams(location.search).get("view") === "projects") window.oerLoadProjects();
