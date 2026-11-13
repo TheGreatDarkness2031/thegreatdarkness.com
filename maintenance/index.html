@@ -644,136 +644,30 @@
           RECORD INDEX CONTROLS
         </div>
 
-        <table class="filter-table">
-
-          <tr>
-            <td class="filter-label">
-              YEAR:
-            </td>
-
-            <td>
-              <select id="yearSelect" aria-label="Year">
-                <option value="LATEST">LATEST</option>
-              </select>
-            </td>
-
-            <td class="filter-label">
-              SEARCH:
-            </td>
-
-            <td>
-              <input
-                id="searchInput"
-                type="text"
-                autocomplete="off"
-                placeholder="Search record text, systems, personnel..."
-              >
-            </td>
-
-            <td
-              class="button-cell"
-              rowspan="2"
-            >
-              <button
-                id="applyButton"
-                type="button"
-              >
-                UPDATE INDEX
-              </button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="filter-label">
-              ERA:
-            </td>
-
-            <td>
-              <select id="eraSelect">
-                <option value="">ALL</option>
-              </select>
-            </td>
-
-            <td class="filter-label">
-              ACTION:
-            </td>
-
-            <td>
-              <select id="actionSelect">
-                <option value="">ALL</option>
-              </select>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="filter-label">
-              SYSTEM:
-            </td>
-
-            <td>
-              <select id="systemSelect">
-                <option value="">ALL</option>
-              </select>
-            </td>
-
-            <td class="filter-label">
-              AUTHOR:
-            </td>
-
-            <td>
-              <select id="authorSelect">
-                <option value="">ALL</option>
-              </select>
-            </td>
-
-            <td class="button-cell">
-              <button
-                id="clearButton"
-                type="button"
-              >
-                CLEAR
-              </button>
-            </td>
-          </tr>
-
-          <tr>
-            <td class="filter-label">
-              SORT:
-            </td>
-
-            <td>
-              <select id="sortSelect">
-                <option value="date">DATE</option>
-                <option value="id">RECORD ID</option>
-                <option value="era">ERA</option>
-                <option value="action">ACTION</option>
-                <option value="system">SYSTEM</option>
-                <option value="author">AUTHOR</option>
-              </select>
-            </td>
-
-            <td class="filter-label">
-              ORDER:
-            </td>
-
-            <td>
-              <select id="directionSelect">
-                <option value="desc">NEWEST FIRST</option>
-                <option value="asc">OLDEST FIRST</option>
-              </select>
-            </td>
-
-            <td class="button-cell">
-              <button
-                id="recordListButton"
-                type="button"
-              >
-                REFRESH
-              </button>
-            </td>
-          </tr>
-
-        </table>
+        <!-- Two rows that fit the panel (owner 2026-11-13; ERA removed). -->
+        <div class="mfilters">
+          <label class="mf"><span>YEAR:</span><select id="yearSelect" aria-label="Year"><option value="LATEST">LATEST</option></select></label>
+          <label class="mf"><span>ACTION:</span><select id="actionSelect"><option value="">ALL</option></select></label>
+          <label class="mf"><span>SYSTEM:</span><select id="systemSelect"><option value="">ALL</option></select></label>
+          <label class="mf"><span>AUTHOR:</span><select id="authorSelect"><option value="">ALL</option></select></label>
+          <label class="mf mf-search"><span>SEARCH:</span><input id="searchInput" type="text" autocomplete="off" placeholder="Search record text, systems, personnel..."></label>
+          <label class="mf"><span>SORT:</span><select id="sortSelect">
+            <option value="date">DATE</option>
+            <option value="id">RECORD ID</option>
+            <option value="action">ACTION</option>
+            <option value="system">SYSTEM</option>
+            <option value="author">AUTHOR</option>
+          </select></label>
+          <label class="mf"><span>ORDER:</span><select id="directionSelect">
+            <option value="desc">NEWEST FIRST</option>
+            <option value="asc">OLDEST FIRST</option>
+          </select></label>
+          <div class="mf-buttons">
+            <button id="applyButton" type="button">UPDATE INDEX</button>
+            <button id="clearButton" type="button">CLEAR</button>
+            <button id="recordListButton" type="button">REFRESH</button>
+          </div>
+        </div>
 
       </div>
 
@@ -1064,11 +958,6 @@
           "yearSelect"
         ),
 
-      eraSelect:
-        document.getElementById(
-          "eraSelect"
-        ),
-
       actionSelect:
         document.getElementById(
           "actionSelect"
@@ -1337,9 +1226,6 @@
         maintenanceElements.searchInput.value
           .trim();
 
-      maintenanceState.era =
-        maintenanceElements.eraSelect.value;
-
       maintenanceState.action =
         maintenanceElements.actionSelect.value;
 
@@ -1387,7 +1273,6 @@
         "";
 
       maintenanceElements.searchInput.value = "";
-      maintenanceElements.eraSelect.value = "";
       maintenanceElements.actionSelect.value = "";
       maintenanceElements.systemSelect.value = "";
       maintenanceElements.authorSelect.value = "";
@@ -1521,12 +1406,6 @@
     function updateMaintenanceSelectOptions_(
       filters
     ) {
-
-      updateMaintenanceSelect_(
-        maintenanceElements.eraSelect,
-        filters.eras || [],
-        maintenanceState.era
-      );
 
       updateMaintenanceSelect_(
         maintenanceElements.actionSelect,
@@ -1737,7 +1616,6 @@
           "<tr>" +
             "<th style=\"width:78px;\">RECORD</th>" +
             "<th style=\"width:84px;\">DATE</th>" +
-            "<th style=\"width:68px;\">ERA</th>" +
             "<th>SYSTEM</th>" +
             "<th style=\"width:118px;\">ACTION</th>" +
           "</tr>" +
@@ -1778,13 +1656,6 @@
           row.appendChild(
             buildMaintenanceCell_(
               record.date ||
-              "UNKNOWN"
-            )
-          );
-
-          row.appendChild(
-            buildMaintenanceCell_(
-              record.era ||
               "UNKNOWN"
             )
           );
@@ -1960,12 +1831,6 @@
         metaTable,
         "DATE:",
         record.date
-      );
-
-      appendMaintenanceMetaRow_(
-        metaTable,
-        "ERA:",
-        record.era
       );
 
       appendMaintenanceMetaRow_(
@@ -2511,7 +2376,23 @@ function exitMaintenanceLog() {
     body.oer-night .prj-IDLE { color: #ffbf00; }
     .prj-entries td { vertical-align: top; padding: 4px 6px; border-bottom: 1px dotted #999; }
     .prj-entries .prj-date { white-space: nowrap; }
-  </style>
+  
+    /* Maintenance Log controls in two rows (2026-11-13) */
+    .mfilters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 14px; padding: 6px 4px 4px; }
+    .mf { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 11px; letter-spacing: 1px; }
+    .mf > span { flex: 0 0 auto; text-align: right; }
+    .mf select, .mf input { flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box; }
+    .mf-search { grid-column: span 2; }
+    .mf-buttons { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+    @media (max-width: 900px) {
+      .mfilters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .mf-buttons { justify-content: flex-start; flex-wrap: wrap; }
+    }
+    @media (max-width: 520px) {
+      .mfilters { grid-template-columns: 1fr; }
+      .mf-search { grid-column: auto; }
+    }
+</style>
   <script>
   // ENGINEERING PROJECTS view (2026-11-11): maintenance-log systems grouped
   // into projects; status from each project's newest entry.
