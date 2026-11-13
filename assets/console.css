@@ -87,6 +87,8 @@ body.oerc #docReturnBottom { display: none !important; }
 }
 .oerc-light-on::before { background: #2bff4f; box-shadow: 0 0 6px #2bff4f; animation: oerc-blink 2.4s steps(1) infinite; }
 .oerc-light-off::before { background: #ff3030; box-shadow: 0 0 6px #ff3030; }
+.oerc-light.oerc-light-recv { color: #ffbf00; }
+.oerc-light.oerc-light-recv::before { background: #ffbf00; box-shadow: 0 0 6px #ffbf00; animation: oerc-blink 0.5s steps(1) infinite; }
 @keyframes oerc-blink { 0%, 88% { opacity: 1; } 89%, 100% { opacity: 0.25; } }
 .oerc-menu-button { display: none; }
 
@@ -346,41 +348,8 @@ a.oer-badge88:hover { outline-color: #fff; }
 }
 .oer-dialog-ok:active { border-color: #404040 #fff #fff #404040; }
 
-/* ---- applet loading box ---- */
-.oer-applet {
-  position: fixed;
-  left: 50%;
-  top: 50%;
-  z-index: 99980;
-  width: 250px;
-  transform: translate(-50%, -50%);
-  padding: 12px 14px;
-  background: #c0c0c0;
-  border: 2px solid;
-  border-color: #fff #404040 #404040 #fff;
-  color: #000;
-  font: 11px/1.4 Tahoma, Verdana, Arial, sans-serif;
-  text-align: left;
-  pointer-events: none;
-}
-.oer-applet-bar {
-  height: 14px;
-  margin-top: 8px;
-  padding: 1px;
-  background: #fff;
-  border: 1px solid;
-  border-color: #404040 #fff #fff #404040;
-  overflow: hidden;
-}
-.oer-applet-fill {
-  height: 100%;
-  width: 40%;
-  background: repeating-linear-gradient(90deg, #000080 0 9px, transparent 9px 11px);
-  animation: oer-applet-move 1.6s linear infinite;
-}
-@keyframes oer-applet-move { from { margin-left: -40%; } to { margin-left: 100%; } }
 @media (prefers-reduced-motion: reduce) {
-  .oerc-new, .oer-applet-fill { animation: none; }
+  .oerc-new, .oerc-light.oerc-light-recv::before { animation: none; }
 }
 
 /* ---- OER seal watermark (record and document screens only) ----

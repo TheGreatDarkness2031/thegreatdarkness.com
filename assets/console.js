@@ -372,20 +372,21 @@
   }
   window.oerDialog = oerDialog;
 
-  // ---- data calls (reported by gsr.js): applet box and failure dialog ----
-  var pending = 0, firstLoadOver = false, appletTimer = null, applet = null, failedOnce = false;
-  function showApplet() {
-    if (applet || firstLoadOver) return;
-    applet = el("div", "oer-applet");
-    applet.appendChild(el("div", "", "LOADING OER CONSOLE APPLET..."));
-    var bar = el("div", "oer-applet-bar");
-    bar.appendChild(el("div", "oer-applet-fill"));
-    applet.appendChild(bar);
-    document.body.appendChild(applet);
+  // ---- data calls (reported by gsr.js): LINK light and failure dialog ----
+  // (2026-11-13, owner: the centred LOADING OER CONSOLE APPLET box was too
+  // much.) A call still waiting after 0.7 s turns the LINK light in the
+  // title bar amber and blinking, labelled RECV, until every call is back.
+  var pending = 0, recvTimer = null, failedOnce = false;
+  function linkLight() { return document.querySelector(".oerc-light"); }
+  function showRecv(on) {
+    var l = linkLight();
+    if (!l) return;
+    l.classList.toggle("oerc-light-recv", on);
+    l.textContent = on ? "RECV" : "LINK";
   }
   window.oerRpcStart = function () {
     pending++;
-    if (!firstLoadOver && !appletTimer) appletTimer = setTimeout(showApplet, 700);
+    if (!recvTimer) recvTimer = setTimeout(function () { recvTimer = null; if (pending > 0) showRecv(true); }, 700);
   };
   window.oerRpcEnd = function (ok) {
     pending = Math.max(0, pending - 1);
@@ -394,10 +395,10 @@
       oerDialog("OER CONSOLE",
         "The OER data service did not respond.\n\nSome information on this screen may be missing or out of date.");
     }
-    if (pending === 0 && !firstLoadOver) {
-      firstLoadOver = true;
-      clearTimeout(appletTimer);
-      if (applet && applet.parentNode) applet.parentNode.removeChild(applet);
+    if (pending === 0) {
+      clearTimeout(recvTimer);
+      recvTimer = null;
+      showRecv(false);
     }
   };
 
