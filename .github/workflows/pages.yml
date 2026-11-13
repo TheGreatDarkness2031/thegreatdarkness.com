@@ -64,25 +64,49 @@ jobs:
             fi
             rm -f "$2.new" "$2.old"
           }
-          mkdir -p data/watch
+          # Unchanged years (2026-11-13): a year whose index entry (count,
+          # last record) is the same as in the published index keeps its
+          # published file, read from the site instead of Apps Script. Most
+          # years are closed, so a run asks Apps Script for 1-3 years instead
+          # of ~60. Hand edits that keep the count are picked up by the full
+          # rebuild once a day (the 09:07 UTC run) or any manual run.
+          FULL=0
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%H)" = "09" ] && [ "$(date -u +%M)" -lt 30 ]; }; then FULL=1; echo "full rebuild of every log year"; fi
+          keep() {  # keep <file>: the published copy, if it is valid
+            curl -sSL --max-time 30 -o "$1.old" "$LIVE/${1#data/}" && valid "$1.old" && mv "$1.old" "$1"
+            rm -f "$1.old"; [ -f "$1" ]
+          }
+          same() {  # same <old index> <new index> <key field> <key value>: entry unchanged
+            [ "$FULL" = 0 ] && [ -f "$1" ] && node -e '
+              const [o,n,k,v]=process.argv.slice(1); const r=f=>JSON.parse(require("fs").readFileSync(f,"utf8")).years.find(y=>String(y[k])===v);
+              const a=r(o), b=r(n); process.exit(a&&b&&JSON.stringify(a)===JSON.stringify(b)?0:1)' "$1" "$2" "$3" "$4" 2>/dev/null
+          }
+          mkdir -p data/watch data/maintenance
+          curl -sSL --max-time 30 -o data/watch/index.prev "$LIVE/watch/index.json" || true
+          curl -sSL --max-time 30 -o data/maintenance/index.prev "$LIVE/maintenance/index.json" || true
           save "logexport=watchindex" data/watch/index.json
-          save "logexport=maintenance" data/maintenance.json
           save "logexport=schedule" data/schedule.json
           if [ -f data/watch/index.json ]; then
             for s in $(node -e 'JSON.parse(require("fs").readFileSync("data/watch/index.json","utf8")).years.forEach(y=>console.log(y.sheetName))'); do
               case "$s" in *[!A-Za-z0-9_]*) echo "::warning::skipped sheet name $s"; continue;; esac
+              if same data/watch/index.prev data/watch/index.json sheetName "$s" && keep "data/watch/$s.json"; then continue; fi
               save "logexport=watch&sheet=$s" "data/watch/$s.json"
             done
           fi
           # Maintenance log by year (2026-11-11): data/maintenance/index.json + <year>.json.
-          mkdir -p data/maintenance
           save "logexport=maintindex" data/maintenance/index.json
+          MCHANGED=0
           if [ -f data/maintenance/index.json ]; then
             for y in $(node -e 'JSON.parse(require("fs").readFileSync("data/maintenance/index.json","utf8")).years.forEach(y=>console.log(y.year))'); do
               case "$y" in [0-9][0-9][0-9][0-9]) ;; *) echo "::warning::skipped year $y"; continue;; esac
+              if same data/maintenance/index.prev data/maintenance/index.json year "$y" && keep "data/maintenance/$y.json"; then continue; fi
+              MCHANGED=1
               save "logexport=maintenance&year=$y" "data/maintenance/$y.json"
             done
           fi
+          # All years in one file (PROJECTS view): rebuilt only when a year changed.
+          if [ "$MCHANGED" = 1 ] || ! keep data/maintenance.json; then save "logexport=maintenance" data/maintenance.json; fi
+          rm -f data/watch/index.prev data/maintenance/index.prev
 
       # Monitor snapshots (2026-11-12): each monitor page's first answers, so
       # the page shows them at once and then the live answer (assets/gsr.js).

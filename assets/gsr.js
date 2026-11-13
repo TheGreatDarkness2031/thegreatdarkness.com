@@ -98,3 +98,17 @@
     url: { getLocation: getLocation }
   };
 })();
+
+// Page refresh timer that rests while the browser tab is hidden
+// (2026-11-13): a hidden tab makes no requests, and a tab shown again
+// after a missed refresh refreshes at once. Saves Apps Script runs.
+window.oerEvery = function (fn, ms) {
+  var last = Date.now();
+  function run() { last = Date.now(); fn(); }
+  setInterval(function () {
+    if (!document.hidden && Date.now() - last >= ms - 1000) run();
+  }, ms);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden && Date.now() - last >= ms) run();
+  });
+};

@@ -2139,7 +2139,6 @@
       </a>
 
 
-
       <a
         href="/arcade/"
         target="_blank"
@@ -2347,11 +2346,7 @@
           >[ NEXUS TERMINAL ]</a>
 
 
-
-
-
         </div>
-
 
 
       </div>
@@ -2570,51 +2565,10 @@
         }
       };
 
-    function loadSystemStatusData() {
-      systemStatusRequestCounter++;
-
-      const oldScript =
-        document.getElementById(
-          "systemStatusJsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script =
-        document.createElement("script");
-
-      script.id =
-        "systemStatusJsonpScript";
-
-      script.src =
-        API_URL +
-        "?systemstatus=1" +
-        "&callback=handleSystemStatusResponse" +
-        "&_request=" +
-        systemStatusRequestCounter +
-        "&_ts=" +
-        Date.now();
-
-      document.body.appendChild(script);
-    }
 
     const GRID_CACHE_KEY = "oerGridCache";
     const GRID_SKELETON_COUNT = 15; // set to your real number of cells
 
-    function readGridCache_() {
-      try {
-        const raw =
-          localStorage.getItem(GRID_CACHE_KEY);
-
-        return raw
-          ? JSON.parse(raw)
-          : null;
-      } catch (error) {
-        return null;
-      }
-    }
 
     function writeGridCache_(data) {
       try {
@@ -2626,34 +2580,6 @@
       }
     }
 
-    function buildGridSkeleton_(count) {
-      const grid =
-        document.getElementById(
-          "oerMonitorGrid"
-        );
-
-      if (!grid) {
-        return;
-      }
-
-      grid.innerHTML = "";
-
-      for (let i = 0; i < count; i++) {
-        const cell =
-          document.createElement("div");
-
-        cell.className =
-          "oer-monitor-cell";
-
-        cell.innerHTML =
-          '<div class="oer-monitor-id">--</div>' +
-          '<div class="oer-monitor-name health-gray">LOADING</div>' +
-          '<div class="oer-monitor-value health-gray">--</div>' +
-          '<div class="oer-monitor-status health-gray">--</div>';
-
-        grid.appendChild(cell);
-      }
-    }
 
     function createOerCell_(system) {
       const nameText =
@@ -3186,43 +3112,6 @@
         }
       };
 
-    function loadEventFeedPreview() {
-
-      eventFeedPreviewRequestCounter++;
-
-      var oldScript =
-        document.getElementById(
-          "eventFeedPreviewJsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      var script =
-        document.createElement(
-          "script"
-        );
-
-      script.id =
-        "eventFeedPreviewJsonpScript";
-
-      script.src =
-        API_URL +
-        "?eventsdata=1" +
-        "&view=current" +
-        "&severity=1,2,3,4,5" +
-        "&limit=10" +
-        "&callback=handleEventFeedPreviewResponse" +
-        "&_request=" +
-        eventFeedPreviewRequestCounter +
-        "&_ts=" +
-        Date.now();
-
-      document.body.appendChild(
-        script
-      );
-    }
 
     /* =======================================================
        NETWORK STATUS
@@ -3455,37 +3344,6 @@
         }
       };
 
-    function loadNetworkStatusData() {
-      networkStatusRequestCounter++;
-
-      const oldScript =
-        document.getElementById(
-          "networkStatusJsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script =
-        document.createElement(
-          "script"
-        );
-
-      script.id =
-        "networkStatusJsonpScript";
-
-      script.src =
-        API_URL +
-        "?networkstatus=1" +
-        "&callback=handleNetworkStatusResponse" +
-        "&_request=" +
-        networkStatusRequestCounter +
-        "&_ts=" +
-        Date.now();
-
-      document.body.appendChild(script);
-    }
 
     async function runNetworkStatusCheck() {
       if (networkStatusCheckRunning) {
@@ -4150,100 +4008,6 @@
        RADAR
        ======================================================= */
 
-    function initializeRadarAudio() {
-      if (radarAudioContext) {
-        return;
-      }
-
-      radarAudioContext =
-        new (
-          window.AudioContext ||
-          window.webkitAudioContext
-        )();
-
-      radarGain =
-        radarAudioContext.createGain();
-
-      radarGain.gain.value = 0;
-
-      radarGain.connect(
-        radarAudioContext.destination
-      );
-    }
-
-    function toggleRadarSound() {
-      initializeRadarAudio();
-
-      const button =
-        document.getElementById(
-          "radarSoundButton"
-        );
-
-      radarSoundEnabled =
-        !radarSoundEnabled;
-
-      if (radarSoundEnabled) {
-        radarAudioContext.resume()
-          .then(
-            function() {
-              startRadarSound();
-
-              button.textContent =
-                "SOUND: ON";
-
-              playRadarPing();
-            }
-          )
-          .catch(
-            function() {
-              radarSoundEnabled = false;
-
-              button.textContent =
-                "SOUND: OFF";
-            }
-          );
-      } else {
-        stopRadarSound();
-
-        button.textContent =
-          "SOUND: OFF";
-      }
-    }
-
-    function startRadarSound() {
-      if (radarOscillator) {
-        return;
-      }
-
-      radarOscillator =
-        radarAudioContext.createOscillator();
-
-      radarOscillator.type = "sine";
-      radarOscillator.frequency.value = 440;
-
-      radarOscillator.connect(radarGain);
-      radarOscillator.start();
-
-      updateRadarVolume();
-    }
-
-    function stopRadarSound() {
-      if (!radarOscillator) {
-        return;
-      }
-
-      radarGain.gain.setTargetAtTime(
-        0,
-        radarAudioContext.currentTime,
-        0.05
-      );
-
-      radarOscillator.stop(
-        radarAudioContext.currentTime + 0.1
-      );
-
-      radarOscillator = null;
-    }
 
     function playRadarPing() {
       if (
@@ -4296,72 +4060,6 @@
       oscillator.stop(now + 0.18);
     }
 
-    function updateRadarVolume() {
-      if (
-        !radarGain ||
-        !radarAudioContext
-      ) {
-        return;
-      }
-
-      const volume =
-        Number(
-          document.getElementById(
-            "radarVolume"
-          ).value
-        ) / 100;
-
-      radarGain.gain.setTargetAtTime(
-        radarSoundEnabled
-          ? volume * 0.08
-          : 0,
-        radarAudioContext.currentTime,
-        0.03
-      );
-    }
-
-    function updateRadarBrightness() {
-      const screen =
-        document.querySelector(
-          ".radar-screen"
-        );
-
-      if (screen) {
-        screen.style.filter =
-          "brightness(" +
-          document.getElementById(
-            "radarBrightness"
-          ).value +
-          "%)";
-      }
-    }
-
-    function updateRadarSweepSpeed() {
-      const value =
-        document.getElementById(
-          "radarSweepSpeed"
-        ).value;
-
-      const sweep =
-        document.querySelector(
-          ".radar-sweep"
-        );
-
-      const display =
-        document.getElementById(
-          "radarSweepSpeedValue"
-        );
-
-      if (sweep) {
-        sweep.style.animationDuration =
-          value + "s";
-      }
-
-      if (display) {
-        display.textContent =
-          value + " SEC";
-      }
-    }
 
     /* Source color identifies the system; severity sets the size. */
     const RADAR_BLIP_SIZES = {
@@ -5448,98 +5146,6 @@
         }
       };
 
-    function loadRadarData() {
-
-      // One request at a time. An answer can take longer than the
-      // 5 s poll; removing a request still on its way throws its
-      // answer away, so a slow server could leave the Radar at
-      // INITIALIZING forever (2026-11-06). Give up after 20 s.
-      if (
-        radarRequestStartedAt &&
-        RADAR_REQUEST_GIVE_UP_MS > Date.now() - radarRequestStartedAt
-      ) {
-        return;
-      }
-
-      radarRequestCounter++;
-
-      const oldScript =
-        document.getElementById(
-          "radarJsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script =
-        document.createElement("script");
-
-      script.id = "radarJsonpScript";
-
-      const startedAt = Date.now();
-      radarRequestStartedAt = startedAt;
-
-      const finished = function() {
-        if (radarRequestStartedAt === startedAt) {
-          radarRequestStartedAt = 0;
-        }
-      };
-
-      script.onload = finished;
-      script.onerror = function() {
-        finished();
-        radarErrorCount++;
-        radarRetryAt =
-          Date.now() +
-          Math.min(
-            RADAR_ERROR_BACKOFF_MAX_MS,
-            5000 * Math.pow(2, radarErrorCount - 1)
-          );
-      };
-
-      script.src =
-        API_URL +
-        "?radar=1" +
-        "&callback=handleRadarResponse" +
-        "&_request=" +
-        radarRequestCounter +
-        "&_ts=" +
-        Date.now();
-
-      document.body.appendChild(script);
-    }
-
-
-    // Both Radar pages start polling here. Quake blips last 4-12 s,
-    // so the visible rate was 2.5 s until 2026-11-08; 5 s since (load
-    // test: about 30 Apps Script runs at once is the account limit,
-    // and the Radar was 90% of all requests). A hidden tab makes no requests
-    // and catches up the moment it is shown again.
-    function startRadarPolling_(intervalMs) {
-
-      loadRadarData();
-
-      setInterval(function() {
-        if (document.hidden) {
-          return;
-        }
-
-        if (radarRetryAt > Date.now()) {
-          return;
-        }
-
-        loadRadarData();
-      }, intervalMs);
-
-      document.addEventListener("visibilitychange", function() {
-        if (!document.hidden && Date.now() >= radarRetryAt) {
-          loadRadarData();
-        }
-      });
-    }
-
-
 
     /* =======================================================
        PUBLIC LOG SUBMISSION
@@ -5632,64 +5238,6 @@
     setInterval(updateSystemUptime, 1000);
     updateSystemUptime();
 
-    // Start-up: the public log, network status, Monitoring Grid and
-    // Event Feed come in one request (?homestart=1). Any part missing
-    // from the answer, or the whole answer after 15 s, falls back to
-    // that part's own request.
-    function loadHomeStart_() {
-      const fallback = {
-        database: loadDatabaseData,
-        network: loadNetworkStatusData,
-        system: loadSystemStatusData,
-        events: loadEventFeedPreview
-      };
-      let answered = false;
-
-      const runFallback = function() {
-        if (answered) {
-          return;
-        }
-        answered = true;
-        Object.keys(fallback).forEach(function(k) { fallback[k](); });
-      };
-
-      window.handleHomeStartResponse = function(data) {
-        if (answered) {
-          return;
-        }
-        answered = true;
-        data = data || {};
-        const handlers = {
-          database: window.handleDatabaseResponse,
-          network: window.handleNetworkStatusResponse,
-          system: window.handleSystemStatusResponse,
-          events: window.handleEventFeedPreviewResponse
-        };
-        Object.keys(handlers).forEach(function(k) {
-          if (data[k]) {
-            try {
-              handlers[k](data[k]);
-              return;
-            } catch (error) {
-              console.log("homestart " + k + ": " + error);
-            }
-          }
-          fallback[k]();
-        });
-      };
-
-      const script = document.createElement("script");
-      script.id = "homeStartJsonpScript";
-      script.onerror = runFallback;
-      script.src =
-        API_URL +
-        "?homestart=1" +
-        "&callback=handleHomeStartResponse" +
-        "&_ts=" +
-        Date.now();
-      document.body.appendChild(script);
-      setTimeout(runFallback, 15000);
-    }
     (function linkRadarConsole() {
       const link =
         document.getElementById("openRadarConsole");

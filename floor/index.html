@@ -2373,16 +2373,6 @@
         0
       );
 
-    function openOriginalSystemNotice() {
-      const modal =
-        document.getElementById(
-          "originalSystemNoticeModal"
-        );
-
-      if (modal) {
-        modal.classList.add("open");
-      }
-    }
 
     function closeOriginalSystemNotice(
       event
@@ -3451,125 +3441,6 @@
        COUNTDOWN / UPTIME
        ======================================================= */
 
-    function updateCountdown() {
-      const difference =
-        targetDate - Date.now();
-
-      if (difference <= 0) {
-        document.getElementById(
-          "dateLine"
-        ).textContent = "00 : 00 : 00";
-
-        document.getElementById(
-          "timeLine"
-        ).textContent = "00 : 00 : 00";
-
-        return;
-      }
-
-      const totalSeconds =
-        Math.floor(difference / 1000);
-
-      const totalMinutes =
-        Math.floor(totalSeconds / 60);
-
-      const totalHours =
-        Math.floor(totalMinutes / 60);
-
-      const totalDays =
-        Math.floor(totalHours / 24);
-
-      const years =
-        Math.floor(totalDays / 365);
-
-      const remainingDays =
-        totalDays % 365;
-
-      const months =
-        Math.floor(remainingDays / 30.44);
-
-      const days =
-        Math.floor(remainingDays % 30.44);
-
-      const hours =
-        totalHours % 24;
-
-      const minutes =
-        totalMinutes % 60;
-
-      const seconds =
-        totalSeconds % 60;
-
-      const format =
-        function(value) {
-          return String(value)
-            .padStart(2, "0")
-            .slice(-2);
-        };
-
-      document.getElementById(
-        "dateLine"
-      ).textContent =
-        format(years) +
-        " : " +
-        format(months) +
-        " : " +
-        format(days);
-
-      document.getElementById(
-        "timeLine"
-      ).textContent =
-        format(hours) +
-        " : " +
-        format(minutes) +
-        " : " +
-        format(seconds);
-    }
-
-    function updateSystemUptime() {
-      const uptimeElement =
-        document.getElementById(
-          "systemUptime"
-        );
-
-      if (!uptimeElement) {
-        return;
-      }
-
-      const elapsed =
-        Math.max(
-          0,
-          Date.now() -
-          systemActivationTime
-        );
-
-      const totalSeconds =
-        Math.floor(elapsed / 1000);
-
-      const totalMinutes =
-        Math.floor(totalSeconds / 60);
-
-      const totalHours =
-        Math.floor(totalMinutes / 60);
-
-      const days =
-        Math.floor(totalHours / 24);
-
-      const format =
-        function(value) {
-          return String(value)
-            .padStart(2, "0");
-        };
-
-      uptimeElement.textContent =
-        days +
-        " DAYS " +
-        format(totalHours % 24) +
-        ":" +
-        format(totalMinutes % 60) +
-        ":" +
-        format(totalSeconds % 60);
-    }
 
     /* =======================================================
        PUBLIC LOG
@@ -3819,36 +3690,6 @@
       );
     }
 
-    function toggleLogArchive() {
-      const menu =
-        document.getElementById(
-          "logArchiveMenu"
-        );
-
-      const toggle =
-        document.getElementById(
-          "logArchiveToggle"
-        );
-
-      if (!menu) {
-        return;
-      }
-
-      const open =
-        menu.style.display === "block";
-
-      menu.style.display =
-        open
-          ? "none"
-          : "block";
-
-      if (toggle) {
-        toggle.textContent =
-          open
-            ? "[ LOG ARCHIVE ▼ ]"
-            : "[ LOG ARCHIVE ▲ ]";
-      }
-    }
 
     function closeLogArchive() {
       const menu =
@@ -3968,28 +3809,6 @@
       }
     });
 
-    function loadDatabaseData() {
-      const oldScript =
-        document.getElementById(
-          "jsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script =
-        document.createElement("script");
-
-      script.id = "jsonpScript";
-
-      script.src =
-        API_URL +
-        "?callback=handleDatabaseResponse&_ts=" +
-        Date.now();
-
-      document.body.appendChild(script);
-    }
 
         /* =======================================================
        RADAR (shared: HomeView.html and RadarView.html)
@@ -5474,149 +5293,16 @@
     }
 
 
-
     /* =======================================================
        PUBLIC LOG SUBMISSION
        ======================================================= */
 
-    function submitPost() {
-      const handle =
-        document.getElementById(
-          "bbsHandle"
-        ).value.trim();
-
-      const message =
-        document.getElementById(
-          "bbsMsg"
-        ).value.trim();
-
-      if (
-        !handle ||
-        !message
-      ) {
-        const blank =
-          document.getElementById(!handle ? "bbsHandle" : "bbsMsg");
-        blank.placeholder = "FIELDS CANNOT BE BLANK.";
-        blank.focus();
-        return;
-      }
-
-      document.getElementById(
-        "bbsMsg"
-      ).value = "TRANSMITTING...";
-
-      const xhr =
-        new XMLHttpRequest();
-
-      xhr.open("POST", API_URL, true);
-
-      xhr.setRequestHeader(
-        "Content-Type",
-        "text/plain"
-      );
-
-      xhr.onreadystatechange =
-        function() {
-          if (xhr.readyState === 4) {
-            const msgField =
-              document.getElementById("bbsMsg");
-            document.getElementById(
-              "bbsHandle"
-            ).value = "";
-            msgField.value = "";
-            msgField.placeholder =
-              "LINE ENTRY TRANSMITTED.";
-            // Saving can take a few seconds: check again until the
-            // entry is in the log (gives up after ~15 s).
-            [1500, 4000, 8000, 15000].forEach(function(ms) {
-              setTimeout(function() {
-                const arrived = allLogPosts.some(function(post) {
-                  return (
-                    String(post.handle) === handle &&
-                    String(post.message) === message
-                  );
-                });
-                if (!arrived) {
-                  loadDatabaseData();
-                }
-              }, ms);
-            });
-            setTimeout(function() {
-              msgField.placeholder =
-                "TYPE MESSAGE DIRECTLY TO DATABASE...";
-            }, 15000);
-          }
-        };
-
-      xhr.send(
-        JSON.stringify({
-          handle: handle,
-          message: message
-        })
-      );
-    }
 
     /* =======================================================
        INITIALIZATION
        ======================================================= */
 
 
-    // Start-up: the public log, network status, Monitoring Grid and
-    // Event Feed come in one request (?homestart=1). Any part missing
-    // from the answer, or the whole answer after 15 s, falls back to
-    // that part's own request.
-    function loadHomeStart_() {
-      const fallback = {
-        network: loadNetworkStatusData,
-        system: loadSystemStatusData,
-        events: loadEventFeedPreview
-      };
-      let answered = false;
-
-      const runFallback = function() {
-        if (answered) {
-          return;
-        }
-        answered = true;
-        Object.keys(fallback).forEach(function(k) { fallback[k](); });
-      };
-
-      window.handleHomeStartResponse = function(data) {
-        if (answered) {
-          return;
-        }
-        answered = true;
-        data = data || {};
-        const handlers = {
-          network: window.handleNetworkStatusResponse,
-          system: window.handleSystemStatusResponse,
-          events: window.handleEventFeedPreviewResponse
-        };
-        Object.keys(handlers).forEach(function(k) {
-          if (data[k]) {
-            try {
-              handlers[k](data[k]);
-              return;
-            } catch (error) {
-              console.log("homestart " + k + ": " + error);
-            }
-          }
-          fallback[k]();
-        });
-      };
-
-      const script = document.createElement("script");
-      script.id = "homeStartJsonpScript";
-      script.onerror = runFallback;
-      script.src =
-        API_URL +
-        "?homestart=1" +
-        "&callback=handleHomeStartResponse" +
-        "&_ts=" +
-        Date.now();
-      document.body.appendChild(script);
-      setTimeout(runFallback, 15000);
-    }
     (function linkRadarConsole() {
       const link =
         document.getElementById("openRadarConsole");
