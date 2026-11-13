@@ -897,7 +897,7 @@
           <div id="prjViewTitle" class="record-view-title">PROJECT VIEW</div>
           <div id="prjViewBody" class="record-view-body">
             <div class="record-placeholder">
-              SELECT A PROJECT TO DISPLAY ITS LATEST ENGINEERING ENTRIES.
+              SELECT A PROJECT TO DISPLAY ITS FULL ENGINEERING FILE.
             </div>
           </div>
         </div>
@@ -2369,11 +2369,12 @@ function exitMaintenanceLog() {
 
   <style>
     .prj-table td.prj-status { white-space: nowrap; font-weight: bold; letter-spacing: 1px; }
-    .prj-ACTIVE { color: #0a7a0a; }
-    .prj-IDLE { color: #9a6a00; }
-    .prj-DORMANT { color: #777777; }
-    body.oer-night .prj-ACTIVE { color: #33ff33; }
-    body.oer-night .prj-IDLE { color: #ffbf00; }
+    .prj-COMPLETE { color: #0a7a0a; }
+    .prj-ONGOING { color: #00539a; }
+    .prj-CLOSED { color: #8a5a00; }
+    body.oer-night .prj-COMPLETE { color: #33ff33; }
+    body.oer-night .prj-ONGOING { color: #6fc3ff; }
+    body.oer-night .prj-CLOSED { color: #ffbf00; }
     .prj-entries td { vertical-align: top; padding: 4px 6px; border-bottom: 1px dotted #999; }
     .prj-entries .prj-date { white-space: nowrap; }
   
@@ -2394,31 +2395,13 @@ function exitMaintenanceLog() {
     }
 </style>
   <script>
-  // ENGINEERING PROJECTS view (2026-11-11): maintenance-log systems grouped
-  // into projects; status from each project's newest entry.
+  // ENGINEERING PROJECTS view (rebuilt 2026-11-13): the project list is
+  // /maintenance/projects.json (window, outcome, register documents, match
+  // rules); entries come from /data/maintenance.json. An entry belongs to a
+  // project when its date is in the window and its system heading matches
+  // sys, its text matches text, or its text names one of the documents; an
+  // entry matching several goes to the project with the shortest window.
   (function () {
-    var PROJECTS = [
-      ["ENG-01", "ARCHIVE WRITE PERFORMANCE", /^Archive (Write )?Performance$|^Archive (Host|Test Host|Services|Integrity|Verification|Retrieval)$/,
-        "Nightly archive write phase, host capacity and verification of archived counts."],
-      ["ENG-02", "EXTERNAL FEED TIMING", /Regional Timing|Regional Clock|External Feed|July 1997 Record/,
-        "Late and out-of-sequence regional updates; open item OER-OPS-1998-024."],
-      ["ENG-03", "RECEIVER AND COMMIT CHAIN", /Inbound Interface|Regional Receiver|Commit Monitor|Pending-Confirmation|Receiver Replay|Retry Handling|Run-State|Process-State/,
-        "Receipt, sender commitment and confirmation between regional nodes and the central receiver."],
-      ["ENG-04", "REGIONAL STATUS REPORTING", /Regional Status/,
-        "Displayed regional status that stops updating while receiver activity continues."],
-      ["ENG-05", "MONITORING PROTOTYPE", /Monitoring (Prototype|Proposal|Requirements)/,
-        "Isolated automated monitoring prototype. Not deployed."],
-      ["ENG-06", "MONITORING RESEARCH PROGRAM", /Research|Monitoring Data Integration|Network Observation|Capability Review/,
-        "Survey of network, feed, storage and correlation methods for a future monitoring system."],
-      ["ENG-07", "EVENT CORRELATION", /Event Correlation|Correlation/,
-        "Relating records across regions and sources without assigning unsupported causes."],
-      ["ENG-08", "OPERATOR PROCEDURES", /Operator Procedure|Operations Reference|Recovery Procedure|Emergency Procedure|Maintenance Log Integration/,
-        "Watch-floor procedures, references and recovery walkthroughs."],
-      ["ENG-09", "CHANGE CONTROL AND RELEASE", /Change Control|Release|Revision Control|Configuration|Test Environment$/,
-        "Release inventory, approved changes and the controlled test environment."],
-      ["ENG-10", "ACCESS AND FACILITY SECURITY", /Access|Security/,
-        "Access reviews, test-environment access and facility security posture."]
-    ];
     var loaded = false, projects = [], selected = "";
     var els = {
       status: document.getElementById("prjStatus"),
@@ -2427,47 +2410,57 @@ function exitMaintenanceLog() {
       body: document.getElementById("prjViewBody")
     };
     function esc(s) {
-      return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
+      return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
     }
-    function days(a, b) { return Math.round((Date.parse(b) - Date.parse(a)) / 86400000); }
+    function word(outcome) { return String(outcome).split(" ")[0]; }
 
-    function build(records) {
-      var end = records.reduce(function (m, r) { return r.date > m ? r.date : m; }, "");
-      projects = PROJECTS.map(function (p) { return { code: p[0], name: p[1], re: p[2], scope: p[3], rows: [] }; });
+    function build(list, records) {
+      projects = list.map(function (p) {
+        return {
+          code: p.code, title: p.title, scope: p.scope, outcome: p.outcome, from: p.from, to: p.to, docs: p.docs || [],
+          sys: p.sys ? new RegExp(p.sys) : null, text: p.text ? new RegExp(p.text) : null,
+          span: Date.parse(p.to) - Date.parse(p.from), rows: []
+        };
+      });
       records.forEach(function (r) {
-        if (!/^\d{4}-\d\d-\d\d$/.test(r.date || "")) return;
-        for (var i = 0; i < projects.length; i++) {
-          if (projects[i].re.test(r.system || "")) { projects[i].rows.push(r); return; }
-        }
+        var d = r.date || "";
+        if (!/^\d{4}-\d\d-\d\d$/.test(d)) return;
+        var e = r.entry || "", best = null;
+        projects.forEach(function (p) {
+          if (d < p.from || d > p.to) return;
+          var hit = (p.sys && p.sys.test(r.system || "")) || (p.text && p.text.test(e)) ||
+            p.docs.some(function (k) { return e.indexOf(k) !== -1; });
+          if (hit && (!best || p.span < best.span)) best = p;
+        });
+        if (best) best.rows.push(r);
       });
       projects = projects.filter(function (p) { return p.rows.length; });
       projects.forEach(function (p) {
         p.rows.sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : (a.idNumber || 0) - (b.idNumber || 0); });
         p.opened = p.rows[0].date;
-        p.last = p.rows[p.rows.length - 1];
-        var gap = days(p.last.date, end);
-        p.status = gap <= 120 ? "ACTIVE" : gap <= 365 ? "IDLE" : "DORMANT";
+        p.last = p.rows[p.rows.length - 1].date;
         var count = {};
-        p.rows.slice(-20).forEach(function (r) { if (!/Staff$/.test(r.author)) count[r.author] = (count[r.author] || 0) + 1; });
+        p.rows.forEach(function (r) { if (r.author && !/Staff$/.test(r.author)) count[r.author] = (count[r.author] || 0) + 1; });
         p.lead = Object.keys(count).sort(function (a, b) { return count[b] - count[a]; })[0] || "ENGINEERING";
       });
-      var rank = { ACTIVE: 0, IDLE: 1, DORMANT: 2 };
-      projects.sort(function (a, b) { return rank[a.status] - rank[b.status] || (a.last.date < b.last.date ? 1 : -1); });
-      return end;
+      // Newest first, like every other list on the site.
+      projects.sort(function (a, b) { return a.opened < b.opened ? 1 : a.opened > b.opened ? -1 : 0; });
     }
 
-    function render(end) {
-      var active = projects.filter(function (p) { return p.status === "ACTIVE"; }).length;
+    function render() {
+      var tally = {};
+      projects.forEach(function (p) { var k = word(p.outcome); tally[k] = (tally[k] || 0) + 1; });
       els.status.classList.remove("error");
-      els.status.textContent = projects.length + " PROJECT(S) // " + active + " ACTIVE // STATUS AS OF " + end + " (LAST ENGINEERING RECORD).";
+      els.status.textContent = projects.length + " PROJECTS // " + (tally.COMPLETE || 0) + " COMPLETE // " +
+        (tally.CLOSED || 0) + " CLOSED // " + (tally.ONGOING || 0) + " ONGOING. SELECT A PROJECT FOR ITS FULL FILE.";
       els.list.innerHTML = '<table class="record-table register-table prj-table"><thead><tr>' +
-        '<th style="width:64px">PROJECT</th><th>TITLE</th><th style="width:78px">STATUS</th>' +
-        '<th style="width:84px">OPENED</th><th style="width:84px">LAST ENTRY</th><th style="width:54px">ENTRIES</th></tr></thead><tbody>' +
+        '<th style="width:78px">PROJECT</th><th>TITLE</th><th style="width:90px">OUTCOME</th>' +
+        '<th style="width:84px">OPENED</th><th style="width:84px">CLOSED</th><th style="width:58px">ENTRIES</th></tr></thead><tbody>' +
         projects.map(function (p) {
           return '<tr data-code="' + p.code + '"' + (p.code === selected ? ' class="selected"' : '') + '>' +
-            '<td class="record-id">' + p.code + '</td><td title="' + esc(p.scope) + '">' + esc(p.name) + '</td>' +
-            '<td class="prj-status prj-' + p.status + '">' + p.status + '</td>' +
-            '<td>' + p.opened + '</td><td>' + p.last.date + '</td><td>' + p.rows.length + '</td></tr>';
+            '<td class="record-id">' + p.code + '</td><td title="' + esc(p.scope) + '">' + esc(p.title) + '</td>' +
+            '<td class="prj-status prj-' + word(p.outcome) + '">' + esc(word(p.outcome)) + '</td>' +
+            '<td>' + p.opened + '</td><td>' + (p.outcome === "ONGOING" ? "--" : p.last) + '</td><td>' + p.rows.length + '</td></tr>';
         }).join("") + '</tbody></table>';
     }
 
@@ -2477,41 +2470,47 @@ function exitMaintenanceLog() {
       selected = code;
       var trs = els.list.querySelectorAll("tbody tr");
       for (var i = 0; i < trs.length; i++) trs[i].classList.toggle("selected", trs[i].getAttribute("data-code") === code);
-      var systems = {};
-      p.rows.forEach(function (r) { systems[r.system] = 1; });
-      els.title.textContent = p.code + " // " + p.name;
+      var people = {};
+      p.rows.forEach(function (r) { if (r.author) people[r.author] = 1; });
+      els.title.textContent = p.code + " // " + p.title;
       els.body.innerHTML =
         '<table class="record-view-meta">' +
         '<tr><td class="record-view-label">SCOPE:</td><td>' + esc(p.scope) + '</td></tr>' +
-        '<tr><td class="record-view-label">STATUS:</td><td class="prj-' + p.status + '"><b>' + p.status + '</b></td></tr>' +
+        '<tr><td class="record-view-label">OUTCOME:</td><td class="prj-' + word(p.outcome) + '"><b>' + esc(p.outcome) + '</b></td></tr>' +
         '<tr><td class="record-view-label">ENGINEER:</td><td>' + esc(p.lead) + '</td></tr>' +
         '<tr><td class="record-view-label">OPENED:</td><td>' + p.opened + '</td></tr>' +
-        '<tr><td class="record-view-label">LAST ENTRY:</td><td>' + p.last.date + ' (' + esc(p.last.action) + ')</td></tr>' +
-        '<tr><td class="record-view-label">RECORDS:</td><td>' + p.rows.length + ' ENTRIES UNDER ' + Object.keys(systems).length + ' SYSTEM HEADING(S)</td></tr>' +
+        '<tr><td class="record-view-label">' + (p.outcome === "ONGOING" ? "LATEST:" : "CLOSED:") + '</td><td>' + p.last + '</td></tr>' +
+        (p.docs.length ? '<tr><td class="record-view-label">DOCUMENTS:</td><td><a href="/maintenance/?view=register">' + esc(p.docs.join(", ")) + '</a></td></tr>' : '') +
+        '<tr><td class="record-view-label">FILE:</td><td>' + p.rows.length + ' ENTRIES BY ' + Object.keys(people).length + ' PERSON(S)</td></tr>' +
         '</table><div class="record-entry-divider"></div>' +
-        '<div class="record-view-label" style="margin-bottom:6px">LATEST ENTRIES</div>' +
+        '<div class="record-view-label" style="margin-bottom:6px">PROJECT FILE (OLDEST FIRST)</div>' +
         '<table class="prj-entries">' +
-        p.rows.slice(-6).reverse().map(function (r) {
-          return '<tr><td class="prj-date">' + r.date + '</td><td><b>' + esc(r.system) + '</b> // ' + esc(r.action) +
-            ' // ' + esc(r.author) + '<br>' + esc(r.entry) + '</td></tr>';
+        p.rows.map(function (r) {
+          return '<tr><td class="prj-date">' + r.date + '<br>ML-' + esc(String(r.id).padStart(6, "0")) + '</td><td><b>' + esc(r.system) +
+            '</b> // ' + esc(r.action) + ' // ' + esc(r.author) + '<br>' + esc(r.entry) + '</td></tr>';
         }).join("") + '</table>';
+      els.body.scrollTop = 0;
     }
 
+    function fail() {
+      loaded = false;
+      els.status.classList.add("error");
+      els.status.textContent = "PROJECT STATUS UNAVAILABLE. RETRY LATER.";
+      els.list.innerHTML = '<div class="record-empty">PROJECT STATUS NOT RETRIEVED.</div>';
+    }
+    function getJson(url) {
+      return fetch(url, { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+    }
     window.oerLoadProjects = function () {
       if (loaded) return;
       loaded = true;
-      fetch("/data/maintenance.json", { cache: "no-cache" })
-        .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-        .then(function (d) {
-          if (!d || d.ok !== true || !d.records) throw new Error("bad file");
-          render(build(d.records));
+      Promise.all([getJson("/maintenance/projects.json"), getJson("/data/maintenance.json")])
+        .then(function (res) {
+          if (!res[0] || !res[0].projects || !res[1] || res[1].ok !== true || !res[1].records) throw new Error("bad file");
+          build(res[0].projects, res[1].records);
+          render();
         })
-        .catch(function () {
-          loaded = false;
-          els.status.classList.add("error");
-          els.status.textContent = "PROJECT STATUS UNAVAILABLE. RETRY LATER.";
-          els.list.innerHTML = '<div class="record-empty">PROJECT STATUS NOT RETRIEVED.</div>';
-        });
+        .catch(fail);
     };
     els.list.addEventListener("click", function (e) {
       var tr = e.target.closest("tr[data-code]");

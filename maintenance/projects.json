@@ -1,0 +1,805 @@
+{
+ "note": "Engineering project list (2026-11-13). Each project: window [from, to], outcome, register documents, and match rules. A log entry belongs to a project when its date is inside the window and its system heading matches sys, or its text matches text, or its text names one of the project's documents. An entry matching several projects goes to the one with the shortest window. OPENED / CLOSED shown on the page are the first and last matching entries.",
+ "projects": [
+  {
+   "code": "ENG-96-01",
+   "title": "NEXUS STUDY PHASE",
+   "outcome": "COMPLETE",
+   "from": "1996-01-01",
+   "to": "1996-07-15",
+   "scope": "Requirements, site assessment, source identification and records practice before any design was approved.",
+   "docs": [
+    "SWA-001 A"
+   ],
+   "sys": "Study Phase|NEXUS / Regional Sites|Source Contacts|NEXUS / Access Control",
+   "text": ""
+  },
+  {
+   "code": "ENG-96-02",
+   "title": "NEXUS INTEGRATED PROTOTYPE",
+   "outcome": "COMPLETE",
+   "from": "1996-03-01",
+   "to": "1997-04-30",
+   "scope": "Collectors, ingestion, record store and comparison tests on the development host.",
+   "docs": [
+    "SWA-001 A"
+   ],
+   "sys": "Collection Jobs|Development Host|Observation Comparison|Backup Practice",
+   "text": ""
+  },
+  {
+   "code": "ENG-96-03",
+   "title": "BUILDING 2 MACHINE ROOM FIT-OUT",
+   "outcome": "COMPLETE",
+   "from": "1996-06-01",
+   "to": "1997-07-31",
+   "scope": "Raised floor, cooling, utility feed, generator, UPS and the building network for the machine room.",
+   "docs": [
+    "FLR-001 A",
+    "MEC-001 A",
+    "PWR-001 A",
+    "PWR-001 B",
+    "NET-001 A",
+    "FLR-001 B"
+   ],
+   "sys": "NEXUS / (Machine Room|Building|Power|Building Network|Engineering Room)",
+   "text": ""
+  },
+  {
+   "code": "ENG-96-04",
+   "title": "REGIONAL NODES N1-N8",
+   "outcome": "COMPLETE",
+   "from": "1996-10-01",
+   "to": "1998-06-30",
+   "scope": "Eight remote data collection sites: collector rooms, sensor interfaces, T1 links and acceptance.",
+   "docs": [
+    "NODE-001 A",
+    "INV-002 A",
+    "NET-002 A",
+    "NET-002 B",
+    "RCK-03 A",
+    "NODE-001 B",
+    "INV-002 B"
+   ],
+   "sys": "Regional Node|Regional Nodes|NEXUS / Regional",
+   "text": "\\bnode site|\\bT1\\b"
+  },
+  {
+   "code": "ENG-97-01",
+   "title": "NEXUS CORE AND CENTRAL HOST",
+   "outcome": "COMPLETE",
+   "from": "1997-04-01",
+   "to": "1997-12-31",
+   "scope": "Central host delivery, storage and tape, the regional transfer contract and the NEXUS CORE acceptance baseline.",
+   "docs": [
+    "SWA-001 B",
+    "RCK-01 A",
+    "RCK-02 A",
+    "INV-001 A",
+    "NET-001 B",
+    "SWA-002 A",
+    "SWA-001 C"
+   ],
+   "sys": "Performance Acceptance|Scheduled Jobs|Test Environment$|Archive Recovery|Archive Verification",
+   "text": "central host|acceptance baseline|NEXUS CORE"
+  },
+  {
+   "code": "ENG-97-02",
+   "title": "ALTERNATE SITE SURVEY",
+   "outcome": "COMPLETE",
+   "from": "1997-05-01",
+   "to": "1997-10-31",
+   "scope": "Leased space for an alternate operations room; layout and first link tests.",
+   "docs": [
+    "SITE-B-001 A"
+   ],
+   "sys": "NEXUS / Site B",
+   "text": ""
+  },
+  {
+   "code": "ENG-98-01",
+   "title": "OER COMMISSIONING",
+   "outcome": "COMPLETE",
+   "from": "1998-01-01",
+   "to": "1998-07-15",
+   "scope": "Watch floor, central host pair, Fibre Channel storage, ATM wide area network and operational configuration for the first OER watch.",
+   "docs": [
+    "FLR-002 A",
+    "RCK-01 B",
+    "SWA-002 B",
+    "RCK-02 B",
+    "NET-002 C",
+    "RCK-03 B",
+    "SEC-001 B",
+    "FLR-002 B",
+    "NET-001 C",
+    "SWA-001 D",
+    "INV-001 B"
+   ],
+   "sys": "Operator Procedures|Host Configuration|Controlled Performance Test|Monitoring Handoff|^Engineering$|Recovery Procedure|Change Control",
+   "text": "commission|watch floor|ATM"
+  },
+  {
+   "code": "ENG-98-02",
+   "title": "RECEIVER AND COMMIT CHAIN",
+   "outcome": "COMPLETE",
+   "from": "1998-07-01",
+   "to": "2001-12-31",
+   "scope": "Receipt, sender commitment and confirmation between the regional nodes and the central receiver.",
+   "docs": [],
+   "sys": "Inbound Interface|Regional Receiver|Commit Monitor|Pending-Confirmation|Receiver Replay|Retry|Run-State|Process-State|Interface Reference",
+   "text": ""
+  },
+  {
+   "code": "ENG-98-03",
+   "title": "REGIONAL TIMING (OER-OPS-1998-024)",
+   "outcome": "CLOSED",
+   "from": "1998-07-01",
+   "to": "2002-06-30",
+   "scope": "Late and out-of-sequence regional updates, including the July 1997 record sequence.",
+   "docs": [],
+   "sys": "Regional Timing|Regional Clock|July 1997 Record|External Feed Schedule|External Feed Freshness|Evidence Search|Provider Documentation",
+   "text": "OER-OPS-1998-024"
+  },
+  {
+   "code": "ENG-99-01",
+   "title": "ARCHIVE WRITE PERFORMANCE",
+   "outcome": "COMPLETE",
+   "from": "1999-01-01",
+   "to": "2001-12-31",
+   "scope": "Nightly archive write phase, host capacity and verification of archived counts.",
+   "docs": [],
+   "sys": "^Archive (Write )?Performance$|^Archive (Host|Test Host|Services|Integrity|Retrieval)$|Archive Recovery Documentation|Test Environment Access|Test Revision Control",
+   "text": ""
+  },
+  {
+   "code": "ENG-99-02",
+   "title": "SITE B ALTERNATE OPERATIONS ROOM",
+   "outcome": "COMPLETE",
+   "from": "1999-05-01",
+   "to": "2000-05-31",
+   "scope": "Six-console alternate room with its own power, a DS3 link and a replicated archive; first switchover procedure.",
+   "docs": [
+    "PWR-002 A",
+    "NET-002 D",
+    "SITE-B-001 B",
+    "SITE-B-002 A",
+    "SITE-B-002 B"
+   ],
+   "sys": "Alternate Site",
+   "text": "Site B|DS3|switchover"
+  },
+  {
+   "code": "ENG-99-03",
+   "title": "YEAR 2000 READINESS",
+   "outcome": "COMPLETE",
+   "from": "1999-03-01",
+   "to": "2000-03-15",
+   "scope": "Date handling across hosts, collectors and node equipment; rollover configuration and the rollover watch.",
+   "docs": [
+    "SWA-001 E",
+    "PWR-001 C",
+    "FLR-001 C"
+   ],
+   "sys": "",
+   "text": "Y2K|year 2000|rollover|2000-02-29|leap day|tape vault|load bank"
+  },
+  {
+   "code": "ENG-00-01",
+   "title": "GIGABIT CORE AND DS3 LINKS",
+   "outcome": "COMPLETE",
+   "from": "2000-03-01",
+   "to": "2000-10-15",
+   "scope": "Gigabit core switches replace the FDDI dual ring; DS3 links to N1-N8 and OC-3 to Site B, with a transfer schedule for the faster links.",
+   "docs": [
+    "NET-001 D",
+    "RCK-03 C",
+    "NET-002 E",
+    "SWA-002 C"
+   ],
+   "sys": "Local Network|Wide Area Network",
+   "text": "FDDI|gigabit|Gigabit|core switch|DS3|OC-3"
+  },
+  {
+   "code": "ENG-00-02",
+   "title": "GUEST BADGES, OER-2 BADGES AND DOOR READERS",
+   "outcome": "COMPLETE",
+   "from": "2000-07-01",
+   "to": "2001-12-15",
+   "scope": "Cleared and uncleared guest badge pools with an escort rule, then magnetic stripe badges and door readers at the watch floor and engineering entrances.",
+   "docs": [
+    "SEC-001 C",
+    "SEC-001 D",
+    "FLR-002 C"
+   ],
+   "sys": "",
+   "text": "guest badge|GC-01|OER-2|door reader"
+  },
+  {
+   "code": "ENG-00-03",
+   "title": "SAN, TAPE LIBRARY AND SECOND HOST GENERATION",
+   "outcome": "COMPLETE",
+   "from": "2000-08-01",
+   "to": "2001-03-31",
+   "scope": "1 Gb Fibre Channel SAN and a 400-slot tape library; 32-processor hosts in A08-A10, the first pair moved to test and then retired.",
+   "docs": [
+    "RCK-02 C",
+    "RCK-01 C",
+    "INV-001 C"
+   ],
+   "sys": "",
+   "text": "SAN|tape library|Fibre Channel|A08|host generation"
+  },
+  {
+   "code": "ENG-00-04",
+   "title": "AUTOMATED MONITORING PROTOTYPE",
+   "outcome": "CLOSED - NOT DEPLOYED",
+   "from": "2000-09-01",
+   "to": "2002-08-31",
+   "scope": "Isolated automated monitoring prototype, built and tested apart from production. Not deployed.",
+   "docs": [],
+   "sys": "Monitoring (Prototype|Proposal|Requirements)|Record Comparison Prototype",
+   "text": ""
+  },
+  {
+   "code": "ENG-01-01",
+   "title": "REGIONAL STATUS REPORTING",
+   "outcome": "COMPLETE",
+   "from": "2001-03-01",
+   "to": "2002-03-31",
+   "scope": "Displayed regional status that stopped updating while receiver activity continued.",
+   "docs": [],
+   "sys": "Regional Status",
+   "text": ""
+  },
+  {
+   "code": "ENG-01-02",
+   "title": "MONITORING RESEARCH PROGRAM",
+   "outcome": "COMPLETE",
+   "from": "2001-07-01",
+   "to": "2003-06-30",
+   "scope": "Survey of network, feed, storage and correlation methods for a future monitoring system.",
+   "docs": [],
+   "sys": "Research|Monitoring Data Integration|Network Observation|Capability Review|Monitoring Development|Incoming Data Quality",
+   "text": ""
+  },
+  {
+   "code": "ENG-02-01",
+   "title": "SITE B FULL WATCH FLOOR",
+   "outcome": "COMPLETE",
+   "from": "2001-12-01",
+   "to": "2002-07-15",
+   "scope": "Site B expanded for the full watch floor, with its own power and a revised switchover procedure.",
+   "docs": [
+    "PWR-002 B",
+    "SITE-B-001 C",
+    "SITE-B-002 C"
+   ],
+   "sys": "Alternate Site",
+   "text": "Site B"
+  },
+  {
+   "code": "ENG-03-01",
+   "title": "CORRELATION CLUSTER AND 40 TB SAN",
+   "outcome": "COMPLETE",
+   "from": "2003-03-01",
+   "to": "2004-06-15",
+   "scope": "64-server correlation cluster in a new row D. The first move to the cluster (rev B) was withdrawn after a week; the second held. The SAN grew to 40 TB with disk-to-disk backup ahead of tape.",
+   "docs": [
+    "FLR-001 D",
+    "NET-001 E",
+    "RCK-04 A",
+    "RCK-04 B",
+    "RCK-04 C",
+    "RCK-04 D",
+    "SWA-001 F",
+    "INV-001 D",
+    "RCK-02 D"
+   ],
+   "sys": "Correlation Cluster",
+   "text": "cluster|Row D|row D|disk-to-disk|40 TB"
+  },
+  {
+   "code": "ENG-03-02",
+   "title": "OUT-OF-BAND MANAGEMENT NETWORK",
+   "outcome": "COMPLETE",
+   "from": "2003-10-01",
+   "to": "2004-02-29",
+   "scope": "Console servers and separate management switches at every site; the dial-back modems kept as the last resort.",
+   "docs": [
+    "NET-005 A"
+   ],
+   "sys": "Out-of-Band",
+   "text": "out-of-band|console server|dial-back"
+  },
+  {
+   "code": "ENG-04-01",
+   "title": "OC-3 NODE LINKS",
+   "outcome": "COMPLETE",
+   "from": "2003-12-01",
+   "to": "2004-03-15",
+   "scope": "OC-12 to Site B and OC-3 to the eight nodes.",
+   "docs": [
+    "NET-002 F",
+    "INV-002 C",
+    "NODE-001 C"
+   ],
+   "sys": "",
+   "text": "OC-3|OC-12"
+  },
+  {
+   "code": "ENG-04-02",
+   "title": "WATCH FLOOR DISPLAYS",
+   "outcome": "COMPLETE",
+   "from": "2004-01-01",
+   "to": "2004-04-30",
+   "scope": "Flat panels replace the CRTs; a 4 x 2 video wall replaces the rear-projection cubes.",
+   "docs": [
+    "FLR-002 D"
+   ],
+   "sys": "Watch Floor Displays",
+   "text": "flat panel|video wall|CRT"
+  },
+  {
+   "code": "ENG-04-03",
+   "title": "300 KVA UPS",
+   "outcome": "COMPLETE",
+   "from": "2004-05-01",
+   "to": "2004-08-31",
+   "scope": "Two 300 kVA UPS units replace the 80 kVA units.",
+   "docs": [
+    "PWR-001 D"
+   ],
+   "sys": "",
+   "text": "300 kVA|80 kVA|new UPS|UPS replace"
+  },
+  {
+   "code": "ENG-04-04",
+   "title": "HOT AND COLD AISLES",
+   "outcome": "COMPLETE",
+   "from": "2004-07-15",
+   "to": "2004-11-15",
+   "scope": "Rows A-D re-oriented into hot and cold aisles.",
+   "docs": [
+    "FLR-001 E",
+    "MEC-001 B"
+   ],
+   "sys": "",
+   "text": "aisle|re-orient"
+  },
+  {
+   "code": "ENG-05-01",
+   "title": "SECOND GENERATOR",
+   "outcome": "COMPLETE",
+   "from": "2005-01-15",
+   "to": "2005-06-15",
+   "scope": "A second generator and paralleling switchgear; the generator plant gets its own drawing.",
+   "docs": [
+    "PWR-001 E",
+    "PWR-005 A"
+   ],
+   "sys": "",
+   "text": "second generator|generator 2|paralleling"
+  },
+  {
+   "code": "ENG-06-01",
+   "title": "ROW A REDUCTION",
+   "outcome": "COMPLETE",
+   "from": "2006-02-15",
+   "to": "2006-05-15",
+   "scope": "Second-generation hosts removed from A04-A07. A01-A03 retained, powered.",
+   "docs": [
+    "RCK-01 D"
+   ],
+   "sys": "Central Hosts",
+   "text": "A04-A07"
+  },
+  {
+   "code": "ENG-06-02",
+   "title": "ROW E BLADE CHASSIS",
+   "outcome": "COMPLETE",
+   "from": "2006-05-15",
+   "to": "2006-09-15",
+   "scope": "Row E for blade chassis with in-row cooling.",
+   "docs": [
+    "FLR-001 F",
+    "MEC-001 C",
+    "RCK-05 A"
+   ],
+   "sys": "",
+   "text": "Row E|blade|in-row"
+  },
+  {
+   "code": "ENG-06-03",
+   "title": "OER-3 PROXIMITY CARDS",
+   "outcome": "COMPLETE",
+   "from": "2006-07-15",
+   "to": "2006-10-31",
+   "scope": "Proximity cards and readers replace the magnetic stripe badges.",
+   "docs": [
+    "SEC-001 E"
+   ],
+   "sys": "",
+   "text": "OER-3|proximity"
+  },
+  {
+   "code": "ENG-07-01",
+   "title": "TIERED SAN AND 10 GB CORE",
+   "outcome": "COMPLETE",
+   "from": "2006-11-15",
+   "to": "2007-04-15",
+   "scope": "4 Gb tiered SAN of 300 TB and a 10 Gb Ethernet core.",
+   "docs": [
+    "RCK-02 E",
+    "NET-001 F",
+    "RCK-03 D"
+   ],
+   "sys": "",
+   "text": "300 TB|tier|10 Gb core|10 Gb Ethernet"
+  },
+  {
+   "code": "ENG-07-02",
+   "title": "VIRTUALIZED SUPPORT SYSTEMS",
+   "outcome": "COMPLETE",
+   "from": "2007-03-01",
+   "to": "2007-06-30",
+   "scope": "Support systems moved onto virtualization hosts in Row E.",
+   "docs": [
+    "RCK-05 B",
+    "INV-001 E"
+   ],
+   "sys": "Support Systems",
+   "text": "virtuali"
+  },
+  {
+   "code": "ENG-07-03",
+   "title": "10 GB WAVELENGTHS AND LINK COMPRESSION",
+   "outcome": "COMPLETE",
+   "from": "2007-08-01",
+   "to": "2008-03-31",
+   "scope": "10 Gb wavelengths to Site B, N1, N2, N5 and N7; compression on node links; replication checks before switchback.",
+   "docs": [
+    "NET-002 G",
+    "SWA-002 D",
+    "SITE-B-002 D"
+   ],
+   "sys": "",
+   "text": "wavelength|compression|replication check"
+  },
+  {
+   "code": "ENG-08-01",
+   "title": "ROW E POWER",
+   "outcome": "COMPLETE",
+   "from": "2008-05-01",
+   "to": "2008-08-15",
+   "scope": "Dedicated circuits for Row E.",
+   "docs": [
+    "PWR-001 F"
+   ],
+   "sys": "",
+   "text": "Row E circuit"
+  },
+  {
+   "code": "ENG-09-01",
+   "title": "STORAGE ARRAY FIRMWARE AND 8 GB SAN",
+   "outcome": "COMPLETE",
+   "from": "2009-06-15",
+   "to": "2009-12-31",
+   "scope": "Six arrays moved to new firmware in two halves; SAN raised to 8 Gb and 1.5 PB.",
+   "docs": [
+    "RCK-02 F",
+    "RCK-02 G"
+   ],
+   "sys": "",
+   "text": "firmware|1.5 PB|8 Gb SAN|arrays? [1-6]"
+  },
+  {
+   "code": "ENG-10-01",
+   "title": "OVERHEAD CABLING",
+   "outcome": "COMPLETE",
+   "from": "2009-12-01",
+   "to": "2010-03-31",
+   "scope": "Under-floor data cabling removed to overhead trays.",
+   "docs": [
+    "FLR-001 G",
+    "RCK-04 E",
+    "INV-001 F"
+   ],
+   "sys": "",
+   "text": "overhead|cable tray|under-floor"
+  },
+  {
+   "code": "ENG-10-02",
+   "title": "MPLS AND NEW CONSOLES",
+   "outcome": "COMPLETE",
+   "from": "2010-04-01",
+   "to": "2010-11-30",
+   "scope": "MPLS between all sites; a thin-bezel video wall and three monitors per console at both sites.",
+   "docs": [
+    "NET-002 H",
+    "SWA-001 G",
+    "FLR-002 E",
+    "SITE-B-001 D"
+   ],
+   "sys": "",
+   "text": "MPLS|thin-bezel|three monitors|video wall"
+  },
+  {
+   "code": "ENG-11-01",
+   "title": "DISTRIBUTED BATCH CLUSTER",
+   "outcome": "COMPLETE",
+   "from": "2010-12-15",
+   "to": "2011-04-15",
+   "scope": "A batch cluster over the archive in Row E; fuel polishing and room for a third generator.",
+   "docs": [
+    "RCK-05 C",
+    "PWR-005 B"
+   ],
+   "sys": "",
+   "text": "batch cluster|fuel polish|third generator"
+  },
+  {
+   "code": "ENG-11-02",
+   "title": "IPV6 DUAL STACK",
+   "outcome": "COMPLETE",
+   "from": "2011-05-15",
+   "to": "2011-09-30",
+   "scope": "IPv6 alongside IPv4 on the site and management networks.",
+   "docs": [
+    "NET-001 G",
+    "NET-005 B"
+   ],
+   "sys": "",
+   "text": "IPv6|dual stack"
+  },
+  {
+   "code": "ENG-12-01",
+   "title": "OER-4 SMART CARDS",
+   "outcome": "COMPLETE",
+   "from": "2011-12-01",
+   "to": "2012-03-31",
+   "scope": "Smart cards with PIN replace the proximity cards.",
+   "docs": [
+    "SEC-001 F"
+   ],
+   "sys": "",
+   "text": "OER-4|smart card"
+  },
+  {
+   "code": "ENG-12-02",
+   "title": "SITE B UPS REPLACEMENT",
+   "outcome": "COMPLETE",
+   "from": "2012-06-15",
+   "to": "2012-10-15",
+   "scope": "The Site B UPS replaced.",
+   "docs": [
+    "PWR-002 C"
+   ],
+   "sys": "",
+   "text": "Site B UPS"
+  },
+  {
+   "code": "ENG-13-01",
+   "title": "LEAF-SPINE FABRIC AND FLASH TIER",
+   "outcome": "COMPLETE",
+   "from": "2013-02-15",
+   "to": "2013-08-15",
+   "scope": "Leaf-spine cabinets at the row ends; the database on a flash tier; A08-A10 removed, A01-A03 retained, powered.",
+   "docs": [
+    "FLR-001 H",
+    "NET-001 H",
+    "NET-006 A",
+    "RCK-03 E",
+    "RCK-01 E",
+    "RCK-02 H",
+    "INV-001 G"
+   ],
+   "sys": "",
+   "text": "leaf|spine|flash|A08-A10"
+  },
+  {
+   "code": "ENG-14-01",
+   "title": "10 GB TO ALL NODES",
+   "outcome": "COMPLETE",
+   "from": "2014-01-01",
+   "to": "2014-04-30",
+   "scope": "10 Gb wavelengths to every node; node equipment refreshed.",
+   "docs": [
+    "NET-002 J",
+    "INV-002 D",
+    "NODE-001 D"
+   ],
+   "sys": "",
+   "text": "[Ww]avelength|every node"
+  },
+  {
+   "code": "ENG-15-01",
+   "title": "DENSE SERVERS FOR ROW D",
+   "outcome": "COMPLETE",
+   "from": "2015-05-01",
+   "to": "2015-08-31",
+   "scope": "Dense multicore servers replace the correlation cluster; a separate support cluster.",
+   "docs": [
+    "RCK-04 F"
+   ],
+   "sys": "Correlation Cluster",
+   "text": "multicore|dense|Row D"
+  },
+  {
+   "code": "ENG-16-01",
+   "title": "CONTAINERS AND OBJECT STORAGE",
+   "outcome": "COMPLETE",
+   "from": "2016-01-01",
+   "to": "2016-11-30",
+   "scope": "Container hosts for collectors and feed handlers; 20 PB object storage for the archive with tape kept as the offline copy; aisle containment; modular UPS frames.",
+   "docs": [
+    "RCK-05 D",
+    "SWA-001 H",
+    "RCK-02 J",
+    "INV-001 H",
+    "FLR-001 J",
+    "MEC-001 D",
+    "PWR-001 G"
+   ],
+   "sys": "",
+   "text": "container|object storage|20 PB|containment|modular UPS"
+  },
+  {
+   "code": "ENG-17-01",
+   "title": "100 GB SPINE AND LINK ENCRYPTION",
+   "outcome": "COMPLETE",
+   "from": "2017-06-15",
+   "to": "2017-10-31",
+   "scope": "100 Gb spine and inter-site link encryption; switchover procedure revised.",
+   "docs": [
+    "NET-001 J",
+    "NET-002 K",
+    "NET-006 B",
+    "NET-007 A",
+    "SITE-B-002 E"
+   ],
+   "sys": "",
+   "text": "100 Gb|encrypt"
+  },
+  {
+   "code": "ENG-18-01",
+   "title": "MANAGEMENT NETWORK PER SITE",
+   "outcome": "COMPLETE",
+   "from": "2017-11-15",
+   "to": "2018-02-28",
+   "scope": "The out-of-band management network separated per site.",
+   "docs": [
+    "NET-005 C"
+   ],
+   "sys": "Out-of-Band",
+   "text": "management network"
+  },
+  {
+   "code": "ENG-19-01",
+   "title": "GENERATOR 1 REPLACEMENT",
+   "outcome": "COMPLETE",
+   "from": "2019-07-01",
+   "to": "2019-11-15",
+   "scope": "Generator 1 replaced.",
+   "docs": [
+    "PWR-005 C"
+   ],
+   "sys": "",
+   "text": "generator 1 replace|new generator|Generator 1 replace"
+  },
+  {
+   "code": "ENG-20-01",
+   "title": "ROW F ACCELERATORS",
+   "outcome": "COMPLETE",
+   "from": "2019-11-01",
+   "to": "2020-03-31",
+   "scope": "Row F for accelerator nodes with liquid cooling distribution.",
+   "docs": [
+    "FLR-001 K",
+    "MEC-001 E",
+    "PWR-001 H",
+    "RCK-04 G",
+    "RCK-06 A",
+    "SWA-001 J",
+    "INV-001 J"
+   ],
+   "sys": "",
+   "text": "Row F|accelerator|liquid"
+  },
+  {
+   "code": "ENG-21-01",
+   "title": "OER-5 CREDENTIALS AND DATABASE SERVERS",
+   "outcome": "COMPLETE",
+   "from": "2021-01-15",
+   "to": "2021-06-30",
+   "scope": "Mobile credential and card; database servers in A04-A09 (A01-A03 retained, powered); modular UPS at Site B.",
+   "docs": [
+    "SEC-001 G",
+    "RCK-01 F",
+    "RCK-02 K",
+    "PWR-002 D"
+   ],
+   "sys": "",
+   "text": "OER-5|mobile credential|A04-A09"
+  },
+  {
+   "code": "ENG-22-01",
+   "title": "LED WALL AND 400 GB SPINE",
+   "outcome": "COMPLETE",
+   "from": "2022-01-15",
+   "to": "2022-09-15",
+   "scope": "Direct-view LED wall and re-spaced consoles at both sites; 400 Gb spine.",
+   "docs": [
+    "FLR-002 F",
+    "SITE-B-001 E",
+    "NET-001 K",
+    "NET-006 C"
+   ],
+   "sys": "",
+   "text": "LED|400 Gb|re-spac"
+  },
+  {
+   "code": "ENG-23-01",
+   "title": "PRIVATE WAVELENGTHS AND ROW E REFRESH",
+   "outcome": "COMPLETE",
+   "from": "2022-12-15",
+   "to": "2023-09-30",
+   "scope": "Private 100 Gb wavelengths to every site; Row E chassis replaced with 2U servers.",
+   "docs": [
+    "NET-002 L",
+    "RCK-05 E"
+   ],
+   "sys": "",
+   "text": "private|wavelength|2U|chassis"
+  },
+  {
+   "code": "ENG-24-01",
+   "title": "KEY ROTATION, ROW C RETIREMENT AND NODE PROCESSING",
+   "outcome": "COMPLETE",
+   "from": "2023-10-15",
+   "to": "2024-09-30",
+   "scope": "Shorter key rotation and a new cipher suite; Row C retired and Row F extended; collection processing at the nodes before transfer.",
+   "docs": [
+    "NET-007 B",
+    "SITE-B-002 F",
+    "FLR-001 L",
+    "RCK-03 F",
+    "RCK-06 B",
+    "INV-001 K",
+    "SWA-001 K",
+    "SWA-002 E",
+    "INV-002 E",
+    "NODE-001 E"
+   ],
+   "sys": "",
+   "text": "key rotation|cipher|Row C|processing at the node"
+  },
+  {
+   "code": "ENG-25-01",
+   "title": "UPS BATTERY STRING REPLACEMENT",
+   "outcome": "COMPLETE",
+   "from": "2024-12-01",
+   "to": "2025-03-31",
+   "scope": "Every UPS battery string replaced.",
+   "docs": [
+    "PWR-001 J",
+    "RCK-02 L"
+   ],
+   "sys": "",
+   "text": "battery string"
+  },
+  {
+   "code": "ENG-25-02",
+   "title": "800 GB CORE LINKS",
+   "outcome": "ONGOING",
+   "from": "2025-08-01",
+   "to": "2025-12-31",
+   "scope": "800 Gb links in the core. In service; old optics still to be removed.",
+   "docs": [
+    "NET-001 L"
+   ],
+   "sys": "",
+   "text": "800 Gb"
+  }
+ ]
+}
