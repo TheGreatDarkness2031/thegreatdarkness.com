@@ -449,6 +449,10 @@
     .register-table tr.superseded td { color: #777777; text-decoration: line-through; }
     .syslog-ranges { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px 4px 2px; }
     .syslog-ranges button.on { background: #000080; color: #ffffff; }
+    /* Full entries (2026-11-12): the record table clips cells to one line; the System Log wraps them. */
+    .syslog-table { table-layout: auto; }
+    .syslog-table td { white-space: normal; overflow: visible; text-overflow: clip; vertical-align: top; }
+    .syslog-table td.sys-entry { width: auto; line-height: 1.4; }
     .syslog-table td.sys-time { width: 128px; white-space: nowrap; }
     .syslog-table td.sys-system { width: 120px; }
     .syslog-table td.sys-level { width: 52px; text-align: center; font-weight: bold; }
@@ -2659,7 +2663,7 @@ function exitMaintenanceLog() {
       list.innerHTML = '<table class="record-table register-table syslog-table"><thead><tr><th>TIME</th><th>SYSTEM</th><th>LEVEL</th><th>ENTRY</th></tr></thead><tbody>' +
         rows.map(function (e) {
           return '<tr class="' + (e.level === "WARN" ? "warn" : "") + '"><td class="sys-time">' + esc(e.time) + '</td><td class="sys-system">' + esc(e.system) +
-            '</td><td class="sys-level">' + esc(e.level) + '</td><td>' + esc(e.message) + '</td></tr>';
+            '</td><td class="sys-level">' + esc(e.level) + '</td><td class="sys-entry">' + esc(e.message) + '</td></tr>';
         }).join("") + "</tbody></table>";
     }
     function load(r) {

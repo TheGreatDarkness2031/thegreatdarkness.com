@@ -37,6 +37,7 @@
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
       ["MAINTENANCE LOG", "/maintenance/?view=records"],
+      ["SYSTEM LOG", "/maintenance/?view=syslog"],
       ["RSS CHANNEL", "/feed/"]
     ]],
     ["RESOURCES", [

@@ -84,6 +84,54 @@ jobs:
             done
           fi
 
+      # Monitor snapshots (2026-11-12): each monitor page's first answers, so
+      # the page shows them at once and then the live answer (assets/gsr.js).
+      # Keys are <function>+JSON args exactly as the pages call them;
+      # tests/test_monitor_snapshot.js keeps this list in step with the pages.
+      - name: Build monitor snapshot
+        run: |
+          node - <<'EOF'
+          const fs = require("fs");
+          const BASE = "https://script.google.com/macros/s/AKfycbxXsPZtr6ZIqLcBIJeiLeoYSoOQQjKX2zDHsmd0Qn0dalEjgtD6hldIWEkQQFGx0K0GFg/exec";
+          const CALLS = [
+            ["getTgdMonitorPage", ["spacewx", "24H"]], ["getTgdMonitorPage", ["severewx", "24H"]],
+            ["getTgdMonitorPage", ["wildfire", "24H"]], ["getTgdMonitorPage", ["volcano", "24H"]],
+            ["getTgdMonitorPage", ["netout", "24H"]], ["getTgdMonitorPage", ["gps", "24H"]],
+            ["getTgdMonitorPage", ["aiinc", "24H"]], ["getTgdMonitorPage", ["neo", "24H"]],
+            ["getQuakeStatus", []], ["getQuakeHistory", ["24H"]],
+            ["getTempViewSummary", []], ["getTempHistHistory", ["HOUR"]],
+            ["getPowerGridRealStatus", []], ["getPowerGridRealHistory", ["24H"]]
+          ];
+          (async () => {
+            const answers = {};
+            // The published copy: any answer that can't be fetched now keeps its last copy.
+            let old = {};
+            try { const r = await fetch("https://thegreatdarkness.com/data/monitors.json", { signal: AbortSignal.timeout(20000) }); const d = await r.json(); if (d && d.ok) old = d.answers || {}; } catch (e) {}
+            for (const [name, args] of CALLS) {
+              const key = name + JSON.stringify(args);
+              const url = BASE + "?rpc=" + encodeURIComponent(name) + "&args=" + encodeURIComponent(JSON.stringify(args));
+              for (let attempt = 1; attempt <= 2 && !answers[key]; attempt++) {
+                try {
+                  const r = await fetch(url, { redirect: "follow", signal: AbortSignal.timeout(45000) });
+                  const d = JSON.parse(await r.text());
+                  if (d && d.ok === true && d.result && d.result.success !== false) answers[key] = d.result;
+                  else console.log("::warning::snapshot answer refused " + key);
+                } catch (e) {
+                  console.log("::warning::snapshot try " + attempt + " failed " + key + ": " + e.message);
+                }
+              }
+              if (!answers[key] && old[key]) { answers[key] = old[key]; console.log("::warning::kept the published copy of " + key); }
+            }
+            fs.mkdirSync("data", { recursive: true });
+            if (Object.keys(answers).length) {
+              fs.writeFileSync("data/monitors.json", JSON.stringify({ ok: true, built: new Date().toISOString(), answers }));
+              console.log("monitor snapshot: " + Object.keys(answers).length + " of " + CALLS.length + " answers");
+            } else {
+              console.log("::warning::no monitor snapshot this run");
+            }
+          })();
+          EOF
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
