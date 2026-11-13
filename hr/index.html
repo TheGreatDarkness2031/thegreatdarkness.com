@@ -133,6 +133,8 @@ dl.fields dd { margin: 0; color: #eee; }
 .bio .who { font-size: 1.05rem; letter-spacing: 2px; color: #fff; margin: 0 0 4px; }
 .bio .post { font-size: 0.75rem; letter-spacing: 1px; color: var(--muted); margin: 0 0 16px; line-height: 1.6; }
 .bio .text { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; line-height: 1.7; color: #e6e6e6; margin: 0; max-width: 62ch; }
+.bio .text p { margin: 0 0 0.9em; }
+.bio .text p:last-child { margin-bottom: 0; }
 
 /* org chart */
 .org { font-size: 0.78rem; }
@@ -558,13 +560,15 @@ table.rack td { padding: 6px 8px; }
     right.appendChild(el("p", "who", (p.hon ? p.hon + " " : "") + p.name.toUpperCase()));
     right.appendChild(el("p", "post", p.title.toUpperCase() + " // " + (p.dept === "NX" ? "NEXUS // " : "") + p.unit.toUpperCase() +
       " // " + (active(p) ? "SINCE " + date(p.hire) : date(p.hire) + " - " + date(p.sep))));
-    var text = el("p", "text", "LOADING PROFILE...");
+    var text = el("div", "text", "LOADING PROFILE...");
     right.appendChild(text);
     box.appendChild(right);
     pane.appendChild(box);
     function fill() {
       var b = biosData && biosData.bios && biosData.bios[p.id];
-      text.textContent = b || "NO PUBLIC PROFILE ON FILE.";
+      // Paragraphs are separated by a blank line in bios.json.
+      text.textContent = "";
+      String(b || "NO PUBLIC PROFILE ON FILE.").split(/\n\s*\n/).forEach(function (para) { text.appendChild(el("p", null, para.trim())); });
     }
     if (biosData) { fill(); return; }
     if (biosLoading) return;
