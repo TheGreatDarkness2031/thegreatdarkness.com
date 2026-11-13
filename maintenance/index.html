@@ -962,8 +962,8 @@
             SYSTEM LOG // AUTOMATED ENTRIES // FACILITY TIME
           </div>
           <div class="syslog-ranges">
-            <button type="button" data-range="24H">24 HOURS</button>
-            <button type="button" data-range="7D" class="on">7 DAYS</button>
+            <button type="button" data-range="24H" class="on">24 HOURS</button>
+            <button type="button" data-range="7D">7 DAYS</button>
             <button type="button" data-range="30D">30 DAYS</button>
             <button type="button" data-range="90D">90 DAYS</button>
           </div>
@@ -2649,7 +2649,7 @@ function exitMaintenanceLog() {
     var list = document.getElementById("sysList");
     var status = document.getElementById("sysStatus");
     var buttons = document.querySelectorAll(".syslog-ranges button");
-    var range = "7D", loaded = {}, busy = false;
+    var range = "24H", loaded = {}, busy = false;
     function esc(s) {
       return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
     }
