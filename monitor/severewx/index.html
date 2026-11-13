@@ -333,6 +333,12 @@ canvas {
     .item-grid.compact { grid-template-columns: repeat(3, 1fr); }
     .range-button { flex: 1 1 28%; }
 }
+
+/* Contact lines in the log (2026-11-12) */
+.contact-toggle { margin-top: 4px; padding: 1px 6px; background: #111; color: #9fd8a8; border: 1px solid #555; font: 11px "Courier New", Courier, monospace; letter-spacing: 1px; cursor: pointer; }
+.contact-toggle:hover { background: #1c1c1c; }
+.contact-details { margin-top: 5px; padding: 6px 8px; background: #080808; border: 1px dashed #444; color: #cfcfcf; font-size: 11px; line-height: 1.5; }
+.contact-key { color: #8a8a8a; }
 </style>
 
 </head>
@@ -598,39 +604,79 @@ function renderWarningLog(items) {
     });
 }
 
-function renderLog(changes) {
+function renderLog(changes, contacts) {
 
+    // Status changes and the contacts the monitor logged (new or escalated),
+    // newest first. A contact line opens to the details it was logged with.
     var list = document.getElementById("eventList");
     list.innerHTML = "";
 
-    if (!changes || !changes.length) {
+    var entries = [];
+    (changes || []).forEach(function(c) { entries.push({ kind: "status", t: c.t || 0, c: c }); });
+    (contacts || []).forEach(function(c) { entries.push({ kind: "contact", t: c.t || 0, c: c }); });
+    entries.sort(function(a, b) { return b.t - a.t; });
+
+    if (!entries.length) {
         var none = document.createElement("div");
         none.className = "event-row";
-        none.textContent = "NO STATUS CHANGES IN THE KEPT HISTORY.";
+        none.textContent = "NO STATUS CHANGES OR CONTACTS IN THE KEPT HISTORY.";
         list.appendChild(none);
         return;
     }
 
-    changes.forEach(function(c) {
+    entries.forEach(function(e) {
+        var c = e.c;
         var row = document.createElement("div");
-        row.className = "event-row";
+        row.className = "event-row" + (e.kind === "contact" ? " contact-row" : "");
 
         var time = document.createElement("div");
         time.className = "event-time";
         time.textContent = c.time;
+        row.appendChild(time);
 
         var status = document.createElement("div");
-        var shown = c.dataStatus === "DEGRADED" ? "DEGRADED" : c.status;
-        status.className = statusClass(shown);
-        status.textContent = "STATUS: " + shown;
+        if (e.kind === "status") {
+            var shown = c.dataStatus === "DEGRADED" ? "DEGRADED" : c.status;
+            status.className = statusClass(shown);
+            status.textContent = "STATUS: " + shown;
+        } else {
+            status.className = statusClass(c.status);
+            status.textContent = (c.change === "RISE"
+                ? "CONTACT ESCALATED: " + (c.previousStatus ? c.previousStatus + " > " : "") + c.status
+                : "NEW CONTACT: " + c.status);
+        }
+        row.appendChild(status);
 
         var detail = document.createElement("div");
         detail.className = "event-detail";
-        detail.textContent = c.summary;
-
-        row.appendChild(time);
-        row.appendChild(status);
+        detail.textContent = e.kind === "status" ? c.summary : c.label;
         row.appendChild(detail);
+
+        if (e.kind === "contact" && c.rows && c.rows.length) {
+            var toggle = document.createElement("button");
+            toggle.type = "button";
+            toggle.className = "contact-toggle";
+            toggle.textContent = "[ DETAILS ]";
+            var box = document.createElement("div");
+            box.className = "contact-details";
+            box.hidden = true;
+            c.rows.forEach(function(r) {
+                var line = document.createElement("div");
+                var k = document.createElement("span");
+                k.className = "contact-key";
+                k.textContent = r[0] + ": ";
+                line.appendChild(k);
+                line.appendChild(document.createTextNode(r[1]));
+                box.appendChild(line);
+            });
+            toggle.addEventListener("click", function() {
+                box.hidden = !box.hidden;
+                toggle.textContent = box.hidden ? "[ DETAILS ]" : "[ HIDE ]";
+            });
+            row.appendChild(toggle);
+            row.appendChild(box);
+        }
+
         list.appendChild(row);
     });
 }
