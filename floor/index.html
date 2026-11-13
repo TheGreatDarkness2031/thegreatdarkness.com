@@ -3316,7 +3316,21 @@
         }
       };
 
+    // The list rarely changes: the Publish site workflow saves it once a
+    // day as /data/network.json (2026-11-13); Apps Script is asked only
+    // when that file is missing.
     function loadNetworkStatusData() {
+      if (!window.fetch) { loadNetworkStatusLive_(); return; }
+      fetch("/data/network.json", { cache: "no-cache" })
+        .then(function(r) { return r.ok ? r.json() : null; })
+        .then(function(d) {
+          if (d && d.success && d.networks && d.networks.length) window.handleNetworkStatusResponse(d);
+          else loadNetworkStatusLive_();
+        })
+        .catch(function() { loadNetworkStatusLive_(); });
+    }
+
+    function loadNetworkStatusLive_() {
       networkStatusRequestCounter++;
 
       const oldScript =
@@ -4988,8 +5002,25 @@
       );
     }
 
+    // Watch Floor piggyback state (see loadRadarData).
+    let floorStatusDueAt = Date.now() + 60000;
+    let floorEventsDueAt = Date.now() + 30000;
+    let floorPendingWith = [];
+
     window.handleRadarResponse =
       function(data) {
+        // Hand the ride-along answers to their own handlers. A server
+        // that hasn't been updated sends none: ask separately then.
+        const asked = floorPendingWith;
+        floorPendingWith = [];
+        if (asked.indexOf("status") !== -1) {
+          if (data && data.status) window.handleSystemStatusResponse(data.status);
+          else { loadSystemStatusData(); }
+        }
+        if (asked.indexOf("events") !== -1) {
+          if (data && data.events) window.handleEventFeedPreviewResponse(data.events);
+          else { loadEventFeedPreview(); }
+        }
         noteRadarAnswerForPolling_(data);
         if (window.oerReady) window.oerReady("radar");
         if (data) noteBulletinVersion(data.bv);
@@ -5189,9 +5220,21 @@
           );
       };
 
+      // Status (every 60 s) and the event feed (every 30 s) ride along on
+      // a Radar poll when they are due (RadarLoad.js, 2026-11-13).
+      const withParts = [];
+      if (Date.now() >= floorStatusDueAt) withParts.push("status");
+      if (Date.now() >= floorEventsDueAt) withParts.push("events");
+      floorPendingWith = withParts;
+      if (withParts.length) {
+        if (withParts.indexOf("status") !== -1) floorStatusDueAt = Date.now() + 60000;
+        if (withParts.indexOf("events") !== -1) floorEventsDueAt = Date.now() + 30000;
+      }
+
       script.src =
         API_URL +
         "?radar=1" +
+        (withParts.length ? "&with=" + withParts.join(",") : "") +
         "&callback=handleRadarResponse" +
         "&_request=" +
         radarRequestCounter +
@@ -5212,7 +5255,11 @@
     let radarLastSignature = "";
     let radarLastPollAt = 0;
 
+    // Server slow-down (RadarLoad.js, 2026-11-13): 1, 2 or 3 x the interval.
+    let radarServerSlow = 1;
+
     function noteRadarAnswerForPolling_(data) {
+      radarServerSlow = Math.min(3, Math.max(1, Math.floor(Number(data && data.slow) || 1)));
       let signature = "";
       try {
         signature = JSON.stringify([
@@ -5251,7 +5298,7 @@
       RADAR_QUIET_STEPS.forEach(function(step) {
         if (radarQuietCount >= step[0]) times = step[1];
       });
-      return baseMs * times;
+      return baseMs * Math.max(times, radarServerSlow);
     }
 
 
@@ -5340,19 +5387,12 @@
     // was made above.
     startRadarPolling_(5000);
 
-    // Hidden tabs skip these too; showing the tab refreshes them.
-    setInterval(function() {
-      if (!document.hidden) { loadSystemStatusData(); }
-    }, 60000);
-
-    setInterval(function() {
-      if (!document.hidden) { loadEventFeedPreview(); }
-    }, 30000);
-
+    // Status and the event feed refresh on Radar polls (loadRadarData);
+    // showing the tab again makes both due on the poll that follows.
     document.addEventListener("visibilitychange", function() {
       if (!document.hidden) {
-        loadSystemStatusData();
-        loadEventFeedPreview();
+        floorStatusDueAt = 0;
+        floorEventsDueAt = 0;
       }
     });
   </script>

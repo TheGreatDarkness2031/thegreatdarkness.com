@@ -2992,7 +2992,11 @@
     let radarLastSignature = "";
     let radarLastPollAt = 0;
 
+    // Server slow-down (RadarLoad.js, 2026-11-13): 1, 2 or 3 x the interval.
+    let radarServerSlow = 1;
+
     function noteRadarAnswerForPolling_(data) {
+      radarServerSlow = Math.min(3, Math.max(1, Math.floor(Number(data && data.slow) || 1)));
       let signature = "";
       try {
         signature = JSON.stringify([
@@ -3031,7 +3035,7 @@
       RADAR_QUIET_STEPS.forEach(function(step) {
         if (radarQuietCount >= step[0]) times = step[1];
       });
-      return baseMs * times;
+      return baseMs * Math.max(times, radarServerSlow);
     }
 
 

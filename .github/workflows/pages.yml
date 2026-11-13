@@ -72,6 +72,22 @@ jobs:
           # rebuild once a day (the 09:07 UTC run) or any manual run.
           FULL=0
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] || { [ "${{ github.event_name }}" = "schedule" ] && [ "$(date -u +%H)" = "09" ] && [ "$(date -u +%M)" -lt 30 ]; }; then FULL=1; echo "full rebuild of every log year"; fi
+          # Watch Floor NETWORK REFERENCE list (2026-11-13): it rarely changes, so
+          # it is rebuilt from Apps Script on the daily full run (or when the site
+          # has no copy yet) and otherwise copied from the published site. /floor/
+          # reads /data/network.json and asks Apps Script only when it is missing.
+          mkdir -p data
+          netok() { node -e 'const d=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(d&&d.success===true&&Array.isArray(d.networks)&&d.networks.length?0:1)' "$1" 2>/dev/null; }
+          if [ "$FULL" = 0 ] && curl -sSL --max-time 30 -o data/network.old "$LIVE/network.json" && netok data/network.old; then
+            mv data/network.old data/network.json; echo "kept data/network.json"
+          elif curl -sSL --max-time 120 --retry 2 -o data/network.new "$BASE?networkstatus=1" && netok data/network.new; then
+            mv data/network.new data/network.json; echo "rebuilt data/network.json ($(wc -c < data/network.json) bytes)"
+          elif curl -sSL --max-time 30 -o data/network.old "$LIVE/network.json" && netok data/network.old; then
+            mv data/network.old data/network.json; echo "::warning::kept the published data/network.json"
+          else
+            echo "::warning::no data/network.json this run"
+          fi
+          rm -f data/network.new data/network.old
           keep() {  # keep <file>: the published copy, if it is valid
             curl -sSL --max-time 30 -o "$1.old" "$LIVE/${1#data/}" && valid "$1.old" && mv "$1.old" "$1"
             rm -f "$1.old"; [ -f "$1" ]
