@@ -237,6 +237,14 @@ table.rack td { padding: 6px 8px; }
   .door-plate { padding: 10px 16px 9px; }
   .door-name { font-size: 1.05rem; letter-spacing: 4px; }
 }
+
+/* Full-size photo viewer (2026-11-13) */
+img[data-full] { cursor: zoom-in; }
+tr[data-id] img[data-full] { cursor: pointer; }
+.photo-viewer { position: fixed; inset: 0; z-index: 9999; background: rgba(0,0,0,0.88); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; cursor: zoom-out; padding: 12px; box-sizing: border-box; }
+.photo-viewer img { max-width: 100%; max-height: calc(100vh - 60px); width: auto; height: auto; border: 2px solid #888; background: #ccc; }
+.photo-viewer-cap { margin-top: 8px; color: #cfcfcf; font: 12px "Courier New", Courier, monospace; letter-spacing: 1px; text-align: center; }
 </style>
 </head>
 
@@ -315,6 +323,9 @@ table.rack td { padding: 6px 8px; }
     img.src = photoSrc(p, y);
     img.alt = p.name + ", " + y;
     img.loading = "lazy";
+    // Full-size copy (1024 px, /hr/img/f/) opens on click (2026-11-13).
+    img.setAttribute("data-full", "/hr/img/f/" + p.id + "_" + y + ".jpg");
+    img.title = "ENLARGE";
     return img;
   }
   function link(view, extra) {
@@ -358,7 +369,25 @@ table.rack td { padding: 6px 8px; }
     e.preventDefault();
     go(a.getAttribute("href"));
   });
+  // Photo viewer: a full-size copy over the page; click or Esc closes it.
+  var viewer = null;
+  function closeViewer() { if (viewer) { viewer.remove(); viewer = null; } }
+  function openViewer(img) {
+    closeViewer();
+    viewer = el("div", "photo-viewer");
+    var big = el("img");
+    big.src = img.getAttribute("data-full");
+    big.alt = img.alt;
+    big.onerror = function () { big.src = img.src; };
+    viewer.appendChild(big);
+    viewer.appendChild(el("div", "photo-viewer-cap", (img.alt || "").toUpperCase() + "  //  CLICK TO CLOSE"));
+    viewer.addEventListener("click", closeViewer);
+    document.body.appendChild(viewer);
+  }
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeViewer(); });
   pane.addEventListener("click", function (e) {
+    var im = e.target.closest("img[data-full]");
+    if (im && !e.target.closest("tr[data-id]")) { e.preventDefault(); openViewer(im); return; }
     var a = e.target.closest("a[data-go]");
     if (a) { e.preventDefault(); go(a.getAttribute("href")); return; }
     var tr = e.target.closest("tr[data-id]");
