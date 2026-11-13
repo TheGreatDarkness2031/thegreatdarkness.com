@@ -1593,15 +1593,32 @@
       table.className =
         "record-table";
 
+      // Click a heading to sort by it, again to reverse (2026-11-13).
+      var sortArrow = function(key) {
+        return maintenanceState.sortBy === key
+          ? (maintenanceState.sortDirection === "asc" ? " &#9650;" : " &#9660;")
+          : "";
+      };
       table.innerHTML =
         "<thead>" +
           "<tr>" +
-            "<th style=\"width:78px;\">RECORD</th>" +
-            "<th style=\"width:84px;\">DATE</th>" +
-            "<th>SYSTEM</th>" +
-            "<th style=\"width:118px;\">ACTION</th>" +
+            "<th data-sort=\"id\" class=\"sortable\" style=\"width:86px;\">RECORD" + sortArrow("id") + "</th>" +
+            "<th data-sort=\"date\" class=\"sortable\" style=\"width:92px;\">DATE" + sortArrow("date") + "</th>" +
+            "<th data-sort=\"system\" class=\"sortable\">SYSTEM" + sortArrow("system") + "</th>" +
+            "<th data-sort=\"action\" class=\"sortable\" style=\"width:128px;\">ACTION" + sortArrow("action") + "</th>" +
           "</tr>" +
         "</thead>";
+      table.querySelector("thead").addEventListener("click", function(e) {
+        var th = e.target.closest("th[data-sort]");
+        if (!th) return;
+        var key = th.getAttribute("data-sort");
+        var dir = maintenanceState.sortBy === key
+          ? (maintenanceState.sortDirection === "asc" ? "desc" : "asc")
+          : (key === "date" || key === "id" ? "desc" : "asc");
+        maintenanceElements.sortSelect.value = key;
+        maintenanceElements.directionSelect.value = dir;
+        applyMaintenanceLogFilters_();
+      });
 
       var body =
         document.createElement(
@@ -1659,6 +1676,12 @@
           row.addEventListener(
             "click",
             function() {
+              if (selectedMaintenanceRecordId === record.id) {
+                selectedMaintenanceRecordId = "";
+                renderMaintenanceSelectedRow_(body, "");
+                renderMaintenanceRecordPlaceholder_();
+                return;
+              }
               selectMaintenanceRecord_(
                 record,
                 body
@@ -1752,6 +1775,8 @@
         body.rows,
         function(row) {
 
+          if (!row.dataset.recordId) return;
+
           row.className =
             row.dataset.recordId ===
             recordId
@@ -1761,6 +1786,40 @@
       );
     }
 
+
+    // The record view and its PRIOR / NEXT bar sit in one box that opens
+    // under the selected row (2026-11-13); hidden when nothing is selected.
+    var maintenanceInlineBox_ = null;
+    function placeMaintenanceRecordView_() {
+      if (!maintenanceInlineBox_) {
+        maintenanceInlineBox_ = document.createElement("div");
+        maintenanceInlineBox_.className = "inline-view mrec-inline";
+        var view = maintenanceElements.recordViewTitle.parentNode;
+        var nav = maintenanceElements.previousRecordButton.parentNode;
+        maintenanceInlineBox_.appendChild(view);
+        maintenanceInlineBox_.appendChild(nav);
+      }
+      var old = maintenanceElements.recordList.querySelector("tr.inline-row");
+      var row = selectedMaintenanceRecordId
+        ? maintenanceElements.recordList.querySelector('tr[data-record-id="' + selectedMaintenanceRecordId + '"]')
+        : null;
+      if (!row) {
+        if (old) old.remove();
+        maintenanceInlineBox_.hidden = true;
+        return;
+      }
+      var holder = old || document.createElement("tr");
+      holder.className = "inline-row";
+      if (!old) {
+        var td = document.createElement("td");
+        td.colSpan = 4;
+        holder.appendChild(td);
+      }
+      holder.firstChild.appendChild(maintenanceInlineBox_);
+      maintenanceInlineBox_.hidden = false;
+      if (row.nextSibling !== holder) row.parentNode.insertBefore(holder, row.nextSibling);
+      row.scrollIntoView({ block: "nearest" });
+    }
 
     function renderMaintenanceRecordPlaceholder_() {
 
@@ -1786,6 +1845,7 @@
       );
 
       updateMaintenanceRecordNavigation_();
+      placeMaintenanceRecordView_();
     }
 
 
@@ -1870,6 +1930,7 @@
       maintenanceElements.recordViewBody.appendChild(
         entry
       );
+      placeMaintenanceRecordView_();
     }
 
 
@@ -2433,6 +2494,13 @@ function exitMaintenanceLog() {
     body.oer-night tr.inline-row > td { background: #111111; }
     body.oer-night .inline-view { background: #000000; color: #cccccc; border-color: #3a7a3a; }
     body.oer-night .inline-view-title { background: #1a3a1a; }
+
+    /* Maintenance Log: the record opens under its row (2026-11-13) */
+    #recordList { height: auto; max-height: none; overflow: visible; }
+    #recordList thead th { position: sticky; top: 0; z-index: 1; }
+    .mrec-inline { padding: 0; border: 0; margin: 4px 6px 10px 18px; background: transparent; }
+    .mrec-inline .record-view { margin-top: 0; }
+    .mrec-inline .record-navigation { margin-top: 0; }
 </style>
   <script>
   // ENGINEERING PROJECTS view (rebuilt 2026-11-13): the project list is
@@ -2595,14 +2663,29 @@ function exitMaintenanceLog() {
     function esc(s) {
       return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; });
     }
+    // Click a heading to sort by it, again to reverse (2026-11-13).
+    var sortKey = "time", sortDir = -1, last = null;
+    var FIELD = { time: "time", system: "system", level: "level", entry: "message" };
+    function th(k, label) {
+      return '<th data-sort="' + k + '" class="sortable">' + label + (k === sortKey ? (sortDir > 0 ? " &#9650;" : " &#9660;") : "") + "</th>";
+    }
     function draw(r) {
-      var rows = (r && r.entries) || [];
-      status.textContent = "SYSTEM LOG: ONLINE | RANGE: " + r.range + " | ENTRIES: " + rows.length + " | NEWEST FIRST";
+      last = r;
+      var rows = ((r && r.entries) || []).map(function (e, i) { return { e: e, i: i }; });
+      rows.sort(function (a, b) {
+        var x = String(a.e[FIELD[sortKey]] || ""), y = String(b.e[FIELD[sortKey]] || "");
+        // Entries arrive newest first, so a lower index is newer.
+        if (x === y) return a.i - b.i;
+        return (x < y ? -1 : 1) * sortDir;
+      });
+      rows = rows.map(function (x) { return x.e; });
+      status.textContent = "SYSTEM LOG: ONLINE | RANGE: " + r.range + " | ENTRIES: " + rows.length + " | SORTED BY " +
+        sortKey.toUpperCase() + (sortDir > 0 ? " (ASCENDING)" : " (DESCENDING)");
       if (!rows.length) {
         list.innerHTML = '<div class="record-empty">NO SYSTEM ENTRIES IN THIS RANGE. ALL FEEDS AND RECORDS NOMINAL.</div>';
         return;
       }
-      list.innerHTML = '<table class="record-table register-table syslog-table"><thead><tr><th>TIME</th><th>SYSTEM</th><th>LEVEL</th><th>ENTRY</th></tr></thead><tbody>' +
+      list.innerHTML = '<table class="record-table register-table syslog-table"><thead><tr>' + th("time", "TIME") + th("system", "SYSTEM") + th("level", "LEVEL") + th("entry", "ENTRY") + '</tr></thead><tbody>' +
         rows.map(function (e) {
           return '<tr class="' + (e.level === "WARN" ? "warn" : "") + '"><td class="sys-time">' + esc(e.time) + '</td><td class="sys-system">' + esc(e.system) +
             '</td><td class="sys-level">' + esc(e.level) + '</td><td class="sys-entry">' + esc(e.message) + '</td></tr>';
@@ -2622,6 +2705,13 @@ function exitMaintenanceLog() {
     }
     Array.prototype.forEach.call(buttons, function (b) {
       b.addEventListener("click", function () { load(b.getAttribute("data-range")); });
+    });
+    list.addEventListener("click", function (e) {
+      var h = e.target.closest("th[data-sort]");
+      if (!h || !last) return;
+      var k = h.getAttribute("data-sort");
+      if (k === sortKey) sortDir = -sortDir; else { sortKey = k; sortDir = k === "time" ? -1 : 1; }
+      draw(last);
     });
     window.oerLoadSyslog = function () { load(); };
     if (new URLSearchParams(location.search).get("view") === "syslog") load();
