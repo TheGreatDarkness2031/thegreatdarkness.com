@@ -25,10 +25,16 @@
     : null;
   var snapshotUsed = {};
 
+  // Busy retry (2026-11-13): when Google is running too many scripts it
+  // answers with an error web page instead of our script, so the callback
+  // never runs. That is spotted when the script finishes loading, and the
+  // call is sent again after a random 1-3 s pause (up to BUSY_RETRIES
+  // times). Apps Script never ran the refused call, so a retry is safe.
+  var BUSY_RETRIES = 2;
   function call(name, args, onOk, onFail, userObject) {
-    var cb = "tgdRpc" + Date.now().toString(36) + "_" + (++seq);
-    var script = document.createElement("script");
-    var done = false;
+    var cb = "";
+    var script = null;
+    var done = false, tries = 0;
     var timer = setTimeout(function() { finish(null, "NO RESPONSE"); }, TIMEOUT_MS);
 
     function finish(answer, problem) {
@@ -38,7 +44,7 @@
       // The console frame's applet box and failure dialog (console.js).
       if (window.oerRpcEnd) window.oerRpcEnd(!!(answer && answer.ok) || shown);
       window[cb] = function() {};
-      if (script.parentNode) script.parentNode.removeChild(script);
+      if (script && script.parentNode) script.parentNode.removeChild(script);
       if (answer && answer.ok) {
         if (onOk) onOk(answer.result, userObject);
       } else {
@@ -62,13 +68,29 @@
         if (onOk) onOk(d.answers[key], userObject);
       });
     }
-    window[cb] = function(answer) { finish(answer); };
-    script.onerror = function() { finish(null, "NETWORK ERROR"); };
-    script.src = TGD_API_URL +
-      "?rpc=" + encodeURIComponent(name) +
-      "&args=" + encodeURIComponent(JSON.stringify(args)) +
-      "&callback=" + cb;
-    document.head.appendChild(script);
+    function send() {
+      if (done) return;
+      tries++;
+      cb = "tgdRpc" + Date.now().toString(36) + "_" + (++seq);
+      script = document.createElement("script");
+      var answered = false, mine = cb, tag = script;
+      window[mine] = function(answer) { answered = true; finish(answer); };
+      script.onerror = function() { finish(null, "NETWORK ERROR"); };
+      script.onload = function() {
+        if (answered || done) return;
+        // Loaded but never called back: Google's busy page.
+        window[mine] = function() {};
+        if (tag.parentNode) tag.parentNode.removeChild(tag);
+        if (tries > BUSY_RETRIES) { finish(null, "SERVICE BUSY"); return; }
+        setTimeout(send, 1000 + Math.floor(Math.random() * 2000));
+      };
+      script.src = TGD_API_URL +
+        "?rpc=" + encodeURIComponent(name) +
+        "&args=" + encodeURIComponent(JSON.stringify(args)) +
+        "&callback=" + cb;
+      document.head.appendChild(script);
+    }
+    send();
   }
 
   function runner(onOk, onFail, userObject) {
