@@ -100,7 +100,10 @@ jobs:
             ["getTgdMonitorPage", ["aiinc", "24H"]], ["getTgdMonitorPage", ["neo", "24H"]],
             ["getQuakeStatus", []], ["getQuakeHistory", ["24H"]],
             ["getTempViewSummary", []], ["getTempHistHistory", ["HOUR"]],
-            ["getPowerGridRealStatus", []], ["getPowerGridRealHistory", ["24H"]]
+            ["getPowerGridRealStatus", []], ["getPowerGridRealHistory", ["24H"]],
+            ["getEventFeedData", [{ view: "current", archive: 0, filter: "ALL", severityLevels: [1, 2, 3, 4, 5], sourceKeys: [], limit: 25 }]],
+            ["getEventFeedData", [{ view: "current", limit: 50 }]],
+            ["getSystemLog", ["24H"]]
           ];
           (async () => {
             const answers = {};

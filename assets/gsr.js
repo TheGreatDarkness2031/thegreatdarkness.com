@@ -15,7 +15,10 @@
   // the saved copy at once (from GitHub, ~0.1 s), then the live answer
   // replaces it when Apps Script replies. If the live call fails after a
   // copy was shown, the copy stays and no failure is reported.
-  var snapshot = location.pathname.indexOf("/monitor/") === 0 && window.fetch
+  // Since 2026-11-13 the same file also holds the first answers of the
+  // Event Log (/events/, /events/text/) and the System Log (/maintenance/).
+  var snapshotPage = /^\/(monitor|events|maintenance)\//.test(location.pathname);
+  var snapshot = snapshotPage && window.fetch
     ? fetch("/data/monitors.json", { cache: "no-cache" })
         .then(function(r) { return r.ok ? r.json() : null; })
         .catch(function() { return null; })
