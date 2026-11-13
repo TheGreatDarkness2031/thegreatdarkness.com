@@ -2376,7 +2376,7 @@ function exitMaintenanceLog() {
       }
       modeLabel.textContent = name === "register" ? "REGISTER VIEW" : name === "projects" ? "PROJECT VIEW" : name === "syslog" ? "SYSTEM LOG VIEW" : "INDEX VIEW";
       var url = new URL(location.href);
-      if (name === "register" || name === "projects" || name === "syslog") url.searchParams.set("view", name); else url.searchParams.delete("view");
+      url.searchParams.set("view", name === "register" || name === "projects" || name === "syslog" ? name : "records");
       history.replaceState(null, "", url.pathname + url.search);
       if (window.oerRefreshMenu) window.oerRefreshMenu();
       if (name === "register") load();
@@ -2494,6 +2494,7 @@ function exitMaintenanceLog() {
 
     var startView = new URLSearchParams(location.search).get("view");
     if (startView === "register" || startView === "projects" || startView === "syslog") showView(startView);
+    else showView("records");
   })();
   </script>
 

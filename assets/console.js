@@ -36,6 +36,7 @@
     ["RECORDS", [
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
+      ["MAINTENANCE LOG", "/maintenance/?view=records"],
       ["RSS CHANNEL", "/feed/"]
     ]],
     ["RESOURCES", [
@@ -47,7 +48,7 @@
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
   // Screens sized to fit the window exactly: no footer below them.
-  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/", "/maintenance/"];
+  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/", "/maintenance/", "/watch/"];
   var framed = !window.OER_NO_FRAME;
 
   function el(tag, cls, text) {
@@ -70,9 +71,10 @@
     var q = href.indexOf("?");
     if (q >= 0) {
       var base = href.slice(0, q);
-      // The only entry for that page (ENGINEERING): lights on every view.
+      // The only top-level entry for that page (ENGINEERING): lights on every
+      // view, including the MAINTENANCE LOG view that RECORDS also links to.
       var alone = MENU.filter(function (item) { return typeof item[1] === "string" && item[1].split("?")[0] === base; }).length === 1 &&
-        !MENU.some(function (item) { return typeof item[1] !== "string" && item[1].some(function (s) { return s[1].split("?")[0] === base; }); });
+        MENU.some(function (item) { return item[1] === href; });
       if (alone) return p === base;
       return p === base && location.search.indexOf(href.slice(q + 1)) >= 0;
     }

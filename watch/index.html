@@ -579,34 +579,87 @@
     .text-only-link { color: #000080 !important; font: 11px "Courier New", Courier, monospace; letter-spacing: 1px; }
     .text-only-link:hover, .text-only-link:focus { color: #0000ee !important; }
 
+
+    /* ===== Watch Log room look (2026-11-12), same as /maintenance/ ===== */
+    body { padding: 10px 12px 12px; color: #d8d8d8; }
+    .console-window.office { width: 95%; max-width: 1180px; margin: 0 auto; padding: 0; background: none; border: 0; }
+    .door { text-align: center; margin: 0 0 8px; }
+    .door-plate {
+      display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+      border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+    }
+    .door-room { color: #9a9a9a; font-size: 11px; letter-spacing: 4px; }
+    .door-name { color: #ececec; font-size: 20px; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+    .door-hours { color: #8a8a8a; font-size: 10px; letter-spacing: 2px; }
+    .office-bar { position: relative; text-align: center; margin: 0 0 8px; min-height: 22px; }
+    .office-nav { display: inline-block; }
+    .office-nav .view-link { display: inline-block; white-space: nowrap; margin: 0 2px; padding: 1px 2px; color: #7fd18b; font-size: 13px; letter-spacing: 1px; text-decoration: none; }
+    .office-nav .view-link::before { content: "[ "; }
+    .office-nav .view-link::after { content: " ]"; }
+    .office-nav a.view-link:hover { text-decoration: underline; }
+    .office-nav .view-link.on { color: #000; background: #7fd18b; }
+    .office-switch { position: absolute; right: 0; top: 0; }
+    .window-body.desk { padding: 12px 14px 14px; background: #050505; border: 2px solid #888888; box-shadow: inset 0 0 0 4px #050505, inset 0 0 0 5px #444; }
+
+    /* the gray Windows panels and buttons, in the room's colors */
+    .bevel-outset { background: #0d0d0d; border: 1px solid #555; color: #d8d8d8; }
+    .bevel-inset { border: 1px solid #444; }
+    .controls-title, .control-label, .filter-heading, .pagination-heading { color: #bdbdbd; }
+    .filter-panel, .pagination-panel { border-color: #444; }
+    .panel-title { background: #1b1b1b; color: #e6e6e6; border-bottom: 1px solid #444; }
+    button, button.active {
+      background: #1b1b1b; color: #e6e6e6; border: 1px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000;
+      font-family: "Courier New", Courier, monospace; letter-spacing: 1px;
+    }
+    button:hover { background: #262626; }
+    button:active, button.active { background: #0a0a0a; }
+    input, select { background: #000; color: #fff; border: 1px solid #555; font-family: "Courier New", Courier, monospace; }
+    .page-indicator { background: #000; color: #d8d8d8; border: 1px solid #555; }
+
+    /* Computers: the room fits the window (frame bars 88 px); the record
+       stream and the selected record scroll inside their panels. */
+    @media (min-width: 901px) and (min-height: 560px) {
+      .console-window.office { height: calc(100vh - 88px - 22px); display: flex; flex-direction: column; }
+      .window-body.desk { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+      .content-layout { flex: 1; min-height: 260px; }
+      .stream-panel, .details-panel { display: flex; flex-direction: column; min-height: 0; }
+      .watch-log-stream, .selected-details-body { flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
+    }
+    @media (max-width: 720px) {
+      body { padding: 7px 4px; }
+      .office-switch { position: static; display: block; margin-top: 6px; }
+      .door-plate { padding: 7px 14px 6px; }
+      .door-room { letter-spacing: 2px; }
+      .door-hours { letter-spacing: 1px; }
+    }
+
   </style>
 
 </head>
 
 <body>
 
-  <main class="console-window">
+  <main class="console-window office">
 
-    <header class="title-bar">
-      === OER WATCH LOG ARCHIVE CONSOLE ===
-
-      <span class="title-bar-right">
-        NODE: GDK-001
-      </span>
-    </header>
-
-    <section class="window-body">
-
-      <div class="console-heading">
-        <span data-oer-daynight="watch" data-default="night"></span>
-        OPERATIONAL EVENT REGISTER // WATCH-FLOOR RECORD ARCHIVE<br>
-
-        <span class="console-heading-muted">
-          WATCH LOG ARCHIVE SOURCE // INDEXED ANNUAL RETRIEVAL //
-          READ ONLY
-        </span><br>
-        <a href="/watch/text/" class="text-only-link">[ TEXT-ONLY VERSION ]</a>
+    <div class="door">
+      <div class="door-plate">
+        <div class="door-room">OPERATIONS ROOM // WATCH FLOOR RECORDS</div>
+        <div class="door-name">WATCH LOG</div>
+        <div class="door-hours">WATCH-FLOOR RECORD ARCHIVE // INDEXED ANNUAL RETRIEVAL // READ ONLY</div>
       </div>
+    </div>
+
+    <div class="office-bar">
+      <nav class="office-nav">
+        <span class="view-link on">WATCH LOG</span>
+        <a class="view-link" href="/watch/text/">TEXT-ONLY VERSION</a>
+        <a class="view-link" href="/schedule/">WATCH SCHEDULE</a>
+        <a class="view-link" href="/floor/">WATCH FLOOR</a>
+      </nav>
+      <span class="office-switch"><span data-oer-daynight="watch" data-default="night"></span></span>
+    </div>
+
+    <section class="window-body desk">
 
       <section class="controls-panel bevel-outset">
 
@@ -839,11 +892,6 @@
 
       </section>
 
-      <footer class="footer">
-        OER WATCH LOG ARCHIVE CONSOLE //
-        INDEX-FIRST ANNUAL RETRIEVAL //
-        PAGED RECORD ACCESS
-      </footer>
 
     </section>
 
