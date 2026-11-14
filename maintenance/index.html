@@ -646,19 +646,19 @@
 
         <!-- Two rows that fit the panel (owner 2026-11-13; ERA removed). -->
         <div class="mfilters">
-          <label class="mf"><span>YEAR:</span><select id="yearSelect" aria-label="Year"><option value="LATEST">LATEST</option></select></label>
-          <label class="mf"><span>ACTION:</span><select id="actionSelect"><option value="">ALL</option></select></label>
-          <label class="mf"><span>SYSTEM:</span><select id="systemSelect"><option value="">ALL</option></select></label>
-          <label class="mf"><span>AUTHOR:</span><select id="authorSelect"><option value="">ALL</option></select></label>
-          <label class="mf mf-search"><span>SEARCH:</span><input id="searchInput" type="text" autocomplete="off" placeholder="Search record text, systems, personnel..."></label>
-          <label class="mf"><span>SORT:</span><select id="sortSelect">
+          <label class="mf"><span>YEAR</span><select id="yearSelect" aria-label="Year"><option value="LATEST">LATEST</option></select></label>
+          <label class="mf"><span>ACTION</span><select id="actionSelect"><option value="">ALL</option></select></label>
+          <label class="mf"><span>SYSTEM</span><select id="systemSelect"><option value="">ALL</option></select></label>
+          <label class="mf"><span>AUTHOR</span><select id="authorSelect"><option value="">ALL</option></select></label>
+          <label class="mf mf-search"><span>SEARCH</span><input id="searchInput" type="text" autocomplete="off" placeholder="Search record text, systems, personnel..."></label>
+          <label class="mf"><span>SORT</span><select id="sortSelect">
             <option value="date">DATE</option>
             <option value="id">RECORD ID</option>
             <option value="action">ACTION</option>
             <option value="system">SYSTEM</option>
             <option value="author">AUTHOR</option>
           </select></label>
-          <label class="mf"><span>ORDER:</span><select id="directionSelect">
+          <label class="mf"><span>ORDER</span><select id="directionSelect">
             <option value="desc">NEWEST FIRST</option>
             <option value="asc">OLDEST FIRST</option>
           </select></label>
@@ -2452,12 +2452,15 @@ function exitMaintenanceLog() {
     .prj-entries .prj-date { white-space: nowrap; }
   
     /* Maintenance Log controls in two rows (2026-11-13) */
-    .mfilters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px 14px; padding: 6px 4px 4px; }
-    .mf { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 11px; letter-spacing: 1px; }
-    .mf > span { flex: 0 0 auto; text-align: right; }
-    .mf select, .mf input { flex: 1 1 auto; min-width: 0; width: 100%; box-sizing: border-box; }
+    /* Labels sit above their boxes (owner 2026-11-13: line them up), so
+       every box in a row starts and ends on the same column lines. */
+    .mfilters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 14px; padding: 6px 4px 4px; align-items: end; }
+    .mf { display: flex; flex-direction: column; align-items: stretch; gap: 3px; min-width: 0; font-size: 10px; letter-spacing: 1.5px; }
+    .mf > span { text-align: left; opacity: 0.8; }
+    .mf select, .mf input { min-width: 0; width: 100%; height: 26px; box-sizing: border-box; }
     .mf-search { grid-column: span 2; }
-    .mf-buttons { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; }
+    .mf-buttons { grid-column: 1 / -1; display: flex; justify-content: flex-end; gap: 8px; padding-top: 2px; }
+    .mf-buttons button { min-width: 120px; }
     @media (max-width: 900px) {
       .mfilters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .mf-buttons { justify-content: flex-start; flex-wrap: wrap; }
