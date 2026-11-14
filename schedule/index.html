@@ -172,6 +172,13 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
   var ROLE_WORDS = { "Watch Lead": "LEAD", "Watch Monitoring": "MONITORING", "Watch Correlation": "CORRELATION", "Watch COMM": "COMM" };
   var DAY = 86400000;
 
+  // The rotation was posted through the end of 2026 and never updated after
+  // that (owner, 2026-11-13): it shows the plan as posted until then, and
+  // nothing after.
+  var POSTED_TO = "2026-12-31";
+  var POSTED_END = Date.UTC(2027, 0, 1, 6, 0);   // midnight Central, 1 Jan 2027
+  function ended() { return Date.now() >= POSTED_END; }
+
   // Red / Blue rotation: a 10-day cycle counted from 24 June 1998, Red on
   // days 0, 1, 5, 6, 7 (same rule as the watch log, WatchLogGen.js wlgCrew_).
   // A crew holds the floor 07:00-07:00: Day Watch to 19:00, then its Night Watch.
@@ -237,6 +244,11 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
         return crewOn(nd.getUTCFullYear(), nd.getUTCMonth(), nd.getUTCDate()).toUpperCase();
       })() + " DAY WATCH";
 
+    var done = ended();
+    if (done) {
+      crew = "";
+      next = "NOT POSTED";
+    }
     pane.appendChild(el("h2", null, "ON THE FLOOR"));
     pane.appendChild(el("p", "note", "WATCH FLOOR STAFFING AT THIS HOUR. TURNOVER BRIEFINGS BEGIN 15 MINUTES BEFORE EACH CHANGE OF WATCH."));
     var wrap = el("div", "now");
@@ -245,8 +257,8 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
     var clock = el("div", "clock", "--:--:--");
     board.appendChild(clock);
     board.appendChild(el("div", "lbl", "CREW ON WATCH"));
-    board.appendChild(el("div", "big crew-" + crew.toLowerCase(), crew.toUpperCase() + " CREW"));
-    [["WATCH", watch.toUpperCase() + " WATCH"], ["HOURS", watch === "Day" ? "07:00 - 19:00" : "19:00 - 07:00"], ["NEXT TURNOVER", next]].forEach(function (r) {
+    board.appendChild(el("div", "big" + (crew ? " crew-" + crew.toLowerCase() : ""), crew ? crew.toUpperCase() + " CREW" : "NONE"));
+    [["WATCH", done ? "NONE POSTED" : watch.toUpperCase() + " WATCH"], ["HOURS", done ? "-" : watch === "Day" ? "07:00 - 19:00" : "19:00 - 07:00"], ["NEXT TURNOVER", next]].forEach(function (r) {
       var row = el("div", "row");
       row.appendChild(el("span", null, r[0]));
       row.appendChild(el("b", null, r[1]));
@@ -259,16 +271,16 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
     var hr = el("tr");
     ["POSITION", "ON WATCH"].forEach(function (h) { hr.appendChild(el("th", null, h)); });
     t.appendChild(hr);
+    function empty() { var td = el("td"); td.appendChild(el("span", "vacant", "NOT STAFFED")); return td; }
     ROLES.forEach(function (role) {
       var tr = el("tr");
       tr.appendChild(el("td", "seat", ROLE_WORDS[role]));
-      tr.appendChild(nameCell(holder(list, crew, watch, role)));
+      tr.appendChild(done ? empty() : nameCell(holder(list, crew, watch, role)));
       t.appendChild(tr);
     });
-    var rl = relief(list, crew);
     var tr = el("tr");
     tr.appendChild(el("td", "seat", "RELIEF"));
-    tr.appendChild(nameCell(rl[0]));
+    tr.appendChild(done ? empty() : nameCell(relief(list, crew)[0]));
     t.appendChild(tr);
     wrap.appendChild(t);
     pane.appendChild(wrap);
@@ -303,7 +315,7 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
       tr.appendChild(el("td", "seat", ROLE_WORDS[role]));
       cols.forEach(function (k) {
         var td = nameCell(holder(list, k[0], k[1], role));
-        if (k[0] === onCrew && k[1] === onWatch) td.className = "lit";
+        if (k[0] === onCrew && k[1] === onWatch && !ended()) td.className = "lit";
         tr.appendChild(td);
       });
       t.appendChild(tr);
@@ -367,9 +379,10 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
     box.textContent = "";
     var head = el("div", "day-head");
     head.appendChild(el("b", null, DAYS[new Date(Date.UTC(y, m, d)).getUTCDay()] + " " + pad(d) + " " + MONTHS[m] + " " + y));
-    head.appendChild(el("span", "crew-" + crew.toLowerCase(), crew.toUpperCase() + " CREW ON WATCH"));
+    if (ymd <= POSTED_TO) head.appendChild(el("span", "crew-" + crew.toLowerCase(), crew.toUpperCase() + " CREW ON WATCH"));
     box.appendChild(head);
     if (ymd < "1998-04-15") { box.appendChild(el("p", "note", "BEFORE WATCH OPERATIONS BEGAN. NO WATCH BILL ON FILE.")); return; }
+    if (ymd > POSTED_TO) { box.appendChild(el("p", "note", "NO WATCH BILL POSTED.")); return; }
     var future = ymd > todayYmd;
     box.appendChild(el("p", "note", future ? "SCHEDULED. STANDING SEAT ASSIGNMENTS AS OF TODAY; LEAVE NOT YET POSTED."
       : "WATCH BILL AS STOOD. DAY WATCH 07:00 - 19:00, NIGHT WATCH 19:00 - 07:00 THE NEXT MORNING."));
@@ -431,7 +444,7 @@ table.cal td.sel, table.cal td.sel:hover { outline: 2px solid #fff; outline-offs
       tr.appendChild(td);
       t.appendChild(tr);
       box.appendChild(t);
-      if (!future && watchYears && watchYears[String(y)]) {
+      if (!future && ymd <= "2026-09-26" && watchYears && watchYears[String(y)]) {   // the watch log ends 26 Sep 2026 06:16
         var a = el("a", "log-link", "[ OPEN THE WATCH LOG FOR THIS DAY ]");
         a.href = "/watch/?year=" + y + "&date=" + ymd;
         box.appendChild(a);

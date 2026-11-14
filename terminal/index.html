@@ -373,7 +373,56 @@
         pnanduri: staffHome("pnanduri"),
         wpike: staffHome("wpike"),
         hsato: staffHome("hsato"),
-        vhale: staffHome("vhale")
+        vhale: staffHome("vhale"),
+        // Calvin Brooks, Data Archive (2026 story, owner 2026-11-13): open to
+        // anyone, nothing locked. Copied here on his last day.
+        cbrooks: dir({
+          "README.txt": file([
+            "c. brooks -- data archive",
+            "",
+            "copied here 25 sep 2026.",
+            "this host needs nothing from",
+            "outside to run. it is the",
+            "oldest one still answering."
+          ].join("\n"), { owner: "cbrooks", date: "2026-09-25" }),
+          "swa-003.txt": file([
+            "EXTERNAL SERVICE DEPENDENCY",
+            "REGISTER  SWA-003 REV C",
+            "(summary)",
+            "",
+            "outside services, 1998:     3",
+            "outside services, 2026:    88",
+            "",
+            "  fallback of its own:     21",
+            "  fallback is another",
+            "  service on this list:    31",
+            "  no owner here:           14",
+            "",
+            "hosts that need nothing",
+            "from outside to run:        9",
+            "  (the oldest nine)"
+          ].join("\n"), { owner: "cbrooks", date: "2026-07-13" }),
+          "still-works.txt": file([
+            "with every outside service",
+            "gone:",
+            "",
+            "  the archive       yes",
+            "  reading it        yes",
+            "  the phones        yes",
+            "  the nodes         drive",
+            "  the screens       no",
+            "  the turnover      by hand"
+          ].join("\n"), { owner: "cbrooks", date: "2026-07-20" }),
+          "last.txt": file([
+            "archive complete to",
+            "25 september 2026.",
+            "",
+            "restore test: 12 apr 1996,",
+            "entry 1. checksum matches.",
+            "",
+            "vault keys at the watch desk."
+          ].join("\n"), { owner: "cbrooks", date: "2026-09-25" })
+        }, { owner: "cbrooks", date: "2026-09-25" })
       }),
 
       docs: dir({
@@ -638,7 +687,7 @@
       guest: { home: "/home/guest", open: true },
       root: {},
       mvoss: {}, mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
-      slaurent: {}, pnanduri: {}, wpike: {}, hsato: {}, vhale: {}
+      slaurent: {}, pnanduri: {}, wpike: {}, hsato: {}, vhale: {}, cbrooks: {}
     };
 
     var HOST = "nexus";
