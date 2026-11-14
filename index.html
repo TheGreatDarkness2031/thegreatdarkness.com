@@ -162,53 +162,18 @@
       .oer-header-inner { padding-right: 7px; padding-left: 7px; }
     }
 
-    .access-node {
-      width: 95%;
-      max-width: 800px;
-      padding: 5px;
-      box-sizing: border-box;
-      background: #0a0a0a;
-      border: 2px outset #888888;
-      box-shadow: 4px 4px 0 #1a1a1a;
-      color: #bbbbbb;
+    /* The painted frame continues: a 777 px wide strip of the picture's empty
+       middle, scaled to the width like the picture, repeated down. Side
+       padding keeps the text inside the painted frame (2.2% = 17 of 777 px). */
+    .entry-body {
+      padding: 2px 4% 0;
+      background: #000000 url("/assets/img/entry-header-mid.png") repeat-y center top / 100% auto;
       text-align: center;
     }
 
-    .access-node-inner {
-      padding: 14px 18px 12px;
-      border: 1px inset #777777;
-    }
-
-    .access-node-label {
-      color: #777777;
-      font-size: 0.6rem;
-      letter-spacing: 2px;
-    }
-
-    .access-node-title {
-      margin: 8px 0 4px;
-      color: #ffffff;
-      font-family: Arial, Helvetica, sans-serif;
-      font-size: clamp(1.15rem, 3.6vw, 1.6rem);
-      font-weight: bold;
-      letter-spacing: 2px;
-    }
-
-    .access-node-sub {
-      color: #888888;
-      font-size: 0.62rem;
-      letter-spacing: 2px;
-    }
-
-    .access-node hr {
-      margin: 12px 0;
-      border: 0;
-      border-top: 1px dashed #555555;
-    }
-
     .access-notice {
-      max-width: 620px;
-      margin: 0 auto;
+      max-width: 640px;
+      margin: 0 auto 12px;
       color: #aaaaaa;
       font-size: 0.74rem;
       line-height: 1.55;
@@ -259,7 +224,7 @@
 
     .access-status {
       min-height: 1.3em;
-      margin-top: 9px;
+      margin-top: 6px;
       color: #00cc00;
       font-size: 0.7rem;
       letter-spacing: 1px;
@@ -274,15 +239,14 @@
       flex-wrap: wrap;
       justify-content: space-between;
       gap: 4px 16px;
-      margin-top: 10px;
+      margin-top: 4px;
       color: #555555;
       font-size: 0.55rem;
       letter-spacing: 1px;
     }
 
-    .access-privacy { margin-top: 6px; font-size: 0.6rem; letter-spacing: 1px; }
-    .access-privacy a { color: #777777; text-decoration: none; }
-    .access-privacy a:hover, .access-privacy a:focus { color: #bbbbbb; text-decoration: underline; }
+    .access-footer a { color: #777777; text-decoration: none; }
+    .access-footer a:hover, .access-footer a:focus { color: #bbbbbb; text-decoration: underline; }
 
     @keyframes titleFlicker {
       0%, 88%, 100% { opacity: 1; }
@@ -297,33 +261,33 @@
 </head>
 <body>
 
-  <section class="oer-header">
+  <!-- One window (owner, 2026-11-14): /home/'s header picture, without the X,
+       cut below EIGHT REGIONS; its painted frame runs on down (the middle strip
+       repeats) around the notice and I ACCEPT, then the painted bottom edge.
+       The strips scale like the picture, so the seal sits where /home/'s does. -->
+  <section class="oer-header" aria-label="OER public access">
     <div class="oer-header-inner">
-      <img class="oer-header-image" src="/assets/img/oer-header-clean.png" alt="Operational Event Register archival header" width="777" height="416">
-    </div>
-  </section>
+      <img class="oer-header-image" src="/assets/img/entry-header-top.png" alt="Operational Event Register: OER public network access node, system activation 01 July 1998" width="777" height="346">
+      <div class="entry-body">
 
-  <section class="access-node" aria-label="OER public access">
-    <div class="access-node-inner">
+        <div class="access-notice">
+          <div class="access-notice-head">*** SYSTEM USE NOTIFICATION ***</div>
+          <p>You are accessing the Operational Event Register (OER) network. This system is provided for authorized monitoring and public information use only.</p>
+          <p>All activity on this system may be monitored, recorded and reviewed. Use of this system constitutes consent to monitoring.</p>
+          <p>Unauthorized or improper use may result in termination of access.</p>
+        </div>
 
-      <div class="access-notice">
-        <div class="access-notice-head">*** SYSTEM USE NOTIFICATION ***</div>
-        <p>You are accessing the Operational Event Register (OER) network. This system is provided for authorized monitoring and public information use only.</p>
-        <p>All activity on this system may be monitored, recorded and reviewed. Use of this system constitutes consent to monitoring.</p>
-        <p>Unauthorized or improper use may result in termination of access.</p>
+        <button type="button" class="access-button" id="accessButton">[ I ACCEPT ]</button>
+        <div class="access-status" id="accessStatus" role="status" aria-live="polite"></div>
+
+        <div class="access-footer">
+          <span>OER/PAN v2.1 // 06/1998</span>
+          <a href="/privacy/">[ DATA HANDLING NOTICE ]</a>
+          <span>FOR ASSISTANCE CONTACT THE OER NETWORK OPERATIONS CENTER</span>
+        </div>
+
       </div>
-
-      <hr>
-
-      <button type="button" class="access-button" id="accessButton">[ I ACCEPT ]</button>
-      <div class="access-status" id="accessStatus" role="status" aria-live="polite"></div>
-
-      <div class="access-footer">
-        <span>OER/PAN v2.1 // 06/1998</span>
-        <span>FOR ASSISTANCE CONTACT THE OER NETWORK OPERATIONS CENTER</span>
-      </div>
-      <div class="access-privacy"><a href="/privacy/">[ DATA HANDLING NOTICE ]</a></div>
-
+      <img class="oer-header-image" src="/assets/img/entry-header-bottom.png" alt="" width="777" height="26">
     </div>
   </section>
 
