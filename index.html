@@ -35,7 +35,6 @@
 
     html {
       height: 100%;
-      overflow-y: scroll;   /* same width as /home/, so the seal lines up */
     }
 
     /* min-height, not height: on a short screen the page scrolls
@@ -45,9 +44,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
+      justify-content: center;
       gap: 18px;
-      padding: 72px 10px 20px;
+      padding: 20px 10px;
       box-sizing: border-box;
       overflow-x: hidden;
       color: #ffffff;
@@ -132,27 +131,13 @@
     }
 
     /* ---- OER public access screen (the original 1998 system) ---- */
-    /* The seal sits exactly where the X'd-out seal sits in /home/'s header
-       image (same box: 95% / 800 px, 7 px of frame each side, 14 on phones; the seal is
-       26% of the image width, its centre 23.7% of the width from the top). */
-    .seal-stage {
-      width: 95%;
-      max-width: 800px;
-      padding: 7px 7px 0;
-      box-sizing: border-box;
-      margin-bottom: -4px;
-    }
-
-    .seal-stage img {
+    /* The plain OER seal heads the access box (owner, 2026-11-14). */
+    .access-seal {
       display: block;
-      width: 26%;
+      width: min(150px, 34%);
       height: auto;
-      margin: 10.7% auto 0;
+      margin: 2px auto 12px;
       border-radius: 50%;
-    }
-
-    @media (max-width: 420px) {
-      .seal-stage { padding-left: 14px; padding-right: 14px; }
     }
 
     .access-node {
@@ -290,10 +275,10 @@
 </head>
 <body>
 
-  <div class="seal-stage"><img src="/assets/img/oer-seal-300.png" alt="OER seal" width="300" height="300"></div>
-
   <section class="access-node" aria-label="OER public access">
     <div class="access-node-inner">
+
+      <img class="access-seal" src="/assets/img/oer-seal-300.png" alt="OER seal" width="300" height="300">
 
       <div class="access-node-label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
       <div class="access-node-title">OPERATIONAL EVENT REGISTER</div>
