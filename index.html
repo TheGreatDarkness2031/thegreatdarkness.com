@@ -35,6 +35,7 @@
 
     html {
       height: 100%;
+      overflow-y: scroll;   /* same width as /home/, so the header lines up */
     }
 
     /* min-height, not height: on a short screen the page scrolls
@@ -44,9 +45,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 18px;
-      padding: 20px 10px;
+      justify-content: flex-start;
+      gap: 16px;
+      padding: 72px 10px 20px;   /* /home/'s marquee bar + gap: the header sits 72 px down there too */
       box-sizing: border-box;
       overflow-x: hidden;
       color: #ffffff;
@@ -131,18 +132,39 @@
     }
 
     /* ---- OER public access screen (the original 1998 system) ---- */
-    /* The plain OER seal heads the access box (owner, 2026-11-14). */
-    .access-seal {
+    /* The header is /home/'s archival header, same frame, size and place,
+       before the X (owner, 2026-11-14): oer-header-clean.png is
+       oer-header.png with the red X taken out. */
+    .oer-header {
+      width: 95%;
+      max-width: 800px;
+      padding: 4px;
+      box-sizing: border-box;
+      background: #111111;
+      border: 2px solid #888888;
+      box-shadow: 4px 4px 0 #222222;
+    }
+
+    .oer-header-inner {
+      overflow: hidden;
+      background: #000000;
+      border: 1px inset #666666;
+    }
+
+    .oer-header-image {
       display: block;
-      width: min(150px, 34%);
+      width: 100%;
       height: auto;
-      margin: 2px auto 12px;
-      border-radius: 50%;
+      background: #000000;
+    }
+
+    @media (max-width: 420px) {
+      .oer-header-inner { padding-right: 7px; padding-left: 7px; }
     }
 
     .access-node {
-      width: 96%;
-      max-width: 760px;
+      width: 95%;
+      max-width: 800px;
       padding: 5px;
       box-sizing: border-box;
       background: #0a0a0a;
@@ -275,16 +297,14 @@
 </head>
 <body>
 
+  <section class="oer-header">
+    <div class="oer-header-inner">
+      <img class="oer-header-image" src="/assets/img/oer-header-clean.png" alt="Operational Event Register archival header" width="777" height="416">
+    </div>
+  </section>
+
   <section class="access-node" aria-label="OER public access">
     <div class="access-node-inner">
-
-      <img class="access-seal" src="/assets/img/oer-seal-300.png" alt="OER seal" width="300" height="300">
-
-      <div class="access-node-label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
-      <div class="access-node-title">OPERATIONAL EVENT REGISTER</div>
-      <div class="access-node-sub">PUBLIC ACCESS TERMINAL // SYSTEM ACTIVATION: 01 JULY 1998</div>
-
-      <hr>
 
       <div class="access-notice">
         <div class="access-notice-head">*** SYSTEM USE NOTIFICATION ***</div>
