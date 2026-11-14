@@ -3933,13 +3933,43 @@
       renderLogView(currentLogView);
     };
 
-    function loadPostsOnly() {
-      const old = document.getElementById("postsScript");
+    // Quiet retry (2026-11-13): when the account is busy Google answers
+    // with a page instead of data, so the script loads but the callback
+    // never runs. Ask again after 1-3 s, up to twice, before giving up.
+    const HOME_BUSY_RETRIES = 2;
+
+    function homeJsonp(id, query, cbName, attempt) {
+      attempt = attempt || 0;
+      if (!window[cbName].homeWrapped) {
+        const inner = window[cbName];
+        const wrapped = function() {
+          wrapped.homeCalls++;
+          return inner.apply(this, arguments);
+        };
+        wrapped.homeWrapped = true;
+        wrapped.homeCalls = 0;
+        window[cbName] = wrapped;
+      }
+      const before = window[cbName].homeCalls;
+      const old = document.getElementById(id);
       if (old) old.remove();
       const script = document.createElement("script");
-      script.id = "postsScript";
-      script.src = API_URL + "?posts=1&callback=handlePostsResponse&_ts=" + Date.now();
+      script.id = id;
+      script.src = API_URL + query + "&_ts=" + Date.now();
+      const retryIfUnanswered = function() {
+        if (window[cbName].homeCalls !== before) return;
+        if (attempt >= HOME_BUSY_RETRIES) return;
+        setTimeout(function() {
+          homeJsonp(id, query, cbName, attempt + 1);
+        }, 1000 + Math.random() * 2000);
+      };
+      script.onload = retryIfUnanswered;
+      script.onerror = retryIfUnanswered;
       document.body.appendChild(script);
+    }
+
+    function loadPostsOnly() {
+      homeJsonp("postsScript", "?posts=1&callback=handlePostsResponse", "handlePostsResponse");
     }
 
     function noteBulletinVersion(v) {
@@ -3956,26 +3986,7 @@
     });
 
     function loadDatabaseData() {
-      const oldScript =
-        document.getElementById(
-          "jsonpScript"
-        );
-
-      if (oldScript) {
-        oldScript.remove();
-      }
-
-      const script =
-        document.createElement("script");
-
-      script.id = "jsonpScript";
-
-      script.src =
-        API_URL +
-        "?callback=handleDatabaseResponse&_ts=" +
-        Date.now();
-
-      document.body.appendChild(script);
+      homeJsonp("jsonpScript", "?callback=handleDatabaseResponse", "handleDatabaseResponse");
     }
 
         /* =======================================================
