@@ -117,7 +117,7 @@
     ["1998-07-20", "BREAK ROOM", "The break room refrigerator is cleaned out every other Friday at 18:30. Label your food with your name and the date. See Form HR-92."],
     ["1998-09-14", "PARKING", "North lot spaces are assigned by seat and change with the crew rotation. Check the posted list, not your memory. Disputes: Form HR-98."],
     ["1999-03-01", "FIRE DRILL", "A fire drill will be held this month on each watch. The watch floor is never left unattended: the Watch Lead and COMM remain at their consoles; everyone else goes to the north lot assembly point."],
-    ["1999-11-15", "YEAR-END STAFFING", "No scheduled leave will be approved from 27 December 1999 through 4 January 2000. Engineering will be on call over the date rollover. Plan holiday time before or after these dates."],
+    ["1999-11-15", "YEAR-END STAFFING", "No scheduled leave will be approved from 27 December 1999 through 4 January 2000. Engineering will be on call over the Y2K rollover. Plan holiday time before or after these dates."],
     ["2000-05-08", "COFFEE", "A reminder that whoever takes the last cup makes the next pot. The burner has been replaced twice this year. See Form HR-97."],
     ["2001-10-15", "BADGE PHOTOGRAPHS 26 OCTOBER", "All staff badges are being re-issued on the new magnetic-stripe card. Photographs will be taken in the Personnel Office on Friday 26 October. Night Watch appointments are held at turnover so no seat is left unattended. Bring your current badge. Form HR-13."],
     ["2002-03-11", "REPORT COVER SHEETS", "Shift Summary Reports require the revised cover sheet (LOG-7, Rev. 3). See the memorandum posted in the forms rack."],
