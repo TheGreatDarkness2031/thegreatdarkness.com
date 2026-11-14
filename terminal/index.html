@@ -21,6 +21,7 @@
 <meta name="robots" content="noindex">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="/assets/config.js"></script>
+<script src="/assets/gsr.js"></script>
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
@@ -420,7 +421,9 @@
             "restore test: 12 apr 1996,",
             "entry 1. checksum matches.",
             "",
-            "vault keys at the watch desk."
+            "vault keys at the watch desk.",
+            "",
+            "the rest is in /archive/2031."
           ].join("\n"), { owner: "cbrooks", date: "2026-09-25" })
         }, { owner: "cbrooks", date: "2026-09-25" })
       }),
@@ -677,7 +680,12 @@
             "APPROVED  WITHHELD"
           ].join("\n"), { owner: "root", date: "2003-11-10" })
         }, { owner: "root", restricted: true, date: "1996-06-10" }),
-        "2031": dir({}, { owner: "root", unlock: Date.UTC(2031, 6, 1, 12, 0, 0), date: "1996-06-10" })
+        // One file, empty here on purpose (owner, 2026-11-13): its text is
+        // only on the server, which hands it out from the unlock moment
+        // (getSealedArchive, SealedArchive.js).
+        "2031": dir({
+          "cbrooks.txt": file("", { owner: "cbrooks", date: "2026-09-25", sealed: true })
+        }, { owner: "root", unlock: Date.UTC(2031, 6, 1, 12, 0, 0), date: "1996-06-10" })
       })
     }, { date: "1996-04-16" });
 
@@ -1302,10 +1310,27 @@
       }
       args.forEach(function(a) {
         var node = readFile("cat", a);
-        if (node) {
+        if (node && node.sealed) {
+          readSealed(node);
+        } else if (node) {
           printFile(node);
         }
       });
+    }
+
+    // /archive/2031: the text comes from the server, and only after the
+    // unlock moment (the folder itself is sealed until then).
+    function readSealed(node) {
+      if (node.text) { printFile(node); return; }
+      if (!(window.google && google.script && google.script.run)) { print("cat: archive server not reachable", "err"); return; }
+      print("reading archive...");
+      google.script.run
+        .withSuccessHandler(function(r) {
+          if (r && r.open && r.text) { node.text = String(r.text); printFile(node); }
+          else print("(empty)");
+        })
+        .withFailureHandler(function() { print("cat: archive server not reachable", "err"); })
+        .getSealedArchive();
     }
 
     function cmdHeadTail(name, args) {
