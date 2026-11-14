@@ -528,11 +528,15 @@ tr[data-id] img[data-full] { cursor: pointer; }
 
     var mine = HR.badges.filter(function (b) { return b.emp === p.id; }).sort(function (a, b) { return a.issue < b.issue ? -1 : 1; });
     var sec = el("div", "section");
-    sec.appendChild(el("h3", null, "IDENTIFICATION BADGES ISSUED (" + mine.length + ")"));
+    sec.appendChild(el("h3", null, "IDENTIFICATION BADGES ISSUED (" + mine.filter(function (b) { return !/^not issued/i.test(b.reason || ""); }).length + ")"));
     var row2 = el("div", "badges");
     mine.forEach(function (b) {
       var box = el("div", "badge");
-      if (b.img) {
+      // Made up for a start date nobody kept: no photo, never handed over (2026-11-14).
+      var notIssued = /^not issued/i.test(b.reason || "");
+      if (notIssued) {
+        box.appendChild(el("div", "card-missing nophoto", "BADGE NOT ISSUED // NO PHOTO TAKEN"));
+      } else if (b.img) {
         var img = el("img");
         img.src = "/hr/img/b/" + b.id + ".png";
         img.alt = "Badge " + b.id;
@@ -546,7 +550,7 @@ tr[data-id] img[data-full] { cursor: pointer; }
       cap.appendChild(document.createElement("br"));
       cap.appendChild(document.createTextNode(GEN[b.gen] || b.gen));
       cap.appendChild(document.createElement("br"));
-      cap.appendChild(document.createTextNode("ISSUED " + date(b.issue) + (b.expire ? " // EXP " + date(b.expire) : "")));
+      cap.appendChild(document.createTextNode((notIssued ? "TO BE ISSUED " : "ISSUED ") + date(b.issue) + (b.expire ? " // EXP " + date(b.expire) : "")));
       if (b.reason) {
         cap.appendChild(document.createElement("br"));
         cap.appendChild(document.createTextNode(b.reason.toUpperCase()));
