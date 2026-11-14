@@ -160,6 +160,11 @@
       ["D", "2008-02-04", "Compression on node links.", "SWA-002_D"],
       ["E", "2024-09-16", "Processing at the nodes before transfer.", "SWA-002_E"]
     ]},
+    { "no": "SWA-003", "series": "SOFTWARE", "title": "EXTERNAL SERVICE DEPENDENCY REGISTER", "revs": [
+      ["A", "2026-03-02", "Initial issue. 52 outside services: owner, what depends on each, fallback."],
+      ["B", "2026-06-02", "Dependencies of each outside service added. 88 entries."],
+      ["C", "2026-07-13", "Cached answers listed as a dependency. Countersigned by the technical lead."]
+    ]},
     { "no": "INV-001", "series": "INVENTORY", "title": "EQUIPMENT INVENTORY, SITE A", "revs": [
       ["A", "1997-07-03", "Initial issue.", "INV-001_A"],
       ["B", "1998-06-15", "Commissioning inventory.", "INV-001_B"],
