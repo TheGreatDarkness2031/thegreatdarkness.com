@@ -296,27 +296,6 @@
     </div>
   </section>
 
-  <section class="late-addendum">
-    <div class="late-addendum-inner">
-
-      <div class="late-addendum-label">
-        [ PUBLIC NOTICE APPENDED TO ORIGINAL SYSTEM RECORD ]
-      </div>
-
-      <h1 class="great-darkness-title">THE GREAT DARKNESS</h1>
-
-      <div class="event-date-title">01 JULY 2031</div>
-
-      <div class="timer-line" id="dateLine">00 : 00 : 00</div>
-      <div class="timer-label">YEARS : MONTHS : DAYS</div>
-
-      <div class="divider"></div>
-
-      <div class="timer-line" id="timeLine">00 : 00 : 00</div>
-      <div class="timer-label">HOURS : MINUTES : SECONDS</div>
-
-    </div>
-  </section>
 
   <script>
     // I ACCEPT. Set ACCESS_OPEN to true to let visitors into the site
@@ -359,43 +338,6 @@
     })();
   </script>
 
-  <script>
-    // Same countdown as the homepage (HomeView.html): 01 JULY 2031, 12:00 UTC.
-    const targetDate = Date.UTC(2031, 6, 1, 12, 0, 0);
-
-    function format(value) {
-      return String(value).padStart(2, "0").slice(-2);
-    }
-
-    function updateCountdown() {
-      const difference = targetDate - Date.now();
-
-      if (difference <= 0) {
-        document.getElementById("dateLine").textContent = "00 : 00 : 00";
-        document.getElementById("timeLine").textContent = "00 : 00 : 00";
-        return;
-      }
-
-      const totalSeconds = Math.floor(difference / 1000);
-      const totalMinutes = Math.floor(totalSeconds / 60);
-      const totalHours = Math.floor(totalMinutes / 60);
-      const totalDays = Math.floor(totalHours / 24);
-
-      const years = Math.floor(totalDays / 365);
-      const remainingDays = totalDays % 365;
-      const months = Math.floor(remainingDays / 30.44);
-      const days = Math.floor(remainingDays % 30.44);
-
-      document.getElementById("dateLine").textContent =
-        format(years) + " : " + format(months) + " : " + format(days);
-
-      document.getElementById("timeLine").textContent =
-        format(totalHours % 24) + " : " + format(totalMinutes % 60) + " : " + format(totalSeconds % 60);
-    }
-
-    updateCountdown();
-    setInterval(updateCountdown, 1000);
-  </script>
 
 <script src="/assets/notice.js" defer></script>
 </body>
