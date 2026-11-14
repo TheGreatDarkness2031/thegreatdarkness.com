@@ -47,7 +47,7 @@
       align-items: center;
       justify-content: flex-start;
       gap: 16px;
-      padding: 72px 10px 20px;   /* /home/'s marquee bar + gap: the header sits 72 px down there too */
+      padding: 72px 10px 12px;   /* /home/'s marquee bar + gap: the header sits 72 px down there too */
       box-sizing: border-box;
       overflow-x: hidden;
       color: #ffffff;
@@ -173,10 +173,10 @@
 
     .access-notice {
       max-width: 640px;
-      margin: 0 auto 12px;
+      margin: 0 auto 8px;
       color: #aaaaaa;
       font-size: 0.74rem;
-      line-height: 1.55;
+      line-height: 1.4;
       text-align: left;
     }
 
@@ -189,7 +189,21 @@
     }
 
     .access-notice p {
-      margin: 0 0 6px;
+      margin: 0 0 4px;
+    }
+
+    /* After I ACCEPT the notice becomes the modem session, in the same space
+       (height locked), oldest lines rolling off the top. */
+    .access-notice.dialing {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      overflow: hidden;
+    }
+    .access-notice .dial-line {
+      color: #00cc00;
+      white-space: pre;
+      letter-spacing: 1px;
     }
 
     .access-button {
@@ -223,12 +237,13 @@
     }
 
     .access-status {
-      min-height: 1.3em;
-      margin-top: 6px;
+      margin-top: 4px;
       color: #00cc00;
       font-size: 0.7rem;
       letter-spacing: 1px;
     }
+
+    .access-status:empty { display: none; }
 
     .access-status.refused {
       color: #ff5555;
@@ -306,26 +321,56 @@
         status.className = "access-status" + (refused ? " refused" : "");
       }
 
+      var notice = document.querySelector(".access-notice");
+      var noticeHtml = notice.innerHTML;
+      var DIAL = [
+        ["ATZ", 300], ["OK", 250], ["ATDT *** *** ****", 700],
+        ["DIALING NODE GDK-001...", 900],
+        ["CONNECT 28800/ARQ/V34/LAPM/V42BIS", 350],
+        ["NEGOTIATING SESSION... GUEST", 600],
+        ["VERIFYING NODE GDK-001... OK", 450],
+        ["SESSION GRANTED.", 600]
+      ];
+
+      // The modem session plays here, inside the window, so the next page
+      // opens straight onto the same header (now with the X): the
+      // connecting screen is marked as already seen for this session.
+      function dial() {
+        new Image().src = "/assets/img/oer-header.png";   // ready for the next page
+        notice.style.height = notice.offsetHeight + "px";
+        notice.classList.add("dialing");
+        notice.innerHTML = "";
+        var n = 0;
+        (function next() {
+          if (n >= DIAL.length) {
+            try { sessionStorage.setItem("oerSessionOpen", "1"); } catch (e) {}
+            location.href = ACCESS_TARGET;
+            return;
+          }
+          var d = document.createElement("div");
+          d.className = "dial-line";
+          d.textContent = DIAL[n][0];
+          notice.appendChild(d);
+          setTimeout(next, DIAL[n++][1]);
+        })();
+      }
+
       button.addEventListener("click", function () {
         button.disabled = true;
+        if (ACCESS_OPEN) { dial(); return; }
         say("ESTABLISHING SESSION...");
         setTimeout(function () {
-          say("VERIFYING NODE GDK-001...");
-        }, 900);
-        setTimeout(function () {
-          if (ACCESS_OPEN) {
-            say("SESSION GRANTED. CONNECTING...");
-            setTimeout(function () { location.href = ACCESS_TARGET; }, 700);
-          } else {
-            say("CONNECTION REFUSED // NODE GDK-001 NOT ACCEPTING PUBLIC SESSIONS", true);
-            button.disabled = false;
-          }
+          say("CONNECTION REFUSED // NODE GDK-001 NOT ACCEPTING PUBLIC SESSIONS", true);
+          button.disabled = false;
         }, 2000);
       });
 
       // Coming back with the browser's Back button: ready again.
       window.addEventListener("pageshow", function (e) {
         if (e.persisted) {
+          notice.classList.remove("dialing");
+          notice.style.height = "";
+          notice.innerHTML = noticeHtml;
           button.disabled = false;
           say("");
         }
