@@ -33,10 +33,14 @@
   };
 
   // The LAST CHECK // LAST GOOD DATA // SOURCE TIME line.
+  // Each "LABEL: date time" stays on one line; the line only breaks at " // "
+  // (phones broke dates in two, "2026-" / "11-14", 2026-11-14).
+  var WJ = String.fromCharCode(0x2060), NBSP = String.fromCharCode(0xa0);
+  function keep(s) { return String(s).replace(/-/g, WJ + "-" + WJ).replace(/ /g, NBSP); }
   oerMonitorTime.line = function (data) {
-    return "LAST CHECK: " + (data.lastCheck || "--") +
-      " // LAST GOOD DATA: " + (data.lastGood || "--") +
-      (data.sourceAt ? " // SOURCE TIME: " + data.sourceAt : "");
+    return keep("LAST CHECK: " + (data.lastCheck || "--")) +
+      " // " + keep("LAST GOOD DATA: " + (data.lastGood || "--")) +
+      (data.sourceAt ? " // " + keep("SOURCE TIME: " + data.sourceAt) : "");
   };
 
   root.oerMonitorTime = oerMonitorTime;

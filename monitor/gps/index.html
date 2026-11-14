@@ -129,6 +129,7 @@ body {
 
 /* ---- Message ---- */
 .message {
+    overflow-wrap: anywhere;
     text-align: center;
     padding: 15px;
     border: 1px solid #ffffff;
@@ -480,9 +481,7 @@ function render(data) {
 
     setText(
         "statusData",
-        "LAST CHECK: " + (data.lastCheck || "--") +
-        " // LAST GOOD DATA: " + (data.lastGood || "--") +
-        (data.sourceAt ? " // SOURCE TIME: " + data.sourceAt : "")
+        oerMonitorTime.line(data)
     );
 
     if (data.degraded) {

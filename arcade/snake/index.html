@@ -3222,6 +3222,17 @@
             window.innerHeight >= 450 ? LIST_MIN_HEIGHT : LIST_MIN_HEIGHT_SHORT,
             Math.floor(current - over - SLACK)
           ) + "px";
+        // End on a whole row, never half a name (2026-11-14).
+        var rows = list.children;
+        if (rows.length > 1) {
+          var top0 = rows[0].getBoundingClientRect().top;
+          var step = rows[1].getBoundingClientRect().top - top0;
+          var pad = top0 - list.getBoundingClientRect().top + list.scrollTop;
+          var h = parseFloat(list.style.height);
+          if (step > 0 && h > pad + step) {
+            list.style.height = Math.floor(pad + Math.floor((h - pad) / step) * step + 2) + "px";
+          }
+        }
       }
     }
 
@@ -3296,7 +3307,7 @@
       var signature =
         window.innerWidth + "x" + window.innerHeight + ":" +
         (shown(canvas) ? "on" : "off") + ":" +
-        (shown(document.querySelector(".shared-leaderboard-scores")) ? "list" : "") + ":" +
+        (shown(document.querySelector(".shared-leaderboard-scores")) ? "list" + document.querySelector(".shared-leaderboard-scores").children.length : "") + ":" +
         (canvas ? canvas.width + "x" + canvas.height : "");
 
       if (signature !== lastSignature) {

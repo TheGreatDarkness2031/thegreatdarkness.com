@@ -2024,6 +2024,9 @@
     #floorPane.wall .source-register { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px; }
     #floorPane.wall .source-register-cell { font-size: 0.72rem; letter-spacing: 0.5px; gap: 6px; padding: 4px 6px; }
     #floorPane.wall .source-lamp { width: 11px; height: 11px; }
+    /* Narrow console column: headings stay on one line (2026-11-14; they wrapped to a lone "===" at 1366). */
+    #floorPane.wall .console-header,
+    #floorPane.wall .source-register-header { white-space: nowrap; font-size: 0.78rem; letter-spacing: 0.5px; padding-left: 4px; padding-right: 4px; gap: 6px; overflow: hidden; }
     #floorPane.wall .radar-screen { width: min(32vw, 620px); min-width: 300px; }
     /* The feed is as tall as the Radar beside it and scrolls inside itself. */
     #floorPane.wall > .event-feed-preview { contain: size; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
