@@ -18,7 +18,6 @@
 <meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
 <meta name="twitter:card" content="summary_large_image">
 <!-- /OER-META -->
-<meta name="robots" content="noindex">
 <script src="/assets/nav.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Great Darkness - Merch</title>
@@ -30,6 +29,10 @@
      the page shows NOT YET RELEASED and the button is switched off.
      ============================================================ */
   var MERCH_STORE_URL = "https://thegreatdarkness.printful.me/";
+  // COMING SOON until the owner has seen the samples (2026-11-15):
+  // visitors see the closed depot; /merch/?depot=open still opens the
+  // store button (for ordering samples). To open for everyone: true.
+  var MERCH_STORE_OPEN = false;
 </script>
 <style>
   * { box-sizing: border-box; }
@@ -144,7 +147,7 @@
     <p class="sub">THE GREAT DARKNESS // 01 JULY 2031</p>
 
     <div class="status" id="depotStatus">
-      DEPOT STATUS: <b>SEALED</b><br>
+      DEPOT STATUS: <b>COMING SOON</b><br>
       INVENTORY: NOT YET RELEASED<span class="blink">_</span>
     </div>
 
@@ -158,6 +161,7 @@
   (function() {
     var url = String(MERCH_STORE_URL || "").trim();
     if (!/^https:\/\//.test(url)) return;
+    if (!MERCH_STORE_OPEN && !/[?&]depot=open(&|$)/.test(location.search)) return;
 
     var link = document.createElement("a");
     link.className = "store";
