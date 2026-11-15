@@ -47,6 +47,14 @@
     box.appendChild(links);
     var bottom = document.querySelector(".oerc-banner-bottom");
     document.body.insertBefore(box, bottom || null);
+    // The homepage's entry notice (2026-11-15) carries a copy under its window.
+    var entry = document.getElementById("oerEntry");
+    if (entry) {
+      var copy = box.cloneNode(true);
+      copy.removeAttribute("id");
+      entry.appendChild(copy);
+      box.setAttribute("inert", "");   // behind the notice; cleared at I ACCEPT
+    }
   }
 
   var css = document.createElement("style");

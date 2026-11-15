@@ -14,7 +14,7 @@
   // [label, address], or [label, [items]] for a group: closed unless the
   // page is inside it. NEW! tags removed 2026-11-11 (owner).
   var MENU = [
-    ["HOME", "/home/"],
+    ["HOME", "/"],
     ["WATCH FLOOR", "/floor/"],
     ["SCHEDULE", "/schedule/"],
     ["ENGINEERING", "/maintenance/?view=projects"],
@@ -86,7 +86,7 @@
       });
     });
     if (shadowed) return false;
-    return p === href || (href !== "/home/" && p.indexOf(href) === 0);
+    return p === href || (href !== "/" && p.indexOf(href) === 0);
   }
 
   // A page that changes its own address (e.g. the Maintenance tabs)
@@ -253,7 +253,8 @@
   // ---- connecting screen: first OER page of a browser session ----
   var CONNECT_KEY = "oerSessionOpen";
   var connecting = false;
-  try { connecting = !sessionStorage.getItem(CONNECT_KEY); } catch (e) { connecting = false; }
+  // The homepage shows its own entry notice instead (window.OER_ENTRY, 2026-11-15).
+  try { connecting = !window.OER_ENTRY && !sessionStorage.getItem(CONNECT_KEY); } catch (e) { connecting = false; }
   if (connecting) {
     document.documentElement.classList.add("oer-connecting");
     try { sessionStorage.setItem(CONNECT_KEY, "1"); } catch (e) {}

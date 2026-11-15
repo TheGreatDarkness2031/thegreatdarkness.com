@@ -24,7 +24,7 @@ function tgdPage(route) {
     p[k] = i >= 0 ? decodeURIComponent(pair.slice(i + 1).replace(/\+/g, " ")) : "";
   });
   if (p.page === "radar") return "/radar/";
-  if (p.page === "home" || p.homescreen === "1") return "/home/";
+  if (p.page === "home" || p.homescreen === "1") return "/";
   if (p.pdf) return "/tools/document/" + (p.doc ? "?doc=" + encodeURIComponent(p.doc) : "");
   if (p.game && TGD_ARCADE_GAMES.indexOf(p.game) >= 0) return "/arcade/" + p.game + "/";
   var flags = { games: "/arcade/", hof: "/arcade/halloffame/", events: "/events/",

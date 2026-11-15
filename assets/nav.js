@@ -5,7 +5,7 @@
 //     instead: browsers won't close a tab the visitor opened.
 //  3. A page with no link home gets a small HOME link in the corner.
 (function() {
-  var HOME = "/home/";
+  var HOME = "/";
 
   function sameSite(url) {
     try {
@@ -74,7 +74,7 @@
     }
 
     // 3. HOME link for pages without one.
-    if (location.pathname === HOME || location.pathname === "/") {
+    if (location.pathname === HOME || location.pathname === "/home/") {
       return;
     }
     var links = document.querySelectorAll("a[href]");
