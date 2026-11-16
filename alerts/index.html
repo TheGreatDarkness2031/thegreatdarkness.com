@@ -316,7 +316,9 @@
   ];
   var LEVELS = ["WATCH", "ELEVATED", "CRITICAL"];
   // The value sent is the lowest level wanted; the words say what arrives.
-  var LEVEL_TEXT = { WATCH: "WATCH AND UP", ELEVATED: "ELEVATED AND UP", CRITICAL: "CRITICAL ONLY" };
+  var LEVEL_TEXT = { WATCH: "ALL ALERTS", ELEVATED: "ELEVATED / CRITICAL", CRITICAL: "CRITICAL ONLY" };
+  // Smallest phones (under 360 px): the middle choice is shortened so the names keep their line.
+  if (window.innerWidth < 360) LEVEL_TEXT.ELEVATED = "ELEV / CRIT";
   var PREFS_KEY = "oerAlertPrefs";
   var status = $("subStatus");
   function say(text, bad) { status.textContent = text; status.className = bad ? "err" : "dim"; }
