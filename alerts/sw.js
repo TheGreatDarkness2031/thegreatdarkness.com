@@ -4,10 +4,10 @@
 // Its scope is /alerts/: it never touches any other page of the site.
 // It caches ONE thing, the offline notice (/alerts/offline.html). Pages and
 // live data always come from the network, so nothing old is shown as
-// current. Push handling (stage 2) will be added to this file.
+// current. It also shows pushed alerts and opens the matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-1";
+const VERSION = "oer-alerts-2";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -39,6 +39,39 @@ self.addEventListener("fetch", function (event) {
           status: 503, headers: { "Content-Type": "text/plain; charset=utf-8" }
         });
       });
+    })
+  );
+});
+
+// ---- Push alerts (stage 2) ----
+self.addEventListener("push", function (event) {
+  var d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
+  var title = d.title || "OER // MESSAGE TRAFFIC";
+  var options = {
+    body: d.body || "New traffic received.",
+    icon: "/icon-192.png",
+    tag: d.tag || "oer-alert",
+    renotify: true,
+    data: { url: d.url || "/alerts/", ref: d.ref || "", at: d.at || Date.now() }
+  };
+  event.waitUntil(Promise.all([
+    self.registration.showNotification(title, options),
+    (self.navigator && self.navigator.setAppBadge) ? self.navigator.setAppBadge().catch(function () {}) : Promise.resolve()
+  ]));
+});
+
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || "/alerts/";
+  if (url.charAt(0) !== "/") url = "/alerts/";
+  var target = new URL(url, self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (wins) {
+      for (var i = 0; i < wins.length; i++) {
+        if (wins[i].url === target && "focus" in wins[i]) return wins[i].focus();
+      }
+      return self.clients.openWindow(target);
     })
   );
 });

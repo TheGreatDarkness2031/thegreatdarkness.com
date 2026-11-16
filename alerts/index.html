@@ -50,6 +50,15 @@
   button { background: #000; color: #33ff66; border: 1px solid #33ff66; font: inherit; padding: 6px 12px; cursor: pointer; }
   button:hover { background: #0c2a14; }
   [hidden] { display: none !important; }
+  .chan { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 0; border-bottom: 1px dotted #144d24; font-size: 13px; }
+  .chan label { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
+  .chan input { accent-color: #33ff66; width: 16px; height: 16px; }
+  select { background: #000; color: #33ff66; border: 1px solid #1f9e3f; font: inherit; font-size: 12px; padding: 2px 4px; }
+  select:disabled { color: #145a26; border-color: #145a26; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+  .quiet { margin-top: 12px; font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  #subStatus { min-height: 1.5em; }
+  .err { color: #ff5a4a; }
 </style>
 </head>
 <body>
@@ -62,10 +71,23 @@
     </div>
   </div>
 
-  <div class="panel">
-    <h2>ALERT DISTRIBUTION</h2>
-    <p>STATUS: <span class="amber">NOT YET IN SERVICE</span></p>
-    <p class="dim">CHANNEL SELECTION AND RECEIVED TRAFFIC WILL APPEAR HERE.</p>
+  <div class="panel" id="subPanel">
+    <h2>ALERT SUBSCRIPTIONS // SELECT CHANNELS</h2>
+    <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE. ALERTS FOLLOW STATUS CHANGES ONLY.</p>
+    <div id="chanList"></div>
+    <div class="quiet">
+      <label><input type="checkbox" id="quietOn"> QUIET HOURS</label>
+      <select id="quietStart" aria-label="Quiet hours start"></select> TO
+      <select id="quietEnd" aria-label="Quiet hours end"></select>
+      <span class="dim">(THIS DEVICE'S TIME)</span>
+    </div>
+    <div class="row">
+      <button type="button" id="subButton">[ SUBSCRIBE ]</button>
+      <button type="button" id="updButton" hidden>[ UPDATE ]</button>
+      <button type="button" id="testButton" hidden>[ SEND TEST ALERT ]</button>
+      <button type="button" id="unsubButton" hidden>[ UNSUBSCRIBE ]</button>
+    </div>
+    <p id="subStatus" class="dim"></p>
   </div>
 
   <div class="panel" id="installPanel">
@@ -127,6 +149,141 @@
       });
     }
   } catch (e) {}
+
+  // ---- Alert subscriptions (stage 2) ----
+  // Sent to the OER ALERTS Worker: this device's push subscription + the
+  // channels, levels and quiet hours chosen here. Nothing else.
+  var WORKER = "https://oer-alerts.thegreatdarkness2031.workers.dev";
+  var VAPID_KEY = "BGd6zhW_exU5kRZV56vZmQahvnQ8XFXjcPBopI7U8JNXxisdrlqQTz61F1lKfe1oy6H8JsS3yLFT96WT29JJ7gA";
+  var CHANNELS = [
+    ["quake", "EARTHQUAKE"], ["powergrid_real", "POWER GRID"], ["temp", "TEMPERATURE DEVIATION"],
+    ["spacewx", "SPACE WEATHER"], ["severewx", "SEVERE WEATHER"], ["wildfire", "WILDFIRE"],
+    ["volcano", "VOLCANIC ACTIVITY"], ["netout", "NETWORK / INTERNET"], ["gps", "GPS / NAVIGATION"],
+    ["aiinc", "AI INCIDENT"], ["neo", "NEAR-EARTH OBJECT"]
+  ];
+  var LEVELS = ["WATCH", "ELEVATED", "CRITICAL"];
+  var PREFS_KEY = "oerAlertPrefs";
+  var status = $("subStatus");
+  function say(text, bad) { status.textContent = text; status.className = bad ? "err" : "dim"; }
+  function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+  function load(k) { try { return JSON.parse(localStorage.getItem(k) || "null"); } catch (e) { return null; } }
+
+  var saved = load(PREFS_KEY) || { prefs: {}, quiet: null };
+  var list = $("chanList");
+  CHANNELS.forEach(function (c) {
+    var row = document.createElement("div"); row.className = "chan";
+    var lab = document.createElement("label");
+    var box = document.createElement("input"); box.type = "checkbox"; box.id = "ch_" + c[0];
+    lab.appendChild(box); lab.appendChild(document.createTextNode(c[1]));
+    var sel = document.createElement("select"); sel.id = "lv_" + c[0]; sel.setAttribute("aria-label", c[1] + " lowest status");
+    LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = l; sel.appendChild(o); });
+    var lv = saved.prefs[c[0]];
+    box.checked = !!lv; sel.value = lv || "CRITICAL"; sel.disabled = !lv;
+    box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; });
+    row.appendChild(lab); row.appendChild(sel); list.appendChild(row);
+  });
+  ["quietStart", "quietEnd"].forEach(function (id, i) {
+    for (var h = 0; h < 24; h++) { var o = document.createElement("option"); o.value = h; o.textContent = (h < 10 ? "0" : "") + h + ":00"; $(id).appendChild(o); }
+    $(id).value = saved.quiet ? (i ? saved.quiet.end : saved.quiet.start) : (i ? 7 : 22);
+  });
+  $("quietOn").checked = !!saved.quiet;
+
+  function choices() {
+    var prefs = {};
+    CHANNELS.forEach(function (c) { if ($("ch_" + c[0]).checked) prefs[c[0]] = $("lv_" + c[0]).value; });
+    var quiet = null;
+    if ($("quietOn").checked && $("quietStart").value !== $("quietEnd").value) {
+      var tz = "UTC"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) {}
+      quiet = { start: Number($("quietStart").value), end: Number($("quietEnd").value), tz: tz };
+    }
+    return { prefs: prefs, quiet: quiet };
+  }
+
+  function post(path, body) {
+    return fetch(WORKER + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) { return r.json().catch(function () { return { ok: false }; }).then(function (d) { d.httpStatus = r.status; return d; }); });
+  }
+
+  function keyBytes(b64) {
+    var s = b64.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "=";
+    var bin = atob(s), out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+
+  function showState(subscribed) {
+    $("subButton").hidden = subscribed;
+    $("updButton").hidden = !subscribed; $("testButton").hidden = !subscribed; $("unsubButton").hidden = !subscribed;
+  }
+
+  var canPush = ("serviceWorker" in navigator) && ("PushManager" in window) && ("Notification" in window);
+  if (!canPush) {
+    showState(false); $("subButton").disabled = true;
+    say(ios && !standalone ? "ON IPHONE, ADD OER ALERTS TO THE HOME SCREEN FIRST, THEN OPEN IT FROM THERE." : "THIS BROWSER CANNOT RECEIVE ALERTS.", true);
+  } else {
+    navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); })
+      .then(function (sub) { showState(!!sub); if (sub) say("THIS DEVICE IS SUBSCRIBED."); })
+      .catch(function () { showState(false); });
+  }
+
+  function current() {
+    return navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); });
+  }
+
+  // Permission is asked only here, when SUBSCRIBE is tapped.
+  $("subButton").addEventListener("click", function () {
+    var c = choices();
+    if (!Object.keys(c.prefs).length) { say("SELECT AT LEAST ONE CHANNEL.", true); return; }
+    say("REQUESTING PERMISSION...");
+    Notification.requestPermission().then(function (perm) {
+      if (perm !== "granted") throw new Error("NOTIFICATIONS ARE BLOCKED FOR THIS SITE. ALLOW THEM IN THE BROWSER SETTINGS.");
+      return navigator.serviceWorker.ready;
+    }).then(function (reg) {
+      return reg.pushManager.getSubscription().then(function (old) {
+        return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_KEY) });
+      });
+    }).then(function (sub) {
+      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs, quiet: c.quiet });
+    }).then(function (d) {
+      if (!d.ok) throw new Error("SUBSCRIPTION NOT RECORDED (" + (d.error || d.httpStatus) + ").");
+      store(PREFS_KEY, c); saved = c; showState(true);
+      say("SUBSCRIBED. " + d.channels + " CHANNEL(S) OPEN ON THIS DEVICE.");
+    }).catch(function (e) { say(String(e && e.message || "SUBSCRIPTION FAILED."), true); });
+  });
+
+  $("updButton").addEventListener("click", function () {
+    var c = choices();
+    if (!Object.keys(c.prefs).length) { say("NO CHANNELS SELECTED. USE UNSUBSCRIBE TO STOP ALL ALERTS.", true); return; }
+    current().then(function (sub) {
+      if (!sub) { showState(false); throw new Error("THIS DEVICE IS NOT SUBSCRIBED."); }
+      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs, quiet: c.quiet });
+    }).then(function (d) {
+      if (!d.ok) throw new Error("UPDATE NOT RECORDED (" + (d.error || d.httpStatus) + ").");
+      store(PREFS_KEY, c); saved = c; say("UPDATED. " + d.channels + " CHANNEL(S) OPEN ON THIS DEVICE.");
+    }).catch(function (e) { say(String(e && e.message || "UPDATE FAILED."), true); });
+  });
+
+  $("unsubButton").addEventListener("click", function () {
+    current().then(function (sub) {
+      if (!sub) return null;
+      var endpoint = sub.endpoint;
+      return sub.unsubscribe().then(function () { return post("/unsubscribe", { endpoint: endpoint }); });
+    }).then(function () {
+      showState(false); say("UNSUBSCRIBED. NO ALERTS WILL REACH THIS DEVICE.");
+    }).catch(function () { say("UNSUBSCRIBE FAILED. TRY AGAIN.", true); });
+  });
+
+  // A test alert goes to this device only.
+  $("testButton").addEventListener("click", function () {
+    current().then(function (sub) {
+      if (!sub) { showState(false); throw new Error("THIS DEVICE IS NOT SUBSCRIBED."); }
+      say("SENDING TEST ALERT...");
+      return post("/test", { endpoint: sub.endpoint });
+    }).then(function (d) {
+      if (d.ok) say("TEST ALERT SENT TO THIS DEVICE.");
+      else say(d.error === "WAIT ONE MINUTE" ? "ONE TEST ALERT PER MINUTE. WAIT AND TRY AGAIN." : "TEST ALERT NOT DELIVERED (" + (d.error || d.status || d.httpStatus) + ").", true);
+    }).catch(function (e) { say(String(e && e.message || "TEST FAILED."), true); });
+  });
 })();
 </script>
 </body>
