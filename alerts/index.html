@@ -309,12 +309,14 @@
   var WORKER = "https://oer-alerts.thegreatdarkness2031.workers.dev";
   var VAPID_KEY = "BGd6zhW_exU5kRZV56vZmQahvnQ8XFXjcPBopI7U8JNXxisdrlqQTz61F1lKfe1oy6H8JsS3yLFT96WT29JJ7gA";
   var CHANNELS = [
-    ["quake", "EARTHQUAKE"], ["powergrid_real", "POWER GRID"], ["temp", "TEMPERATURE DEVIATION"],
+    ["quake", "EARTHQUAKE"], ["powergrid_real", "POWER GRID"], ["temp", "TEMPERATURE"],
     ["spacewx", "SPACE WEATHER"], ["severewx", "SEVERE WEATHER"], ["wildfire", "WILDFIRE"],
     ["volcano", "VOLCANIC ACTIVITY"], ["netout", "NETWORK / INTERNET"], ["gps", "GPS / NAVIGATION"],
     ["aiinc", "AI INCIDENT"], ["neo", "NEAR-EARTH OBJECT"]
   ];
   var LEVELS = ["WATCH", "ELEVATED", "CRITICAL"];
+  // The value sent is the lowest level wanted; the words say what arrives.
+  var LEVEL_TEXT = { WATCH: "WATCH AND UP", ELEVATED: "ELEVATED AND UP", CRITICAL: "CRITICAL ONLY" };
   var PREFS_KEY = "oerAlertPrefs";
   var status = $("subStatus");
   function say(text, bad) { status.textContent = text; status.className = bad ? "err" : "dim"; }
@@ -356,7 +358,7 @@
     var box = document.createElement("input"); box.type = "checkbox"; box.id = "ch_" + c[0];
     lab.appendChild(box); lab.appendChild(document.createTextNode(c[1]));
     var sel = document.createElement("select"); sel.id = "lv_" + c[0]; sel.setAttribute("aria-label", c[1] + " lowest status");
-    LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = l; sel.appendChild(o); });
+    LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = LEVEL_TEXT[l]; sel.appendChild(o); });
     var lv = saved.prefs[c[0]];
     box.checked = !!lv; sel.value = lv || "CRITICAL"; sel.disabled = !lv;
     box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; syncAll(); });
