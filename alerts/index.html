@@ -99,14 +99,14 @@
   <div class="panel" id="ctlPanel" hidden>
     <h2>DEVICE CONTROLS</h2>
     <p>ALERTS ON THIS DEVICE: <span id="muteState" class="amber">ACTIVE</span></p>
-    <div class="row" id="muteRow">
-      <button type="button" data-mute="1">[ MUTE 1H ]</button>
-      <button type="button" data-mute="8">[ MUTE 8H ]</button>
-      <button type="button" data-mute="24">[ MUTE 24H ]</button>
-      <button type="button" data-mute="-1">[ MUTE UNTIL RESUMED ]</button>
-    </div>
-    <div class="row" id="resumeRow" hidden>
-      <button type="button" id="resumeButton">[ RESUME ALERTS ]</button>
+    <div class="quiet">
+      <label><input type="checkbox" id="muteOn"> MUTE ALERTS</label>
+      <select id="muteFor" aria-label="Mute for">
+        <option value="1">FOR 1 HOUR</option>
+        <option value="8">FOR 8 HOURS</option>
+        <option value="24">FOR 24 HOURS</option>
+        <option value="-1">UNTIL TURNED OFF</option>
+      </select>
     </div>
     <div class="quiet">
       <label><input type="checkbox" id="quietOn"> QUIET HOURS</label>
@@ -437,7 +437,8 @@
     var muted = muteUntil === -1 || muteUntil > now;
     $("muteState").textContent = !muted ? "ACTIVE" : (muteUntil === -1 ? "MUTED UNTIL RESUMED" : "MUTED UNTIL " + when(muteUntil));
     $("muteState").className = muted ? "err" : "amber";
-    $("muteRow").hidden = muted; $("resumeRow").hidden = !muted;
+    $("muteOn").checked = muted;
+    if (muteUntil === -1) $("muteFor").value = "-1";
   }
   setInterval(function () { if (muteUntil > 0) showMute(); }, 30000);
   function applyState(d) {
@@ -465,13 +466,15 @@
       applyState(d); ctlSay(okText);
     }).catch(function (e) { ctlSay(String(e && e.message || "NOT SAVED."), true); });
   }
-  Array.prototype.forEach.call(document.querySelectorAll("#muteRow button"), function (b) {
-    b.addEventListener("click", function () {
-      var h = Number(b.getAttribute("data-mute"));
-      saveSettings({ mute: h === -1 ? -1 : Date.now() + h * 3600000 }, "ALERTS MUTED ON THIS DEVICE.");
-    });
-  });
-  $("resumeButton").addEventListener("click", function () { saveSettings({ mute: 0 }, "ALERTS RESUMED ON THIS DEVICE."); });
+  // Ticking the box mutes for the chosen time; changing the time while ticked
+  // starts it again from now; unticking resumes alerts.
+  function saveMute() {
+    if (!$("muteOn").checked) { saveSettings({ mute: 0 }, "ALERTS RESUMED ON THIS DEVICE."); return; }
+    var h = Number($("muteFor").value);
+    saveSettings({ mute: h === -1 ? -1 : Date.now() + h * 3600000 }, "ALERTS MUTED ON THIS DEVICE.");
+  }
+  $("muteOn").addEventListener("change", saveMute);
+  $("muteFor").addEventListener("change", function () { if ($("muteOn").checked) saveMute(); });
   function saveQuiet() {
     var quiet = null;
     if ($("quietOn").checked) {
