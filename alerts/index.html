@@ -70,6 +70,15 @@
   .msg .t { margin-top: 3px; color: #ffbf33; }
   .msg .b { margin-top: 2px; line-height: 1.45; }
   .msg a { font-size: 12px; text-decoration: none; }
+  /* Small phones: headings shrink to stay on one line, panels tighten. */
+  @media (max-width: 480px) {
+    body { padding-left: 10px; padding-right: 10px; }
+    .panel { padding: 12px 12px; }
+    .panel h2 { font-size: min(14px, 3.5vw); letter-spacing: 0; white-space: nowrap; }
+    .views button { font-size: 13px; }
+    .chan { font-size: 12px; }
+    .head img { width: 52px; height: 52px; }
+  }
   .lv-WATCH { color: #ffd84a; } .lv-ELEVATED { color: #ff9a3c; } .lv-CRITICAL { color: #ff5a4a; } .lv-TEST { color: #1f9e3f; }
 </style>
 </head>
