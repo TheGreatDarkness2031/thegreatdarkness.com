@@ -19,11 +19,10 @@
 <meta name="twitter:card" content="summary_large_image">
 <!-- /OER-META -->
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="robots" content="noindex">
 <title>OER ALERTS</title>
 <!-- OER ALERTS app (owner 2026-11-15): a separate app people install or save
      to their home screen. Its own manifest, worker and scope (/alerts/); the
-     main site stays a plain website. noindex until the alert service is on. -->
+     main site stays a plain website. Linked and indexed since 2026-11-16. -->
 <link rel="manifest" href="/alerts/manifest.webmanifest">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -159,6 +158,7 @@
       <button type="button" id="unsubButton" hidden>[ UNSUBSCRIBE ]</button>
     </div>
     <p id="subStatus" class="dim"></p>
+    <p class="dim">PART OF AN INDEPENDENT CREATIVE PROJECT. NOT AN OFFICIAL ALERT OR EMERGENCY SERVICE: IN AN EMERGENCY, FOLLOW YOUR LOCAL AUTHORITIES. <a href="/privacy/">[ DATA HANDLING NOTICE ]</a></p>
   </div>
 
   <div class="panel">
@@ -215,11 +215,19 @@
     });
     try { history.replaceState(null, "", "/alerts/?view=" + v); } catch (e) {}
     if (v === "traffic") renderTraffic();
+    if (v === "channels" && askedChannel && $("askedRow")) {
+      $("askedRow").style.background = "#0c2a14";
+      $("askedRow").scrollIntoView({ block: "center" });
+      askedChannel = null;
+    }
   }
   Array.prototype.forEach.call(document.querySelectorAll("#views button"), function (b) {
     b.addEventListener("click", function () { showView(b.getAttribute("data-view")); });
   });
   var askedView = (location.search.match(/[?&]view=(traffic|channels)\b/) || [])[1] || null;
+  // ?ch=<monitor> (the [ RECEIVE ALERTS ] link on a monitor page): open CHANNELS with it ticked.
+  var askedChannel = (location.search.match(/[?&]ch=([a-z_]+)/) || [])[1] || null;
+  if (askedChannel) askedView = "channels";
 
   // ---- Received traffic: saved on this device by the app worker (IndexedDB) ----
   function openTraffic() {
@@ -273,7 +281,7 @@
         var top = document.createElement("div"); top.className = "when"; top.textContent = when(r.at || Date.now());
         var lv = String(r.level || "").toUpperCase();
         if (lv) { var l = document.createElement("span"); l.className = "lv lv-" + lv.replace(/[^A-Z]/g, ""); l.textContent = lv; top.appendChild(l); }
-        if (r.held) { var h = document.createElement("span"); h.className = "held"; h.textContent = "// HELD WHILE MUTED"; top.appendChild(h); }
+        if (r.held) { var h = document.createElement("span"); h.className = "held"; h.textContent = "// HELD (MUTE / QUIET HOURS)"; top.appendChild(h); }
         var t = document.createElement("div"); t.className = "t"; t.textContent = r.title || "OER // MESSAGE TRAFFIC";
         var b = document.createElement("div"); b.className = "b"; b.textContent = r.body || "";
         m.appendChild(top); m.appendChild(t); m.appendChild(b);
@@ -356,6 +364,7 @@
   });
   CHANNELS.forEach(function (c) {
     var row = document.createElement("div"); row.className = "chan";
+    if (c[0] === askedChannel) row.id = "askedRow";
     var lab = document.createElement("label");
     var box = document.createElement("input"); box.type = "checkbox"; box.id = "ch_" + c[0];
     lab.appendChild(box); lab.appendChild(document.createTextNode(c[1]));
@@ -365,6 +374,7 @@
     box.checked = !!lv; sel.value = lv || "CRITICAL"; sel.disabled = !lv;
     box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; syncAll(); });
     row.appendChild(lab); row.appendChild(sel); list.appendChild(row);
+    if (c[0] === askedChannel && !box.checked) { box.checked = true; sel.disabled = false; sel.value = "CRITICAL"; }
   });
   syncAll();
   ["quietStart", "quietEnd"].forEach(function (id, i) {
@@ -504,7 +514,7 @@
       });
       return addTraffic(recs).then(function () {
         if (view === "traffic") renderTraffic();
-        ctlSay(recs.length + " MESSAGE(S) HELD WHILE MUTED ADDED TO MESSAGE TRAFFIC.");
+        ctlSay(recs.length + " MESSAGE(S) HELD DURING MUTE / QUIET HOURS ADDED TO MESSAGE TRAFFIC.");
       });
     }).catch(function () {});
   }

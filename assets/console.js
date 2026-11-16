@@ -33,6 +33,7 @@
       ["AI INCIDENT", "/monitor/aiinc/"],
       ["NEAR-EARTH", "/monitor/neo/"]
     ]],
+    ["ALERTS", "/alerts/"],
     ["RECORDS", [
       ["EVENT LOG", "/events/"],
       ["WATCH LOG", "/watch/"],
