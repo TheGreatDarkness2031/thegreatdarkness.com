@@ -9,7 +9,7 @@
 // matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-5";
+const VERSION = "oer-alerts-6";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -68,6 +68,25 @@ function saveTraffic(rec) {
     };
   });
 }
+// Icon badge (owner 2026-11-16): the number of messages not yet seen in
+// MESSAGE TRAFFIC. Each saved record carries unread: 1 until the list is
+// looked at (the page clears it). iPhones show only a number, so always a count.
+function setBadgeFromTraffic() {
+  if (!(self.navigator && self.navigator.setAppBadge)) return Promise.resolve();
+  return new Promise(function (resolve) {
+    var rq;
+    try { rq = indexedDB.open("oer-alerts", 1); } catch (e) { resolve(0); return; }
+    rq.onupgradeneeded = function () { rq.result.createObjectStore("traffic", { keyPath: "k", autoIncrement: true }); };
+    rq.onerror = function () { resolve(0); };
+    rq.onsuccess = function () {
+      var all = rq.result.transaction("traffic", "readonly").objectStore("traffic").getAll();
+      all.onsuccess = function () { resolve((all.result || []).filter(function (r) { return r.unread; }).length); };
+      all.onerror = function () { resolve(0); };
+    };
+  }).then(function (n) {
+    return (n > 0 ? self.navigator.setAppBadge(n) : self.navigator.clearAppBadge()).catch(function () {});
+  });
+}
 function tellPages() {
   return self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (wins) {
     wins.forEach(function (w) { w.postMessage({ type: "oer-traffic" }); });
@@ -88,11 +107,10 @@ self.addEventListener("push", function (event) {
     data: { url: d.url || "/alerts/", ref: d.ref || "", at: d.at || Date.now() }
   };
   var rec = { title: title, body: options.body, url: options.data.url, level: String(d.level || ""),
-    prefix: String(d.prefix || ""), ref: options.data.ref, at: options.data.at };
+    prefix: String(d.prefix || ""), ref: options.data.ref, at: options.data.at, unread: 1 };
   event.waitUntil(Promise.all([
     self.registration.showNotification(title, options),
-    saveTraffic(rec).then(tellPages).catch(function () {}),
-    (self.navigator && self.navigator.setAppBadge) ? self.navigator.setAppBadge().catch(function () {}) : Promise.resolve()
+    saveTraffic(rec).then(setBadgeFromTraffic).then(tellPages).catch(function () {})
   ]));
 });
 

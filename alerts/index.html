@@ -293,7 +293,27 @@
         box.appendChild(m);
       });
     });
+    // Seen only when the list is really on screen (a message arriving while the
+    // app sits in the background must keep its number on the icon).
+    if (!document.hidden) markTrafficSeen();
+  }
+  // Icon badge: count of records still marked unread (set by the app worker).
+  function markTrafficSeen() {
+    openTraffic().then(function (db) {
+      var st = db.transaction("traffic", "readwrite").objectStore("traffic");
+      var all = st.getAll();
+      all.onsuccess = function () {
+        (all.result || []).forEach(function (r) { if (r.unread) { r.unread = 0; st.put(r); } });
+      };
+    }).catch(function () {});
     try { if (navigator.clearAppBadge) navigator.clearAppBadge().catch(function () {}); } catch (e) {}
+  }
+  function badgeFromTraffic() {
+    if (!navigator.setAppBadge) return;
+    readTraffic().then(function (rows) {
+      var n = rows.filter(function (r) { return r.unread; }).length;
+      (n > 0 ? navigator.setAppBadge(n) : navigator.clearAppBadge()).catch(function () {});
+    });
   }
   try {
     if ("serviceWorker" in navigator) {
@@ -510,10 +530,10 @@
       if (!d || !d.ok || !d.items || !d.items.length) return;
       var recs = d.items.map(function (x) {
         return { title: String(x.title || ""), body: String(x.body || ""), url: String(x.url || "/alerts/"),
-          level: String(x.level || ""), prefix: String(x.prefix || ""), ref: String(x.ref || ""), at: Number(x.at) || Date.now(), held: true };
+          level: String(x.level || ""), prefix: String(x.prefix || ""), ref: String(x.ref || ""), at: Number(x.at) || Date.now(), held: true, unread: 1 };
       });
       return addTraffic(recs).then(function () {
-        if (view === "traffic") renderTraffic();
+        if (view === "traffic" && !document.hidden) renderTraffic(); else badgeFromTraffic();
         ctlSay(recs.length + " MESSAGE(S) HELD DURING MUTE / QUIET HOURS ADDED TO MESSAGE TRAFFIC.");
       });
     }).catch(function () {});
