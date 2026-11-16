@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER ALERTS">
+<meta property="og:description" content="Operational Event Register // public access node GDK-001. Live monitoring, event records, preparedness resources.">
+<meta property="og:url" content="https://thegreatdarkness.com/alerts/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>OER ALERTS</title>
+<!-- OER ALERTS app (owner 2026-11-15): a separate app people install or save
+     to their home screen. Its own manifest, worker and scope (/alerts/); the
+     main site stays a plain website. noindex until the alert service is on. -->
+<link rel="manifest" href="/alerts/manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="OER ALERTS">
+<style>
+  html, body { margin: 0; background: #000; color: #33ff66; font-family: "Courier New", Courier, monospace; }
+  body { padding: max(16px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom)); box-sizing: border-box; }
+  .wrap { max-width: 560px; margin: 0 auto; }
+  .head { display: flex; align-items: center; gap: 14px; border-bottom: 2px solid #33ff66; padding-bottom: 12px; }
+  .head img { width: 64px; height: 64px; }
+  h1 { font-size: 20px; letter-spacing: 2px; margin: 0; color: #ffbf33; }
+  .sub { font-size: 12px; color: #1f9e3f; margin-top: 4px; letter-spacing: 1px; }
+  .panel { border: 1px solid #33ff66; margin-top: 16px; padding: 14px 16px; }
+  .panel h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: 1px; }
+  .panel h2::before { content: "=== "; } .panel h2::after { content: " ==="; }
+  p { margin: 8px 0; line-height: 1.5; font-size: 14px; }
+  .amber { color: #ffbf33; }
+  .dim { color: #1f9e3f; font-size: 12px; }
+  a { color: #33ff66; }
+  .links a { display: inline-block; margin: 4px 10px 4px 0; text-decoration: none; }
+  .links a:hover { background: #0c2a14; }
+  button { background: #000; color: #33ff66; border: 1px solid #33ff66; font: inherit; padding: 6px 12px; cursor: pointer; }
+  button:hover { background: #0c2a14; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <img src="/icon-192.png" alt="OER seal">
+    <div>
+      <h1>OER ALERTS</h1>
+      <div class="sub">MESSAGE TRAFFIC // PUBLIC ACCESS NODE GDK-001</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>ALERT DISTRIBUTION</h2>
+    <p>STATUS: <span class="amber">NOT YET IN SERVICE</span></p>
+    <p class="dim">CHANNEL SELECTION AND RECEIVED TRAFFIC WILL APPEAR HERE.</p>
+  </div>
+
+  <div class="panel" id="installPanel">
+    <h2>INSTALL THIS TERMINAL</h2>
+    <div id="installIos" hidden>
+      <p>IPHONE / IPAD: OPEN THIS PAGE IN SAFARI, TAP <span class="amber">SHARE</span>, THEN <span class="amber">ADD TO HOME SCREEN</span>.</p>
+      <p class="dim">ALERTS ON IPHONE ARRIVE ONLY WHEN OPENED FROM THE HOME SCREEN ICON.</p>
+    </div>
+    <div id="installPrompt" hidden>
+      <p>ADD OER ALERTS TO THIS DEVICE.</p>
+      <button type="button" id="installButton">[ INSTALL OER ALERTS ]</button>
+    </div>
+    <div id="installOther">
+      <p>USE YOUR BROWSER MENU: <span class="amber">INSTALL APP</span> OR <span class="amber">ADD TO HOME SCREEN</span>.</p>
+    </div>
+    <p id="installed" class="amber" hidden>TERMINAL INSTALLED ON THIS DEVICE.</p>
+  </div>
+
+  <div class="panel">
+    <h2>CONSOLE LINKS</h2>
+    <div class="links">
+      <a href="/" target="_blank" rel="noopener">[ MAIN SITE ]</a>
+      <a href="/floor/" target="_blank" rel="noopener">[ WATCH FLOOR ]</a>
+      <a href="/radar/" target="_blank" rel="noopener">[ RADAR ]</a>
+      <a href="/events/" target="_blank" rel="noopener">[ EVENT LOG ]</a>
+    </div>
+  </div>
+
+</div>
+<script src="/assets/notice.js" defer></script>
+<script>
+(function () {
+  var standalone = false;
+  try { standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) {}
+  var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  var $ = function (id) { return document.getElementById(id); };
+  if (standalone) {
+    $("installOther").hidden = true; $("installed").hidden = false;
+  } else if (ios) {
+    $("installOther").hidden = true; $("installIos").hidden = false;
+  }
+  var deferred = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferred = e;
+    $("installOther").hidden = true; $("installPrompt").hidden = false;
+  });
+  $("installButton").addEventListener("click", function () {
+    if (!deferred) return;
+    deferred.prompt();
+    deferred.userChoice.then(function () { deferred = null; $("installPrompt").hidden = true; });
+  });
+  window.addEventListener("appinstalled", function () {
+    $("installPrompt").hidden = true; $("installOther").hidden = true; $("installed").hidden = false;
+  });
+  try {
+    if ("serviceWorker" in navigator && location.protocol === "https:") {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/alerts/sw.js", { scope: "/alerts/" }).catch(function () {});
+      });
+    }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
