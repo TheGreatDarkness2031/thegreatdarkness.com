@@ -59,6 +59,18 @@
   .quiet { margin-top: 12px; font-size: 13px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
   #subStatus { min-height: 1.5em; }
   .err { color: #ff5a4a; }
+  .views { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px 14px; }
+  .views button { border: 0; padding: 2px 0; color: #1f9e3f; background: none; }
+  .views button.on { color: #33ff66; background: #0c2a14; }
+  .chan.all { border-bottom: 1px solid #1f9e3f; font-weight: bold; }
+  .msg { border-bottom: 1px dotted #144d24; padding: 8px 0; font-size: 13px; }
+  .msg:last-child { border-bottom: 0; }
+  .msg .when { color: #1f9e3f; font-size: 12px; }
+  .msg .lv { font-weight: bold; margin-left: 6px; }
+  .msg .t { margin-top: 3px; color: #ffbf33; }
+  .msg .b { margin-top: 2px; line-height: 1.45; }
+  .msg a { font-size: 12px; text-decoration: none; }
+  .lv-WATCH { color: #ffd84a; } .lv-ELEVATED { color: #ff9a3c; } .lv-CRITICAL { color: #ff5a4a; } .lv-TEST { color: #1f9e3f; }
 </style>
 </head>
 <body>
@@ -70,10 +82,41 @@
       <div class="sub">MESSAGE TRAFFIC // PUBLIC ACCESS NODE GDK-001</div>
     </div>
   </div>
+  <div class="views" id="views">
+    <button type="button" data-view="traffic">[ MESSAGE TRAFFIC ]</button>
+    <button type="button" data-view="channels">[ CHANNELS ]</button>
+  </div>
 
-  <div class="panel" id="subPanel">
-    <h2>ALERT SUBSCRIPTIONS // SELECT CHANNELS</h2>
-    <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE. ALERTS FOLLOW STATUS CHANGES ONLY.</p>
+  <div class="panel" id="trafficPanel" hidden>
+    <h2>MESSAGE TRAFFIC // RECEIVED</h2>
+    <div id="trafficList"></div>
+    <p id="trafficEmpty" class="dim">NO TRAFFIC RECEIVED ON THIS DEVICE.</p>
+    <p class="dim">LAST 200 MESSAGES, KEPT ON THIS DEVICE ONLY.</p>
+  </div>
+
+  <div class="panel" id="installPanel" hidden>
+    <h2>STEP 1 // INSTALL THIS TERMINAL</h2>
+    <div id="installIos" hidden>
+      <p>IPHONE / IPAD: OPEN THIS PAGE IN SAFARI, TAP <span class="amber">SHARE</span>, THEN <span class="amber">ADD TO HOME SCREEN</span>. OPEN OER ALERTS FROM THE NEW ICON AND CONTINUE WITH STEP 2 THERE.</p>
+      <p class="dim">ALERTS ON IPHONE ARRIVE ONLY WHEN OPENED FROM THE HOME SCREEN ICON.</p>
+    </div>
+    <div id="installAndroid" hidden>
+      <p>ANDROID: OPEN THIS PAGE IN <span class="amber">CHROME</span>, TAP THE <span class="amber">&#8942;</span> MENU (TOP RIGHT), THEN <span class="amber">ADD TO HOME SCREEN</span> OR <span class="amber">INSTALL APP</span>. OPEN OER ALERTS FROM THE NEW ICON.</p>
+    </div>
+    <div id="installDesktop" hidden>
+      <p>COMPUTER: IN CHROME OR EDGE, CLICK THE <span class="amber">INSTALL</span> ICON AT THE RIGHT END OF THE ADDRESS BAR, OR OPEN THE BROWSER MENU AND CHOOSE <span class="amber">INSTALL OER ALERTS</span>.</p>
+    </div>
+    <div id="installPrompt" hidden>
+      <p>OR INSTALL DIRECTLY:</p>
+      <button type="button" id="installButton">[ INSTALL OER ALERTS ]</button>
+    </div>
+    <p class="dim" id="installSkip">INSTALLING IS OPTIONAL ON ANDROID AND COMPUTERS: ALERTS ALSO ARRIVE THROUGH THE BROWSER.</p>
+    <p id="installed" class="amber" hidden>TERMINAL INSTALLED ON THIS DEVICE.</p>
+  </div>
+
+  <div class="panel" id="subPanel" hidden>
+    <h2 id="subTitle">STEP 2 // SELECT CHANNELS</h2>
+    <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE, THEN TAP SUBSCRIBE AND ALLOW NOTIFICATIONS. ALERTS FOLLOW STATUS CHANGES ONLY.</p>
     <div id="chanList"></div>
     <div class="quiet">
       <label><input type="checkbox" id="quietOn"> QUIET HOURS</label>
@@ -88,22 +131,6 @@
       <button type="button" id="unsubButton" hidden>[ UNSUBSCRIBE ]</button>
     </div>
     <p id="subStatus" class="dim"></p>
-  </div>
-
-  <div class="panel" id="installPanel">
-    <h2>INSTALL THIS TERMINAL</h2>
-    <div id="installIos" hidden>
-      <p>IPHONE / IPAD: OPEN THIS PAGE IN SAFARI, TAP <span class="amber">SHARE</span>, THEN <span class="amber">ADD TO HOME SCREEN</span>.</p>
-      <p class="dim">ALERTS ON IPHONE ARRIVE ONLY WHEN OPENED FROM THE HOME SCREEN ICON.</p>
-    </div>
-    <div id="installPrompt" hidden>
-      <p>ADD OER ALERTS TO THIS DEVICE.</p>
-      <button type="button" id="installButton">[ INSTALL OER ALERTS ]</button>
-    </div>
-    <div id="installOther">
-      <p>USE YOUR BROWSER MENU: <span class="amber">INSTALL APP</span> OR <span class="amber">ADD TO HOME SCREEN</span>.</p>
-    </div>
-    <p id="installed" class="amber" hidden>TERMINAL INSTALLED ON THIS DEVICE.</p>
   </div>
 
   <div class="panel">
@@ -124,15 +151,17 @@
   try { standalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true; } catch (e) {}
   var ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   var $ = function (id) { return document.getElementById(id); };
-  if (standalone) {
-    $("installOther").hidden = true; $("installed").hidden = false;
-  } else if (ios) {
-    $("installOther").hidden = true; $("installIos").hidden = false;
-  }
+  var android = /Android/i.test(navigator.userAgent);
+  if (ios) $("installIos").hidden = false;
+  else if (android) $("installAndroid").hidden = false;
+  else $("installDesktop").hidden = false;
+  if (ios) $("installSkip").hidden = true;
+  // Inside the installed app there is nothing to install: the steps drop their numbers.
+  if (standalone) $("subTitle").textContent = "SELECT CHANNELS";
   var deferred = null;
   window.addEventListener("beforeinstallprompt", function (e) {
     e.preventDefault(); deferred = e;
-    $("installOther").hidden = true; $("installPrompt").hidden = false;
+    $("installPrompt").hidden = false;
   });
   $("installButton").addEventListener("click", function () {
     if (!deferred) return;
@@ -140,8 +169,85 @@
     deferred.userChoice.then(function () { deferred = null; $("installPrompt").hidden = true; });
   });
   window.addEventListener("appinstalled", function () {
-    $("installPrompt").hidden = true; $("installOther").hidden = true; $("installed").hidden = false;
+    $("installPrompt").hidden = true; $("installed").hidden = false;
   });
+
+  // ---- Views: MESSAGE TRAFFIC (received alerts) and CHANNELS (setup) ----
+  // Opened while subscribed = MESSAGE TRAFFIC; not subscribed = CHANNELS.
+  // ?view=traffic|channels picks one. Install help shows only outside the app.
+  var view = null;
+  function showView(v) {
+    view = v;
+    $("trafficPanel").hidden = v !== "traffic";
+    $("subPanel").hidden = v !== "channels";
+    $("installPanel").hidden = v !== "channels" || standalone;
+    Array.prototype.forEach.call(document.querySelectorAll("#views button"), function (b) {
+      b.className = b.getAttribute("data-view") === v ? "on" : "";
+    });
+    try { history.replaceState(null, "", "/alerts/?view=" + v); } catch (e) {}
+    if (v === "traffic") renderTraffic();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#views button"), function (b) {
+    b.addEventListener("click", function () { showView(b.getAttribute("data-view")); });
+  });
+  var askedView = (location.search.match(/[?&]view=(traffic|channels)\b/) || [])[1] || null;
+
+  // ---- Received traffic: saved on this device by the app worker (IndexedDB) ----
+  function openTraffic() {
+    return new Promise(function (resolve, reject) {
+      if (!("indexedDB" in window)) { reject(new Error("no storage")); return; }
+      var rq = indexedDB.open("oer-alerts", 1);
+      rq.onupgradeneeded = function () { rq.result.createObjectStore("traffic", { keyPath: "k", autoIncrement: true }); };
+      rq.onsuccess = function () { resolve(rq.result); };
+      rq.onerror = function () { reject(rq.error); };
+    });
+  }
+  function readTraffic() {
+    return openTraffic().then(function (db) {
+      return new Promise(function (resolve) {
+        var rq = db.transaction("traffic", "readonly").objectStore("traffic").getAll();
+        rq.onsuccess = function () { resolve(rq.result || []); };
+        rq.onerror = function () { resolve([]); };
+      });
+    }).catch(function () { return []; });
+  }
+  function two(n) { return (n < 10 ? "0" : "") + n; }
+  function when(ms) {
+    var d = new Date(ms);
+    return d.getFullYear() + "-" + two(d.getMonth() + 1) + "-" + two(d.getDate()) + " " + two(d.getHours()) + ":" + two(d.getMinutes());
+  }
+  function renderTraffic() {
+    readTraffic().then(function (rows) {
+      rows.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+      var box = $("trafficList");
+      box.textContent = "";
+      $("trafficEmpty").hidden = rows.length > 0;
+      rows.forEach(function (r) {
+        var m = document.createElement("div"); m.className = "msg";
+        var top = document.createElement("div"); top.className = "when"; top.textContent = when(r.at || Date.now());
+        var lv = String(r.level || "").toUpperCase();
+        if (lv) { var l = document.createElement("span"); l.className = "lv lv-" + lv.replace(/[^A-Z]/g, ""); l.textContent = lv; top.appendChild(l); }
+        var t = document.createElement("div"); t.className = "t"; t.textContent = r.title || "OER // MESSAGE TRAFFIC";
+        var b = document.createElement("div"); b.className = "b"; b.textContent = r.body || "";
+        m.appendChild(top); m.appendChild(t); m.appendChild(b);
+        var url = String(r.url || "");
+        if (url.charAt(0) === "/" && url.indexOf("/alerts/") !== 0) {
+          var a = document.createElement("a"); a.href = url; a.target = "_blank"; a.rel = "noopener"; a.textContent = "[ OPEN ]";
+          m.appendChild(a);
+        }
+        box.appendChild(m);
+      });
+    });
+    try { if (navigator.clearAppBadge) navigator.clearAppBadge().catch(function () {}); } catch (e) {}
+  }
+  try {
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.addEventListener("message", function (e) {
+        if (e.data && e.data.type === "oer-traffic" && view === "traffic") renderTraffic();
+      });
+    }
+  } catch (e) {}
+  document.addEventListener("visibilitychange", function () { if (!document.hidden && view === "traffic") renderTraffic(); });
   try {
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       window.addEventListener("load", function () {
@@ -170,6 +276,26 @@
 
   var saved = load(PREFS_KEY) || { prefs: {}, quiet: null };
   var list = $("chanList");
+  var allRow = document.createElement("div"); allRow.className = "chan all";
+  var allLab = document.createElement("label");
+  var allBox = document.createElement("input"); allBox.type = "checkbox"; allBox.id = "chAll";
+  allLab.appendChild(allBox); allLab.appendChild(document.createTextNode("SELECT ALL CHANNELS"));
+  allRow.appendChild(allLab); list.appendChild(allRow);
+  function syncAll() {
+    var on = CHANNELS.filter(function (c) { return $("ch_" + c[0]).checked; }).length;
+    allBox.checked = on === CHANNELS.length;
+    allBox.indeterminate = on > 0 && on < CHANNELS.length;
+  }
+  allBox.addEventListener("change", function () {
+    CHANNELS.forEach(function (c) {
+      var box = $("ch_" + c[0]), sel = $("lv_" + c[0]);
+      if (box.checked !== allBox.checked) {
+        box.checked = allBox.checked; sel.disabled = !box.checked;
+        if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL";
+      }
+    });
+    syncAll();
+  });
   CHANNELS.forEach(function (c) {
     var row = document.createElement("div"); row.className = "chan";
     var lab = document.createElement("label");
@@ -179,9 +305,10 @@
     LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = l; sel.appendChild(o); });
     var lv = saved.prefs[c[0]];
     box.checked = !!lv; sel.value = lv || "CRITICAL"; sel.disabled = !lv;
-    box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; });
+    box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; syncAll(); });
     row.appendChild(lab); row.appendChild(sel); list.appendChild(row);
   });
+  syncAll();
   ["quietStart", "quietEnd"].forEach(function (id, i) {
     for (var h = 0; h < 24; h++) { var o = document.createElement("option"); o.value = h; o.textContent = (h < 10 ? "0" : "") + h + ":00"; $(id).appendChild(o); }
     $(id).value = saved.quiet ? (i ? saved.quiet.end : saved.quiet.start) : (i ? 7 : 22);
@@ -220,10 +347,15 @@
   if (!canPush) {
     showState(false); $("subButton").disabled = true;
     say(ios && !standalone ? "ON IPHONE, ADD OER ALERTS TO THE HOME SCREEN FIRST, THEN OPEN IT FROM THERE." : "THIS BROWSER CANNOT RECEIVE ALERTS.", true);
+    showView(askedView || "channels");
   } else {
+    // A first visit has no worker yet: decide after 3 s at most.
+    var decided = false;
+    var decide = function (subscribed) { if (decided) return; decided = true; showView(askedView || (subscribed ? "traffic" : "channels")); };
+    setTimeout(function () { decide(false); }, 3000);
     navigator.serviceWorker.ready.then(function (reg) { return reg.pushManager.getSubscription(); })
-      .then(function (sub) { showState(!!sub); if (sub) say("THIS DEVICE IS SUBSCRIBED."); })
-      .catch(function () { showState(false); });
+      .then(function (sub) { showState(!!sub); if (sub) say("THIS DEVICE IS SUBSCRIBED."); decide(!!sub); })
+      .catch(function () { showState(false); decide(false); });
   }
 
   function current() {
@@ -247,7 +379,7 @@
     }).then(function (d) {
       if (!d.ok) throw new Error("SUBSCRIPTION NOT RECORDED (" + (d.error || d.httpStatus) + ").");
       store(PREFS_KEY, c); saved = c; showState(true);
-      say("SUBSCRIBED. " + d.channels + " CHANNEL(S) OPEN ON THIS DEVICE.");
+      say("SUBSCRIBED. " + d.channels + " CHANNEL(S) OPEN ON THIS DEVICE. TAP SEND TEST ALERT TO CHECK IT.");
     }).catch(function (e) { say(String(e && e.message || "SUBSCRIPTION FAILED."), true); });
   });
 

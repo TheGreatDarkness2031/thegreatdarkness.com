@@ -4,10 +4,12 @@
 // Its scope is /alerts/: it never touches any other page of the site.
 // It caches ONE thing, the offline notice (/alerts/offline.html). Pages and
 // live data always come from the network, so nothing old is shown as
-// current. It also shows pushed alerts and opens the matching page on tap.
+// current. It also shows pushed alerts, keeps the last 200 on this device
+// (IndexedDB "oer-alerts" / "traffic", read by MESSAGE TRAFFIC) and opens the
+// matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-2";
+const VERSION = "oer-alerts-3";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -44,6 +46,34 @@ self.addEventListener("fetch", function (event) {
 });
 
 // ---- Push alerts (stage 2) ----
+var TRAFFIC_KEEP = 200;
+function saveTraffic(rec) {
+  return new Promise(function (resolve) {
+    var rq;
+    try { rq = indexedDB.open("oer-alerts", 1); } catch (e) { resolve(); return; }
+    rq.onupgradeneeded = function () { rq.result.createObjectStore("traffic", { keyPath: "k", autoIncrement: true }); };
+    rq.onerror = function () { resolve(); };
+    rq.onsuccess = function () {
+      var db = rq.result;
+      var tx = db.transaction("traffic", "readwrite");
+      var st = tx.objectStore("traffic");
+      st.add(rec);
+      var keys = st.getAllKeys();
+      keys.onsuccess = function () {
+        var k = keys.result || [];
+        for (var i = 0; i < k.length - TRAFFIC_KEEP; i++) st.delete(k[i]);
+      };
+      tx.oncomplete = function () { resolve(); };
+      tx.onerror = function () { resolve(); };
+    };
+  });
+}
+function tellPages() {
+  return self.clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (wins) {
+    wins.forEach(function (w) { w.postMessage({ type: "oer-traffic" }); });
+  });
+}
+
 self.addEventListener("push", function (event) {
   var d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
@@ -55,8 +85,11 @@ self.addEventListener("push", function (event) {
     renotify: true,
     data: { url: d.url || "/alerts/", ref: d.ref || "", at: d.at || Date.now() }
   };
+  var rec = { title: title, body: options.body, url: options.data.url, level: String(d.level || ""),
+    prefix: String(d.prefix || ""), ref: options.data.ref, at: options.data.at };
   event.waitUntil(Promise.all([
     self.registration.showNotification(title, options),
+    saveTraffic(rec).then(tellPages).catch(function () {}),
     (self.navigator && self.navigator.setAppBadge) ? self.navigator.setAppBadge().catch(function () {}) : Promise.resolve()
   ]));
 });
