@@ -2318,10 +2318,6 @@
         ARCHIVE:
         <span class="status-offline">OFFLINE</span>
 
-        <span class="status-separator">|</span>
-
-        <a href="/alerts/" class="status-online status-alerts-link">[ ALERT DISTRIBUTION ]</a>
-
       </div>
     </section>
 
@@ -2335,6 +2331,11 @@
           <a href="/hr/" class="resource-box door"><span>PERSONNEL OFFICE</span><small>DIRECTORY // FORMS // HANDBOOK</small></a>
         </div>
       </div>
+    </section>
+
+    <section class="oer-term-link oer-alerts-box">
+      <!-- OER ALERTS (owner 2026-11-16): own box under the directory, amber so it reads apart from the green support box. -->
+      <a class="oer-alerts-link" href="/alerts/">&gt; OER ALERTS // RECEIVE MONITOR ALERTS ON THIS DEVICE<span class="dim">earthquakes // power grid // severe weather // 8 more monitors // phone or computer</span></a>
     </section>
 
     <nav class="main-nav">
@@ -2586,6 +2587,12 @@
       .oer-term-link .cur { animation: oer-term-link-blink 1s steps(1) infinite; }
       @keyframes oer-term-link-blink { 50% { opacity: 0; } }
       .oer-term-link a.oer-support-link { padding: 12px 12px; font-size: 14px; }
+      .oer-alerts-box a.oer-alerts-link {
+        background: #0d0900; border-color: #cc8a00; color: #ffbf33;
+        box-shadow: inset 0 0 18px rgba(255, 191, 51, 0.12); text-shadow: 0 0 4px rgba(255, 191, 51, 0.25);
+      }
+      .oer-alerts-box a.oer-alerts-link:hover, .oer-alerts-box a.oer-alerts-link:focus { border-color: #ffbf33; background: #1a1200; }
+      .oer-alerts-box a.oer-alerts-link .dim { color: #c8902a; }
     </style>
 
     
