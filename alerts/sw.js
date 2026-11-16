@@ -9,7 +9,7 @@
 // matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-3";
+const VERSION = "oer-alerts-4";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -83,6 +83,8 @@ self.addEventListener("push", function (event) {
     icon: "/icon-192.png",
     tag: d.tag || "oer-alert",
     renotify: true,
+    vibrate: [200, 100, 200],
+    requireInteraction: String(d.level || "") === "CRITICAL",
     data: { url: d.url || "/alerts/", ref: d.ref || "", at: d.at || Date.now() }
   };
   var rec = { title: title, body: options.body, url: options.data.url, level: String(d.level || ""),

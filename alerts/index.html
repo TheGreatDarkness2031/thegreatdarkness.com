@@ -96,6 +96,28 @@
     <button type="button" data-view="channels">[ CHANNELS ]</button>
   </div>
 
+  <div class="panel" id="ctlPanel" hidden>
+    <h2>DEVICE CONTROLS</h2>
+    <p>ALERTS ON THIS DEVICE: <span id="muteState" class="amber">ACTIVE</span></p>
+    <div class="row" id="muteRow">
+      <button type="button" data-mute="1">[ MUTE 1H ]</button>
+      <button type="button" data-mute="8">[ MUTE 8H ]</button>
+      <button type="button" data-mute="24">[ MUTE 24H ]</button>
+      <button type="button" data-mute="-1">[ MUTE UNTIL RESUMED ]</button>
+    </div>
+    <div class="row" id="resumeRow" hidden>
+      <button type="button" id="resumeButton">[ RESUME ALERTS ]</button>
+    </div>
+    <div class="quiet">
+      <label><input type="checkbox" id="quietOn"> QUIET HOURS</label>
+      <select id="quietStart" aria-label="Quiet hours start"></select> TO
+      <select id="quietEnd" aria-label="Quiet hours end"></select>
+      <span class="dim">(THIS DEVICE&#39;S TIME)</span>
+    </div>
+    <p class="dim">ALERTS SENT WHILE MUTED OR IN QUIET HOURS ARE NOT DELIVERED TO THIS DEVICE.</p>
+    <p id="ctlStatus" class="dim"></p>
+  </div>
+
   <div class="panel" id="trafficPanel" hidden>
     <h2>MESSAGE TRAFFIC // RECEIVED</h2>
     <div id="trafficList"></div>
@@ -127,12 +149,6 @@
     <h2 id="subTitle">STEP 2 // SELECT CHANNELS</h2>
     <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE, THEN TAP SUBSCRIBE AND ALLOW NOTIFICATIONS. ALERTS FOLLOW STATUS CHANGES ONLY.</p>
     <div id="chanList"></div>
-    <div class="quiet">
-      <label><input type="checkbox" id="quietOn"> QUIET HOURS</label>
-      <select id="quietStart" aria-label="Quiet hours start"></select> TO
-      <select id="quietEnd" aria-label="Quiet hours end"></select>
-      <span class="dim">(THIS DEVICE'S TIME)</span>
-    </div>
     <div class="row">
       <button type="button" id="subButton">[ SUBSCRIBE ]</button>
       <button type="button" id="updButton" hidden>[ UPDATE ]</button>
@@ -184,10 +200,11 @@
   // ---- Views: MESSAGE TRAFFIC (received alerts) and CHANNELS (setup) ----
   // Opened while subscribed = MESSAGE TRAFFIC; not subscribed = CHANNELS.
   // ?view=traffic|channels picks one. Install help shows only outside the app.
-  var view = null;
+  var view = null, subscribedNow = false;
   function showView(v) {
     view = v;
     $("trafficPanel").hidden = v !== "traffic";
+    $("ctlPanel").hidden = !subscribedNow;
     $("subPanel").hidden = v !== "channels";
     $("installPanel").hidden = v !== "channels" || standalone;
     Array.prototype.forEach.call(document.querySelectorAll("#views button"), function (b) {
@@ -320,19 +337,13 @@
   syncAll();
   ["quietStart", "quietEnd"].forEach(function (id, i) {
     for (var h = 0; h < 24; h++) { var o = document.createElement("option"); o.value = h; o.textContent = (h < 10 ? "0" : "") + h + ":00"; $(id).appendChild(o); }
-    $(id).value = saved.quiet ? (i ? saved.quiet.end : saved.quiet.start) : (i ? 7 : 22);
+    $(id).value = i ? 7 : 22;
   });
-  $("quietOn").checked = !!saved.quiet;
 
   function choices() {
     var prefs = {};
     CHANNELS.forEach(function (c) { if ($("ch_" + c[0]).checked) prefs[c[0]] = $("lv_" + c[0]).value; });
-    var quiet = null;
-    if ($("quietOn").checked && $("quietStart").value !== $("quietEnd").value) {
-      var tz = "UTC"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) {}
-      quiet = { start: Number($("quietStart").value), end: Number($("quietEnd").value), tz: tz };
-    }
-    return { prefs: prefs, quiet: quiet };
+    return { prefs: prefs };
   }
 
   function post(path, body) {
@@ -348,6 +359,9 @@
   }
 
   function showState(subscribed) {
+    subscribedNow = subscribed;
+    $("ctlPanel").hidden = !subscribed || !view;
+    if (subscribed) loadDeviceState();
     $("subButton").hidden = subscribed;
     $("updButton").hidden = !subscribed; $("testButton").hidden = !subscribed; $("unsubButton").hidden = !subscribed;
   }
@@ -384,7 +398,7 @@
         return old || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes(VAPID_KEY) });
       });
     }).then(function (sub) {
-      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs, quiet: c.quiet });
+      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs });
     }).then(function (d) {
       if (!d.ok) throw new Error("SUBSCRIPTION NOT RECORDED (" + (d.error || d.httpStatus) + ").");
       store(PREFS_KEY, c); saved = c; showState(true);
@@ -397,7 +411,7 @@
     if (!Object.keys(c.prefs).length) { say("NO CHANNELS SELECTED. USE UNSUBSCRIBE TO STOP ALL ALERTS.", true); return; }
     current().then(function (sub) {
       if (!sub) { showState(false); throw new Error("THIS DEVICE IS NOT SUBSCRIBED."); }
-      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs, quiet: c.quiet });
+      return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs });
     }).then(function (d) {
       if (!d.ok) throw new Error("UPDATE NOT RECORDED (" + (d.error || d.httpStatus) + ").");
       store(PREFS_KEY, c); saved = c; say("UPDATED. " + d.channels + " CHANNEL(S) OPEN ON THIS DEVICE.");
@@ -413,6 +427,61 @@
       showState(false); say("UNSUBSCRIBED. NO ALERTS WILL REACH THIS DEVICE.");
     }).catch(function () { say("UNSUBSCRIBE FAILED. TRY AGAIN.", true); });
   });
+
+  // ---- Device controls: mute + quiet hours, saved on the sender ----
+  var muteUntil = 0;
+  var ctl = $("ctlStatus");
+  function ctlSay(text, bad) { ctl.textContent = text; ctl.className = bad ? "err" : "dim"; }
+  function showMute() {
+    var now = Date.now();
+    var muted = muteUntil === -1 || muteUntil > now;
+    $("muteState").textContent = !muted ? "ACTIVE" : (muteUntil === -1 ? "MUTED UNTIL RESUMED" : "MUTED UNTIL " + when(muteUntil));
+    $("muteState").className = muted ? "err" : "amber";
+    $("muteRow").hidden = muted; $("resumeRow").hidden = !muted;
+  }
+  setInterval(function () { if (muteUntil > 0) showMute(); }, 30000);
+  function applyState(d) {
+    muteUntil = Number(d.muteUntil) || 0;
+    showMute();
+    $("quietOn").checked = !!d.quiet;
+    if (d.quiet) { $("quietStart").value = d.quiet.start; $("quietEnd").value = d.quiet.end; }
+  }
+  function loadDeviceState() {
+    current().then(function (sub) {
+      if (!sub) return null;
+      return post("/state", { endpoint: sub.endpoint });
+    }).then(function (d) {
+      if (d && d.ok) applyState(d);
+      else if (d && d.error === "NOT SUBSCRIBED") ctlSay("THIS DEVICE IS NOT ON THE ALERT LIST. SUBSCRIBE AGAIN UNDER CHANNELS.", true);
+    }).catch(function () { ctlSay("SETTINGS UNAVAILABLE. CHECK THE CONNECTION.", true); });
+  }
+  function saveSettings(change, okText) {
+    current().then(function (sub) {
+      if (!sub) throw new Error("THIS DEVICE IS NOT SUBSCRIBED.");
+      change.endpoint = sub.endpoint;
+      return post("/settings", change);
+    }).then(function (d) {
+      if (!d.ok) throw new Error("NOT SAVED (" + (d.error || d.httpStatus) + ").");
+      applyState(d); ctlSay(okText);
+    }).catch(function (e) { ctlSay(String(e && e.message || "NOT SAVED."), true); });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("#muteRow button"), function (b) {
+    b.addEventListener("click", function () {
+      var h = Number(b.getAttribute("data-mute"));
+      saveSettings({ mute: h === -1 ? -1 : Date.now() + h * 3600000 }, "ALERTS MUTED ON THIS DEVICE.");
+    });
+  });
+  $("resumeButton").addEventListener("click", function () { saveSettings({ mute: 0 }, "ALERTS RESUMED ON THIS DEVICE."); });
+  function saveQuiet() {
+    var quiet = null;
+    if ($("quietOn").checked) {
+      if ($("quietStart").value === $("quietEnd").value) { ctlSay("QUIET HOURS NEED A DIFFERENT START AND END.", true); return; }
+      var tz = "UTC"; try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch (e) {}
+      quiet = { start: Number($("quietStart").value), end: Number($("quietEnd").value), tz: tz };
+    }
+    saveSettings({ quiet: quiet }, quiet ? "QUIET HOURS SAVED." : "QUIET HOURS OFF.");
+  }
+  ["quietOn", "quietStart", "quietEnd"].forEach(function (id) { $(id).addEventListener("change", saveQuiet); });
 
   // A test alert goes to this device only.
   $("testButton").addEventListener("click", function () {
