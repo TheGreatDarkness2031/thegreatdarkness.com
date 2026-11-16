@@ -65,7 +65,7 @@
   .chan.all { border-bottom: 1px solid #1f9e3f; font-weight: bold; }
   .msg { border-bottom: 1px dotted #144d24; padding: 8px 0; font-size: 13px; }
   .msg:last-child { border-bottom: 0; }
-  .msg .when { color: #1f9e3f; font-size: 12px; }
+  .msg .when { color: #8cf0a4; font-size: 12px; }
   .msg .lv { font-weight: bold; margin-left: 6px; }
   .msg .t { margin-top: 3px; color: #ffbf33; }
   .msg .b { margin-top: 2px; line-height: 1.45; }
@@ -79,6 +79,9 @@
     .chan { font-size: 12px; }
     .head img { width: 52px; height: 52px; }
   }
+  .lv-NOTICE { color: #4ad8ff; } .lv-URGENT { color: #ff5a4a; }
+  .msg .held { color: #1f9e3f; margin-left: 6px; }
+  .chan.notice { border-bottom: 1px solid #1f9e3f; margin-bottom: 6px; }
   .lv-WATCH { color: #ffd84a; } .lv-ELEVATED { color: #ff9a3c; } .lv-CRITICAL { color: #ff5a4a; } .lv-TEST { color: #1f9e3f; }
 </style>
 </head>
@@ -237,6 +240,23 @@
       });
     }).catch(function () { return []; });
   }
+  function addTraffic(recs) {
+    if (!recs.length) return Promise.resolve();
+    return openTraffic().then(function (db) {
+      return new Promise(function (resolve) {
+        var tx = db.transaction("traffic", "readwrite");
+        var st = tx.objectStore("traffic");
+        recs.forEach(function (r) { st.add(r); });
+        var keys = st.getAllKeys();
+        keys.onsuccess = function () {
+          var k = keys.result || [];
+          for (var i = 0; i < k.length - 200; i++) st.delete(k[i]);
+        };
+        tx.oncomplete = function () { resolve(); };
+        tx.onerror = function () { resolve(); };
+      });
+    }).catch(function () {});
+  }
   function two(n) { return (n < 10 ? "0" : "") + n; }
   function when(ms) {
     var d = new Date(ms);
@@ -253,6 +273,7 @@
         var top = document.createElement("div"); top.className = "when"; top.textContent = when(r.at || Date.now());
         var lv = String(r.level || "").toUpperCase();
         if (lv) { var l = document.createElement("span"); l.className = "lv lv-" + lv.replace(/[^A-Z]/g, ""); l.textContent = lv; top.appendChild(l); }
+        if (r.held) { var h = document.createElement("span"); h.className = "held"; h.textContent = "// HELD WHILE MUTED"; top.appendChild(h); }
         var t = document.createElement("div"); t.className = "t"; t.textContent = r.title || "OER // MESSAGE TRAFFIC";
         var b = document.createElement("div"); b.className = "b"; b.textContent = r.body || "";
         m.appendChild(top); m.appendChild(t); m.appendChild(b);
@@ -302,6 +323,13 @@
 
   var saved = load(PREFS_KEY) || { prefs: {}, quiet: null };
   var list = $("chanList");
+  // Operator notices: on unless turned off (owner 2026-11-15); not part of SELECT ALL.
+  var noticeRow = document.createElement("div"); noticeRow.className = "chan notice";
+  var noticeLab = document.createElement("label");
+  var noticeBox = document.createElement("input"); noticeBox.type = "checkbox"; noticeBox.id = "chNotices";
+  noticeBox.checked = saved.prefs.notices !== "OFF";
+  noticeLab.appendChild(noticeBox); noticeLab.appendChild(document.createTextNode("OER OPERATOR NOTICES"));
+  noticeRow.appendChild(noticeLab); list.appendChild(noticeRow);
   var allRow = document.createElement("div"); allRow.className = "chan all";
   var allLab = document.createElement("label");
   var allBox = document.createElement("input"); allBox.type = "checkbox"; allBox.id = "chAll";
@@ -343,8 +371,10 @@
   function choices() {
     var prefs = {};
     CHANNELS.forEach(function (c) { if ($("ch_" + c[0]).checked) prefs[c[0]] = $("lv_" + c[0]).value; });
+    prefs.notices = $("chNotices").checked ? "ON" : "OFF";
     return { prefs: prefs };
   }
+  function monitorCount(prefs) { return Object.keys(prefs).filter(function (k) { return k !== "notices"; }).length; }
 
   function post(path, body) {
     return fetch(WORKER + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
@@ -388,7 +418,7 @@
   // Permission is asked only here, when SUBSCRIBE is tapped.
   $("subButton").addEventListener("click", function () {
     var c = choices();
-    if (!Object.keys(c.prefs).length) { say("SELECT AT LEAST ONE CHANNEL.", true); return; }
+    if (!monitorCount(c.prefs) && c.prefs.notices === "OFF") { say("SELECT AT LEAST ONE CHANNEL.", true); return; }
     say("REQUESTING PERMISSION...");
     Notification.requestPermission().then(function (perm) {
       if (perm !== "granted") throw new Error("NOTIFICATIONS ARE BLOCKED FOR THIS SITE. ALLOW THEM IN THE BROWSER SETTINGS.");
@@ -408,7 +438,7 @@
 
   $("updButton").addEventListener("click", function () {
     var c = choices();
-    if (!Object.keys(c.prefs).length) { say("NO CHANNELS SELECTED. USE UNSUBSCRIBE TO STOP ALL ALERTS.", true); return; }
+    if (!monitorCount(c.prefs) && c.prefs.notices === "OFF") { say("NO CHANNELS SELECTED. USE UNSUBSCRIBE TO STOP ALL ALERTS.", true); return; }
     current().then(function (sub) {
       if (!sub) { showState(false); throw new Error("THIS DEVICE IS NOT SUBSCRIBED."); }
       return post("/subscribe", { subscription: sub.toJSON(), prefs: c.prefs });
@@ -452,9 +482,27 @@
       if (!sub) return null;
       return post("/state", { endpoint: sub.endpoint });
     }).then(function (d) {
-      if (d && d.ok) applyState(d);
+      if (d && d.ok) { applyState(d); collectMissed(); }
       else if (d && d.error === "NOT SUBSCRIBED") ctlSay("THIS DEVICE IS NOT ON THE ALERT LIST. SUBSCRIBE AGAIN UNDER CHANNELS.", true);
     }).catch(function () { ctlSay("SETTINGS UNAVAILABLE. CHECK THE CONNECTION.", true); });
+  }
+  // Alerts the sender held while this device was muted or in quiet hours:
+  // added to MESSAGE TRAFFIC quietly (no notification), marked HELD.
+  function collectMissed() {
+    current().then(function (sub) {
+      if (!sub) return null;
+      return post("/missed", { endpoint: sub.endpoint });
+    }).then(function (d) {
+      if (!d || !d.ok || !d.items || !d.items.length) return;
+      var recs = d.items.map(function (x) {
+        return { title: String(x.title || ""), body: String(x.body || ""), url: String(x.url || "/alerts/"),
+          level: String(x.level || ""), prefix: String(x.prefix || ""), ref: String(x.ref || ""), at: Number(x.at) || Date.now(), held: true };
+      });
+      return addTraffic(recs).then(function () {
+        if (view === "traffic") renderTraffic();
+        ctlSay(recs.length + " MESSAGE(S) HELD WHILE MUTED ADDED TO MESSAGE TRAFFIC.");
+      });
+    }).catch(function () {});
   }
   function saveSettings(change, okText) {
     current().then(function (sub) {
@@ -464,6 +512,7 @@
     }).then(function (d) {
       if (!d.ok) throw new Error("NOT SAVED (" + (d.error || d.httpStatus) + ").");
       applyState(d); ctlSay(okText);
+      if (change.mute === 0 || change.quiet === null) collectMissed();
     }).catch(function (e) { ctlSay(String(e && e.message || "NOT SAVED."), true); });
   }
   // Ticking the box mutes for the chosen time; changing the time while ticked
