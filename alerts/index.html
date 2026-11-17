@@ -124,6 +124,7 @@
     <h2>MESSAGE TRAFFIC // RECEIVED</h2>
     <div id="trafficList"></div>
     <p id="trafficEmpty" class="dim">NO TRAFFIC RECEIVED ON THIS DEVICE.</p>
+    <p class="dim"><a href="#" id="heldCheck">[ CHECK FOR HELD MESSAGES ]</a> <span id="heldStatus"></span></p>
     <p class="dim">LAST 200 MESSAGES, KEPT ON THIS DEVICE ONLY.</p>
   </div>
 
@@ -322,7 +323,14 @@
       });
     }
   } catch (e) {}
-  document.addEventListener("visibilitychange", function () { if (!document.hidden && view === "traffic") renderTraffic(); });
+  // Back in the app: redraw, and collect anything the sender held while
+  // muted / in quiet hours (at most once a minute; no notification).
+  var lastHeldCheck = 0;
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) return;
+    if (view === "traffic") renderTraffic();
+    if (subscribedNow && Date.now() - lastHeldCheck > 60000) collectMissed();
+  });
   try {
     if ("serviceWorker" in navigator && location.protocol === "https:") {
       window.addEventListener("load", function () {
@@ -366,19 +374,38 @@
   var allLab = document.createElement("label");
   var allBox = document.createElement("input"); allBox.type = "checkbox"; allBox.id = "chAll";
   allLab.appendChild(allBox); allLab.appendChild(document.createTextNode("SELECT ALL CHANNELS"));
-  allRow.appendChild(allLab); list.appendChild(allRow);
+  // One level for every channel (owner 2026-11-17): sets each ticked
+  // channel (none ticked = ticks them all); reads MIXED when they differ.
+  var allSel = document.createElement("select"); allSel.id = "lvAll"; allSel.setAttribute("aria-label", "Lowest status for all channels");
+  LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = LEVEL_TEXT[l]; allSel.appendChild(o); });
+  var mixedOpt = document.createElement("option"); mixedOpt.value = "MIXED"; mixedOpt.textContent = "MIXED"; mixedOpt.disabled = true; mixedOpt.hidden = true;
+  allSel.appendChild(mixedOpt); allSel.value = "CRITICAL";
+  allRow.appendChild(allLab); allRow.appendChild(allSel); list.appendChild(allRow);
+  function allLevel() { return allSel.value === "MIXED" ? "CRITICAL" : allSel.value; }
   function syncAll() {
-    var on = CHANNELS.filter(function (c) { return $("ch_" + c[0]).checked; }).length;
-    allBox.checked = on === CHANNELS.length;
-    allBox.indeterminate = on > 0 && on < CHANNELS.length;
+    var ticked = CHANNELS.filter(function (c) { return $("ch_" + c[0]).checked; });
+    allBox.checked = ticked.length === CHANNELS.length;
+    allBox.indeterminate = ticked.length > 0 && ticked.length < CHANNELS.length;
+    if (!ticked.length) return;
+    var first = $("lv_" + ticked[0][0]).value;
+    allSel.value = ticked.every(function (c) { return $("lv_" + c[0]).value === first; }) ? first : "MIXED";
   }
   allBox.addEventListener("change", function () {
     CHANNELS.forEach(function (c) {
       var box = $("ch_" + c[0]), sel = $("lv_" + c[0]);
       if (box.checked !== allBox.checked) {
         box.checked = allBox.checked; sel.disabled = !box.checked;
-        if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL";
+        if (box.checked) sel.value = allLevel();
       }
+    });
+    syncAll();
+  });
+  allSel.addEventListener("change", function () {
+    var anyOn = CHANNELS.some(function (c) { return $("ch_" + c[0]).checked; });
+    CHANNELS.forEach(function (c) {
+      var box = $("ch_" + c[0]), sel = $("lv_" + c[0]);
+      if (!anyOn) { box.checked = true; sel.disabled = false; }
+      if (box.checked) sel.value = allSel.value;
     });
     syncAll();
   });
@@ -392,7 +419,8 @@
     LEVELS.forEach(function (l) { var o = document.createElement("option"); o.value = l; o.textContent = LEVEL_TEXT[l]; sel.appendChild(o); });
     var lv = saved.prefs[c[0]];
     box.checked = !!lv; sel.value = lv || "CRITICAL"; sel.disabled = !lv;
-    box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = "CRITICAL"; syncAll(); });
+    box.addEventListener("change", function () { sel.disabled = !box.checked; if (box.checked && !saved.prefs[c[0]]) sel.value = allLevel(); syncAll(); });
+    sel.addEventListener("change", syncAll);
     row.appendChild(lab); row.appendChild(sel); list.appendChild(row);
     if (c[0] === askedChannel && !box.checked) { box.checked = true; sel.disabled = false; sel.value = "CRITICAL"; }
   });
@@ -522,11 +550,19 @@
   }
   // Alerts the sender held while this device was muted or in quiet hours:
   // added to MESSAGE TRAFFIC quietly (no notification), marked HELD.
-  function collectMissed() {
+  // manual = the [ CHECK FOR HELD MESSAGES ] link: says what it found.
+  function heldSay(text) { $("heldStatus").textContent = text; }
+  function collectMissed(manual) {
+    lastHeldCheck = Date.now();
+    if (manual) {
+      heldSay("CHECKING...");
+      setTimeout(function () { if ($("heldStatus").textContent === "CHECKING...") heldSay("CHECK FAILED. TRY AGAIN."); }, 15000);
+    }
     current().then(function (sub) {
-      if (!sub) return null;
+      if (!sub) { if (manual) heldSay("THIS DEVICE IS NOT SUBSCRIBED."); return null; }
       return post("/missed", { endpoint: sub.endpoint });
     }).then(function (d) {
+      if (manual && d) heldSay(!d.ok ? "CHECK FAILED. TRY AGAIN." : (d.items && d.items.length ? d.items.length + " HELD MESSAGE(S) ADDED." : "NO HELD MESSAGES."));
       if (!d || !d.ok || !d.items || !d.items.length) return;
       var recs = d.items.map(function (x) {
         return { title: String(x.title || ""), body: String(x.body || ""), url: String(x.url || "/alerts/"),
@@ -536,8 +572,9 @@
         if (view === "traffic" && !document.hidden) renderTraffic(); else badgeFromTraffic();
         ctlSay(recs.length + " MESSAGE(S) HELD DURING MUTE / QUIET HOURS ADDED TO MESSAGE TRAFFIC.");
       });
-    }).catch(function () {});
+    }).catch(function () { if (manual) heldSay("CHECK FAILED. CHECK THE CONNECTION."); });
   }
+  $("heldCheck").addEventListener("click", function (e) { e.preventDefault(); collectMissed(true); });
   function saveSettings(change, okText) {
     current().then(function (sub) {
       if (!sub) throw new Error("THIS DEVICE IS NOT SUBSCRIBED.");
