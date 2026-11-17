@@ -181,11 +181,21 @@ function speakPlace(text) {
 
 // Upper-case labels from the feeds -> plain words (place names keep
 // their capitals: "SANTA CRUZ, CA" -> "Santa Cruz, California").
-const ACRONYMS = ["GPS", "AI", "NWS", "USGS", "EIA", "NASA", "JPL", "NOAA", "IODA", "UTC"];
+// Words with digits stay as written (201W, GLM 5.3); small joining
+// words stay lower case inside a name ("District of Columbia").
+const ACRONYMS = ["GPS", "AI", "NWS", "USGS", "EIA", "NASA", "JPL", "NOAA", "IODA", "UTC", "PRN"];
+const SPECIAL_WORDS = { OPENAI: "OpenAI", XAI: "xAI", DEEPSEEK: "DeepSeek" };
+const SMALL_WORDS = ["of", "the", "and"];   // not "in": state code IN
 function plainCase(text) {
-  return String(text || "").toLowerCase()
-    .replace(/(^|[\s,(/-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
-    .replace(/\b[A-Z][a-z]+\b/g, (w) => (ACRONYMS.includes(w.toUpperCase()) ? w.toUpperCase() : w));
+  return String(text || "").split(/(\s+)/).map((w, i) => {
+    const up = w.toUpperCase();
+    if (SPECIAL_WORDS[up]) return SPECIAL_WORDS[up];
+    if (/\d/.test(w)) return up;
+    const lo = w.toLowerCase();
+    if (i > 0 && SMALL_WORDS.includes(lo)) return lo;
+    return lo.replace(/(^|[,(/-])([a-z])/g, (m, a, b) => a + b.toUpperCase())
+      .replace(/\b[A-Z][a-z]+\b/g, (x) => (ACRONYMS.includes(x.toUpperCase()) ? x.toUpperCase() : x));
+  }).join("");
 }
 const sentenceCase = (t) => { const s = String(t || "").toLowerCase(); return s.charAt(0).toUpperCase() + s.slice(1); };
 const row = (c, name) => { const r = (c.rows || []).find((x) => x[0] === name); return r ? r[1] : ""; };
@@ -216,6 +226,12 @@ function speakContact(id, c) {
   if (id === "AIINC") {
     const p = row(c, "PROVIDER");
     return (p ? plainCase(p) + ", " : "") + sentenceCase(row(c, "PROVIDER STATUS") || c.label);
+  }
+  if (id === "IODA" && row(c, "REGION")) return plainCase(row(c, "REGION")) + " outage";
+  if (id === "GPS" && row(c, "SATELLITE")) return String(row(c, "SATELLITE")).toUpperCase() + " unhealthy";
+  if (id === "NIFC" && row(c, "FIRE")) {
+    const st = String(row(c, "STATE")).toUpperCase();
+    return speakPlace(plainCase(row(c, "FIRE")) + " fire" + (st ? ", " + st : ""));
   }
   return speakPlace(sentenceCase(c.label));
 }
@@ -289,13 +305,13 @@ function narrateMonitor(m, week) {
     }
     if (m.top.length && m.id !== "USGS") {
       const items = m.top.map((c) => speakContact(m.id, c) + ", " + level(c.status));
-      parts.push((m.top.length === 1 ? "Highest: " : "Highest: ") + items.join(". ") + ".");
+      parts.push((m.top.length === 1 ? "Highest contact: " : "Highest contacts: ") + items.join(". ") + ".");
     }
     if (m.peak !== "NOMINAL") {
       const when = m.peakAt <= Date.parse(m.weekFrom) ? "carried over from the previous period" : dayTime(m.peakAt);
-      parts.push("Status reached: " + m.peak + ", " + when + ".");
+      parts.push("Overall status reached: " + m.peak + ", " + when + ".");
     } else {
-      parts.push("Status remained NOMINAL.");
+      parts.push("Overall status remained NOMINAL.");
     }
   }
   if (m.degradedMinutes >= 30) parts.push("Source degraded for " + hoursText(m.degradedMinutes) + ".");
