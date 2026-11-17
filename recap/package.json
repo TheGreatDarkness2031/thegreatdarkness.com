@@ -1,0 +1,9 @@
+{
+  "name": "oer-weekly-summary",
+  "private": true,
+  "description": "OER WEEKLY SUMMARY build tools (not part of the website)",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "kokoro-js": "1.2.1"
+  }
+}
