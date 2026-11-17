@@ -162,7 +162,9 @@
     menuBtn.setAttribute("aria-expanded", "false");
     left.appendChild(menuBtn);
     left.appendChild(el("span", "oerc-org", "OPERATIONAL EVENT REGISTER"));
-    var mid = el("div", "oerc-bar-mid", pageName());
+    // A page without its own <h1> (e.g. /radar/) gets the page name as one
+    // (Bing, 2026-11-17); looks the same (console.css :where reset).
+    var mid = el(document.querySelector("h1") ? "div" : "h1", "oerc-bar-mid oer-h1", pageName());
     var right = el("div", "oerc-bar-right");
     var clock = el("span", "oerc-clock");
     var light = el("span", "oerc-light", "LINK");

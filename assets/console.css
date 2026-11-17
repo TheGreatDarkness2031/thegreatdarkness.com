@@ -403,3 +403,6 @@ a.oer-badge88:hover { outline-color: #fff; }
 @media (max-width: 560px) {
   .oer-daynight { float: none; display: flex; margin: 6px 0 0; }
 }
+/* A title turned into <h1> (Bing, 2026-11-17) keeps its old look:
+   zero-specificity reset, the element's own class wins. */
+:where(h1.oer-h1) { margin: 0; font-size: inherit; font-weight: inherit; line-height: inherit; letter-spacing: inherit; }
