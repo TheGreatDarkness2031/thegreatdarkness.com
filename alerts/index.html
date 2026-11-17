@@ -40,6 +40,11 @@
   .panel { border: 1px solid #33ff66; margin-top: 16px; padding: 14px 16px; }
   .panel h2 { font-size: 14px; margin: 0 0 10px; letter-spacing: 1px; }
   .panel h2::before { content: "=== "; } .panel h2::after { content: " ==="; }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin: 0 0 10px; }
+  .panel-head h2 { margin: 0; }
+  .panel-head a { font-size: 12px; white-space: nowrap; margin-left: auto; }
+  #heldStatus { text-align: right; margin: -6px 0 8px; min-height: 0; }
+  #heldStatus:empty { display: none; }
   p { margin: 8px 0; line-height: 1.5; font-size: 14px; }
   .amber { color: #ffbf33; }
   .dim { color: #1f9e3f; font-size: 12px; }
@@ -121,10 +126,10 @@
   </div>
 
   <div class="panel" id="trafficPanel" hidden>
-    <h2>MESSAGE TRAFFIC // RECEIVED</h2>
+    <div class="panel-head"><h2>MESSAGE TRAFFIC // RECEIVED</h2><a href="#" id="heldCheck" title="Collect alerts held while muted or in quiet hours">[ CHECK HELD ]</a></div>
+    <p id="heldStatus" class="dim"></p>
     <div id="trafficList"></div>
     <p id="trafficEmpty" class="dim">NO TRAFFIC RECEIVED ON THIS DEVICE.</p>
-    <p class="dim"><a href="#" id="heldCheck">[ CHECK FOR HELD MESSAGES ]</a> <span id="heldStatus"></span></p>
     <p class="dim">LAST 200 MESSAGES, KEPT ON THIS DEVICE ONLY.</p>
   </div>
 
@@ -562,7 +567,7 @@
       if (!sub) { if (manual) heldSay("THIS DEVICE IS NOT SUBSCRIBED."); return null; }
       return post("/missed", { endpoint: sub.endpoint });
     }).then(function (d) {
-      if (manual && d) heldSay(!d.ok ? "CHECK FAILED. TRY AGAIN." : (d.items && d.items.length ? d.items.length + " HELD MESSAGE(S) ADDED." : "NO HELD MESSAGES."));
+      if (manual && d) heldSay(!d.ok ? "CHECK FAILED. TRY AGAIN." : (d.items && d.items.length ? d.items.length + " HELD MESSAGE(S) ADDED BELOW." : "NO HELD MESSAGES."));
       if (!d || !d.ok || !d.items || !d.items.length) return;
       var recs = d.items.map(function (x) {
         return { title: String(x.title || ""), body: String(x.body || ""), url: String(x.url || "/alerts/"),
