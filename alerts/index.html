@@ -121,7 +121,7 @@
       <select id="quietEnd" aria-label="Quiet hours end"></select>
       <span class="dim">(THIS DEVICE&#39;S TIME)</span>
     </div>
-    <p class="dim">ALERTS SENT WHILE MUTED OR IN QUIET HOURS ARE NOT DELIVERED TO THIS DEVICE.</p>
+    <p class="dim">ALERTS SENT WHILE MUTED OR IN QUIET HOURS ARE HELD AND ADDED TO MESSAGE TRAFFIC WITHOUT A NOTIFICATION.</p>
     <p id="ctlStatus" class="dim"></p>
   </div>
 
@@ -155,7 +155,7 @@
 
   <div class="panel" id="subPanel" hidden>
     <h2 id="subTitle">STEP 2 // SELECT CHANNELS</h2>
-    <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE, THEN TAP SUBSCRIBE AND ALLOW NOTIFICATIONS. ALERTS FOLLOW STATUS CHANGES ONLY.</p>
+    <p class="dim">SELECT THE MONITORS TO RECEIVE AND THE LOWEST STATUS THAT REACHES THIS DEVICE, THEN TAP SUBSCRIBE AND ALLOW NOTIFICATIONS. EVERY ENTRY A MONITOR WRITES TO THE EVENT LOG IS SENT; ENTRIES FROM ONE CHECK ARRIVE AS ONE NOTIFICATION. ALL ALERTS ALSO INCLUDES RETURNS TO NOMINAL.</p>
     <div id="chanList"></div>
     <div class="row">
       <button type="button" id="subButton">[ SUBSCRIBE ]</button>
@@ -287,7 +287,7 @@
         var top = document.createElement("div"); top.className = "when"; top.textContent = when(r.at || Date.now());
         var lv = String(r.level || "").toUpperCase();
         if (lv) { var l = document.createElement("span"); l.className = "lv lv-" + lv.replace(/[^A-Z]/g, ""); l.textContent = lv; top.appendChild(l); }
-        if (r.held) { var h = document.createElement("span"); h.className = "held"; h.textContent = "// HELD (MUTE / QUIET HOURS)"; top.appendChild(h); }
+        if (r.held) { var h = document.createElement("span"); h.className = "held"; h.textContent = "// HELD (MUTE / QUIET HOURS / DAILY LIMIT)"; top.appendChild(h); }
         var t = document.createElement("div"); t.className = "t"; t.textContent = r.title || "OER // MESSAGE TRAFFIC";
         var b = document.createElement("div"); b.className = "b"; b.textContent = r.body || "";
         m.appendChild(top); m.appendChild(t); m.appendChild(b);
@@ -567,15 +567,27 @@
       if (!sub) { if (manual) heldSay("THIS DEVICE IS NOT SUBSCRIBED."); return null; }
       return post("/missed", { endpoint: sub.endpoint });
     }).then(function (d) {
-      if (manual && d) heldSay(!d.ok ? "CHECK FAILED. TRY AGAIN." : (d.items && d.items.length ? d.items.length + " HELD MESSAGE(S) ADDED BELOW." : "NO HELD MESSAGES."));
-      if (!d || !d.ok || !d.items || !d.items.length) return;
-      var recs = d.items.map(function (x) {
-        return { title: String(x.title || ""), body: String(x.body || ""), url: String(x.url || "/alerts/"),
-          level: String(x.level || ""), prefix: String(x.prefix || ""), ref: String(x.ref || ""), at: Number(x.at) || Date.now(), held: true, unread: 1 };
+      // One line per Event Log entry, same rule as sw.js trafficRecords.
+      var recs = [];
+      ((d && d.ok && d.items) || []).forEach(function (x) {
+        var base = { url: String(x.url || "/alerts/"), prefix: String(x.prefix || ""), ref: String(x.ref || ""),
+          at: Number(x.at) || Date.now(), held: true, unread: 1 };
+        if (!Array.isArray(x.items) || !x.items.length) {
+          recs.push(Object.assign({ title: String(x.title || ""), body: String(x.body || ""), level: String(x.level || "") }, base));
+          return;
+        }
+        var name = String(x.name || x.prefix || "").toUpperCase();
+        x.items.forEach(function (it, i) {
+          recs.push(Object.assign({}, base, { title: "OER // " + name + ": " + String(it.level || ""), body: String(it.text || ""),
+            level: String(it.level || ""), ref: base.ref + "#" + i }));
+        });
+        if (x.more > 0) recs.push(Object.assign({}, base, { title: "OER // " + name, body: "+" + x.more + " MORE ON THE MONITOR PAGE.", level: String(x.level || ""), ref: base.ref + "#more" }));
       });
+      if (manual && d) heldSay(!d.ok ? "CHECK FAILED. TRY AGAIN." : (recs.length ? recs.length + " HELD MESSAGE(S) ADDED BELOW." : "NO HELD MESSAGES."));
+      if (!recs.length) return;
       return addTraffic(recs).then(function () {
         if (view === "traffic" && !document.hidden) renderTraffic(); else badgeFromTraffic();
-        ctlSay(recs.length + " MESSAGE(S) HELD DURING MUTE / QUIET HOURS ADDED TO MESSAGE TRAFFIC.");
+        ctlSay(recs.length + " HELD MESSAGE(S) ADDED TO MESSAGE TRAFFIC.");
       });
     }).catch(function () { if (manual) heldSay("CHECK FAILED. CHECK THE CONNECTION."); });
   }

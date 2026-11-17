@@ -9,7 +9,7 @@
 // matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-6";
+const VERSION = "oer-alerts-7";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -93,6 +93,24 @@ function tellPages() {
   });
 }
 
+// One MESSAGE TRAFFIC line per Event Log entry (owner 2026-11-17): a monitor
+// alert carries `items` (everything one check logged, this device's levels
+// only), shown as one notification but listed one by one. Same rule in
+// index.html (held messages).
+function trafficRecords(d, title, body) {
+  var base = { url: d.url || "/alerts/", prefix: String(d.prefix || ""), ref: d.ref || "", at: d.at || Date.now(), unread: 1 };
+  if (!Array.isArray(d.items) || !d.items.length) {
+    return [Object.assign({ title: title, body: body, level: String(d.level || "") }, base)];
+  }
+  var name = d.name || String(d.prefix || "").toUpperCase();
+  var recs = d.items.map(function (x, i) {
+    return Object.assign({}, base, { title: "OER // " + name + ": " + x.level, body: String(x.text || ""),
+      level: String(x.level || ""), ref: base.ref + "#" + i });
+  });
+  if (d.more > 0) recs.push(Object.assign({}, base, { title: "OER // " + name, body: "+" + d.more + " MORE ON THE MONITOR PAGE.", level: String(d.level || ""), ref: base.ref + "#more" }));
+  return recs;
+}
+
 self.addEventListener("push", function (event) {
   var d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : "" }; }
@@ -106,11 +124,11 @@ self.addEventListener("push", function (event) {
     requireInteraction: String(d.level || "") === "CRITICAL" || String(d.level || "") === "URGENT",
     data: { url: d.url || "/alerts/", ref: d.ref || "", at: d.at || Date.now() }
   };
-  var rec = { title: title, body: options.body, url: options.data.url, level: String(d.level || ""),
-    prefix: String(d.prefix || ""), ref: options.data.ref, at: options.data.at, unread: 1 };
+  var recs = trafficRecords(d, title, options.body);
   event.waitUntil(Promise.all([
     self.registration.showNotification(title, options),
-    saveTraffic(rec).then(setBadgeFromTraffic).then(tellPages).catch(function () {})
+    recs.reduce(function (p, rec) { return p.then(function () { return saveTraffic(rec); }); }, Promise.resolve())
+      .then(setBadgeFromTraffic).then(tellPages).catch(function () {})
   ]));
 });
 
