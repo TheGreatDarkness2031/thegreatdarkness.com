@@ -2983,12 +2983,13 @@
     }
 
 
-    // Adaptive polling (2026-11-12): every 5 s while the Radar is
-    // changing; after 6 unchanged answers (30 s) every 10 s, after 14
-    // (about 2 min) every 15 s. Any change, or showing the tab again,
-    // goes straight back to 5 s. Contacts last minutes, so nothing is
-    // missed; quiet periods cost Apps Script about half the requests.
-    const RADAR_QUIET_STEPS = [[0, 1], [6, 2], [14, 3]];  // [unchanged answers, x the base interval]
+    // Adaptive polling (2026-11-12; slowed 2026-11-18): every 30 s while
+    // the Radar is changing; after 4 unchanged answers (2 min) every 60 s.
+    // Any change, or showing the tab again, goes straight back to 30 s.
+    // The monitors write new Radar rows only every 5 minutes and the
+    // caching Worker keeps a 60 s copy, so nothing is missed; slower polls
+    // keep the Worker inside Cloudflare's free daily request allowance.
+    const RADAR_QUIET_STEPS = [[0, 1], [4, 2]];  // [unchanged answers, x the base interval]
     let radarQuietCount = 0;
     let radarLastSignature = "";
     let radarLastPollAt = 0;
@@ -3740,7 +3741,7 @@
        INITIALIZATION
        ======================================================= */
 
-    startRadarPolling_(5000);
+    startRadarPolling_(30000);
   </script>
 
 <script src="/assets/notice.js" defer></script>
