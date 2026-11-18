@@ -14,11 +14,11 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="Live OER monitoring feed.">
+<meta name="description" content="Live U.S. earthquake monitor. USGS earthquake reports with magnitude, location and nearest city, sorted into eight seismic sectors. OER seismic activity status.">
 <meta property="og:site_name" content="The Great Darkness">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OER // Seismic Activity Monitor">
-<meta property="og:description" content="Live OER monitoring feed.">
+<meta property="og:description" content="Live U.S. earthquake monitor. USGS earthquake reports with magnitude, location and nearest city, sorted into eight seismic sectors. OER seismic activity status.">
 <meta property="og:url" content="https://thegreatdarkness.com/monitor/quake/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
@@ -427,7 +427,7 @@ canvas {
 
 </style>
 
-<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+<style>:where(h1.oer-h1,h2.oer-h2,h3.oer-h3){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
 </head>
 
 
@@ -493,9 +493,9 @@ canvas {
 
     <div class="proximity-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             SEISMIC SECTORS
-        </div>
+        </h2>
 
         <div
             id="proximityGrid"
@@ -507,9 +507,9 @@ canvas {
 
     <div class="history-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             EARTHQUAKE MAGNITUDE HISTORY
-        </div>
+        </h2>
 
         <div class="range-controls">
 
@@ -575,9 +575,9 @@ canvas {
 
     <div class="event-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             SEISMIC EVENT LOG
-        </div>
+        </h2>
 
         <div
             id="eventList"

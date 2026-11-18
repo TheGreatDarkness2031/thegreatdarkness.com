@@ -56,7 +56,10 @@
     margin: 0 auto 28px;
   }
 
-  h1 {
+  /* .xh1: a display line styled like the h1 (one h1 per page, 2026-11-18). */
+  .xh1 { display: block; font-weight: bold; }
+
+  h1, .xh1 {
     margin: 0 0 26px;
     font-size: 1.9rem;
     letter-spacing: 3px;
@@ -96,7 +99,7 @@
     box-shadow: inset 0 0 18px rgba(255, 0, 0, 0.12);
   }
 
-  .closing h1 { margin-bottom: 14px; }
+  .closing h1, .closing .xh1 { margin-bottom: 14px; }
 
   .closing .question {
     color: var(--dim);
@@ -137,7 +140,7 @@
   .back:focus { background: var(--white); color: var(--bg); }
 
   @media (max-width: 479px) {
-    h1 { font-size: 1.45rem; letter-spacing: 2px; }
+    h1, .xh1 { font-size: 1.45rem; letter-spacing: 2px; }
     h2 { font-size: 1.1rem; letter-spacing: 3px; }
     p { font-size: 0.98rem; }
   }
@@ -244,7 +247,7 @@
   <p>we're going to turn it all off.</p>
 
   <section class="closing">
-    <h1>THE GREAT DARKNESS IS COMING</h1>
+    <div class="xh1">THE GREAT DARKNESS IS COMING</div>
     <p class="date">JULY 1, 2031</p>
     <p class="question">WHEN THE LIGHTS GO OUT, WHAT WILL YOU DO?</p>
     <h3>ENJOY IT WHILE YOU CAN.</h3>

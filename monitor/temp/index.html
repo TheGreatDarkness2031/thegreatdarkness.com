@@ -14,11 +14,11 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="Live OER monitoring feed.">
+<meta name="description" content="Live U.S. temperature monitor. Hourly National Weather Service readings in major cities compared with NOAA 1991-2020 climate normals.">
 <meta property="og:site_name" content="The Great Darkness">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OER // Temperature Deviation Monitor">
-<meta property="og:description" content="Live OER monitoring feed.">
+<meta property="og:description" content="Live U.S. temperature monitor. Hourly National Weather Service readings in major cities compared with NOAA 1991-2020 climate normals.">
 <meta property="og:url" content="https://thegreatdarkness.com/monitor/temp/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
@@ -407,7 +407,7 @@ canvas {
 
 </style>
 
-<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+<style>:where(h1.oer-h1,h2.oer-h2,h3.oer-h3){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
 </head>
 
 
@@ -473,9 +473,9 @@ canvas {
 
     <div class="city-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             MONITORED LOCATIONS
-        </div>
+        </h2>
 
         <div
             id="cityGrid"
@@ -487,9 +487,9 @@ canvas {
 
     <div class="history-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             TEMPERATURE DEVIATION HISTORY
-        </div>
+        </h2>
 
         <div class="range-controls">
 

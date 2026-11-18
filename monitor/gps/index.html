@@ -14,11 +14,11 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="Live OER monitoring feed.">
+<meta name="description" content="Live GPS satellite monitor. Health of every satellite in the GPS constellation from the U.S. Coast Guard NAVCEN almanac.">
 <meta property="og:site_name" content="The Great Darkness">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OER // GPS / Navigation Monitor">
-<meta property="og:description" content="Live OER monitoring feed.">
+<meta property="og:description" content="Live GPS satellite monitor. Health of every satellite in the GPS constellation from the U.S. Coast Guard NAVCEN almanac.">
 <meta property="og:url" content="https://thegreatdarkness.com/monitor/gps/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
@@ -341,7 +341,7 @@ canvas {
 .contact-key { color: #8a8a8a; }
 </style>
 
-<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+<style>:where(h1.oer-h1,h2.oer-h2,h3.oer-h3){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
 </head>
 
 <body>
@@ -349,7 +349,7 @@ canvas {
 <div class="monitor-container">
 
     <div class="header">
-        <h1 id="pageTitle" class="header-title oer-h1">MONITOR</h1>
+        <h1 id="pageTitle" class="header-title oer-h1">GPS / NAVIGATION MONITOR</h1>
         <div id="pageSubtitle" class="header-subtitle"></div>
     </div>
 
@@ -364,12 +364,12 @@ canvas {
     <div id="message" class="message">MONITOR INITIALIZING...</div>
 
     <div class="panel">
-        <div id="itemsTitle" class="section-title">ACTIVE CONDITIONS</div>
+        <h2 id="itemsTitle" class="section-title oer-h2">ACTIVE CONDITIONS</h2>
         <div id="itemGrid" class="item-grid"></div>
     </div>
 
     <div class="panel">
-        <div class="section-title">HISTORY</div>
+        <h2 class="section-title oer-h2">HISTORY</h2>
 
         <div class="range-controls">
             <button class="range-button active" data-range="24H" onclick="loadMonitor('24H')">24 HOURS</button>
@@ -385,7 +385,7 @@ canvas {
     </div>
 
     <div class="panel">
-        <div class="section-title">STATUS / CONTACT LOG</div>
+        <h2 class="section-title oer-h2">STATUS / CONTACT LOG</h2>
         <div id="eventList" class="event-list">LOADING...</div>
     </div>
 

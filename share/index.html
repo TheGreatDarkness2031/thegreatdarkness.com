@@ -34,7 +34,9 @@
             text-align: center;
             padding: 60px 20px;
           }
-          h1 {
+          /* .xh1: the date line styled like the h1 (one h1 per page, 2026-11-18). */
+          .xh1 { display: block; font-weight: bold; margin-top: 0.67em; }
+          h1, .xh1 {
             font-family: Impact, "Arial Black", sans-serif;
             font-size: 2.5rem;
             letter-spacing: 2px;
@@ -64,14 +66,14 @@
              scrolling by a line or two. */
           @media (max-height: 480px) {
             body { padding: 24px 20px; }
-            h1 { font-size: 2rem; margin: 10px 0 18px; }
+            h1, .xh1 { font-size: 2rem; margin: 10px 0 18px; }
             .message { margin-top: 18px; }
           }
         </style>
       </head>
       <body>
         <h1>THE GREAT DARKNESS</h1>
-        <h1>01 JULY 2031</h1>
+        <div class="xh1">01 JULY 2031</div>
 
         <button
           class="share-box"

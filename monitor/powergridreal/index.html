@@ -14,11 +14,11 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="Live OER monitoring feed.">
+<meta name="description" content="Live U.S. power grid monitor. Electricity demand against forecast in eight regions from EIA hourly grid data, with grid stress status for each sector.">
 <meta property="og:site_name" content="The Great Darkness">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OER // Power Grid Monitor">
-<meta property="og:description" content="Live OER monitoring feed.">
+<meta property="og:description" content="Live U.S. power grid monitor. Electricity demand against forecast in eight regions from EIA hourly grid data, with grid stress status for each sector.">
 <meta property="og:url" content="https://thegreatdarkness.com/monitor/powergridreal/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
@@ -507,7 +507,7 @@ canvas {
 
 </style>
 
-<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+<style>:where(h1.oer-h1,h2.oer-h2,h3.oer-h3){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
 </head>
 
 
@@ -573,9 +573,9 @@ canvas {
 
     <div class="sector-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             REGIONAL GRID SECTORS
-        </div>
+        </h2>
 
         <div
             id="sectorGrid"
@@ -586,7 +586,7 @@ canvas {
 
 
     <div class="sector-panel">
-        <div class="section-title">HISTORY</div>
+        <h2 class="section-title oer-h2">HISTORY</h2>
 
         <div class="range-controls">
             <button class="range-button active" data-range="24H" onclick="loadGridHistory('24H')">24 HOURS</button>
@@ -602,15 +602,15 @@ canvas {
     </div>
 
     <div class="sector-panel">
-        <div class="section-title">STATUS CHANGE LOG</div>
+        <h2 class="section-title oer-h2">STATUS CHANGE LOG</h2>
         <div id="eventList" class="event-list">LOADING...</div>
     </div>
 
     <div class="legend-panel">
 
-        <div class="section-title">
+        <h2 class="section-title oer-h2">
             REPORTED GRID STRESS MODEL
-        </div>
+        </h2>
 
         <div class="legend-line">
             <strong>ACTUAL DEMAND:</strong>
