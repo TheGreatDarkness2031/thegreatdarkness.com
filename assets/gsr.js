@@ -68,23 +68,37 @@
         if (onOk) onOk(d.answers[key], userObject);
       });
     }
+    // Cacheable public answers go through the caching Worker (config.js);
+    // if it fails, the same call goes straight to Apps Script.
+    var viaCache = typeof TGD_CACHE_RPC !== "undefined" && TGD_CACHE_RPC.indexOf(name) !== -1;
     function send() {
       if (done) return;
+      var base = viaCache && tgdCacheOn() ? TGD_CACHE_URL : TGD_API_URL;
       tries++;
       cb = "tgdRpc" + Date.now().toString(36) + "_" + (++seq);
       script = document.createElement("script");
       var answered = false, mine = cb, tag = script;
       window[mine] = function(answer) { answered = true; finish(answer); };
-      script.onerror = function() { finish(null, "NETWORK ERROR"); };
+      function retryDirect() {
+        window[mine] = function() {};
+        if (tag.parentNode) tag.parentNode.removeChild(tag);
+        tries--;
+        send();
+      }
+      script.onerror = function() {
+        if (tgdCacheFailed(tag.src)) { retryDirect(); return; }
+        finish(null, "NETWORK ERROR");
+      };
       script.onload = function() {
         if (answered || done) return;
+        if (tgdCacheFailed(tag.src)) { retryDirect(); return; }
         // Loaded but never called back: Google's busy page.
         window[mine] = function() {};
         if (tag.parentNode) tag.parentNode.removeChild(tag);
         if (tries > BUSY_RETRIES) { finish(null, "SERVICE BUSY"); return; }
         setTimeout(send, 1000 + Math.floor(Math.random() * 2000));
       };
-      script.src = TGD_API_URL +
+      script.src = base +
         "?rpc=" + encodeURIComponent(name) +
         "&args=" + encodeURIComponent(JSON.stringify(args)) +
         "&callback=" + cb;

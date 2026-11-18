@@ -5214,6 +5214,8 @@
       script.onload = finished;
       script.onerror = function() {
         finished();
+        // The caching Worker failed: the next poll goes to Apps Script (config.js).
+        if (tgdCacheFailed(script.src)) return;
         radarErrorCount++;
         radarRetryAt =
           Date.now() +
@@ -5235,7 +5237,7 @@
       }
 
       script.src =
-        API_URL +
+        tgdDataBase() +
         "?radar=1" +
         (withParts.length ? "&with=" + withParts.join(",") : "") +
         "&callback=handleRadarResponse" +

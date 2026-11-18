@@ -2959,6 +2959,8 @@
       script.onload = finished;
       script.onerror = function() {
         finished();
+        // The caching Worker failed: the next poll goes to Apps Script (config.js).
+        if (tgdCacheFailed(script.src)) return;
         radarErrorCount++;
         radarRetryAt =
           Date.now() +
@@ -2969,7 +2971,7 @@
       };
 
       script.src =
-        API_URL +
+        tgdDataBase() +
         "?radar=1" +
         "&callback=handleRadarResponse" +
         "&_request=" +
@@ -3235,13 +3237,18 @@
 
       script.id = "radarHistoryScript";
       script.src =
-        API_URL +
+        tgdDataBase() +
         "?radarhistory=1&day=" + encodeURIComponent(day) +
         "&callback=handleRadarHistoryResponse" +
         "&_request=" + id +
         "&_ts=" + Date.now();
 
       script.onerror = function() {
+        if (t.pending && t.pending.id === id && tgdCacheFailed(script.src)) {
+          t.pending = null;
+          radarTimelineLoad_(day, then);
+          return;
+        }
         if (t.pending && t.pending.id === id) {
           t.pending = null;
           radarTimelineFailed_("RECORDS UNAVAILABLE");

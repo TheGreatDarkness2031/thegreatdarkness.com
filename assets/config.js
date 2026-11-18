@@ -38,3 +38,37 @@ function tgdPage(route) {
   }
   return route.charAt(0) === "?" ? TGD_API_URL + route : route;
 }
+
+// OER DATA RELAY (2026-11-18): a caching Worker (C:\TGD\cache-worker) in
+// front of the web app. The busiest public answers (Radar, Radar playback,
+// monitor pages, event feed) are read through it, so a crowd of visitors
+// costs Apps Script one run every few seconds. Everything else goes to
+// TGD_API_URL directly. If the Worker fails, this browser uses Apps Script
+// directly for the next 10 minutes. Keep TGD_CACHE_RPC in step with the
+// Worker's RPC_TTL (tests/test_cache_worker.mjs checks).
+var TGD_CACHE_URL = "https://oer-data.thegreatdarkness2031.workers.dev/";
+var TGD_CACHE_RPC = ["getEventFeedData", "getSystemLog", "getTgdMonitorPage",
+  "getPowerGridRealStatus", "getPowerGridRealHistory", "getQuakeStatus", "getQuakeHistory",
+  "getTempViewSummary", "getTempHistHistory", "getMaintenanceLogData", "getWatchLogPage",
+  "getFeedChannels"];
+var tgdCacheDownUntil_ = 0;
+
+function tgdCacheOn() {
+  var until = tgdCacheDownUntil_;
+  try { until = Math.max(until, Number(sessionStorage.getItem("oerCacheDown") || 0)); } catch (e) {}
+  return Date.now() >= until;
+}
+
+// The address to read a cacheable answer from: the Worker, or Apps Script.
+function tgdDataBase() {
+  return tgdCacheOn() ? TGD_CACHE_URL : TGD_API_URL;
+}
+
+// After a failed request: true (and the Worker is skipped for 10 min) if
+// it went through the Worker, so the caller can ask Apps Script again.
+function tgdCacheFailed(src) {
+  if (String(src || "").indexOf(TGD_CACHE_URL) !== 0) return false;
+  tgdCacheDownUntil_ = Date.now() + 600000;
+  try { sessionStorage.setItem("oerCacheDown", String(tgdCacheDownUntil_)); } catch (e) {}
+  return true;
+}
