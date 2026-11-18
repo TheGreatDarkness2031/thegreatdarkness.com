@@ -181,3 +181,30 @@ jobs:
           path: .
       - id: deploy
         uses: actions/deploy-pages@v4
+
+      # IndexNow (Bing and others, 2026-11-18): after a push, tell the search
+      # engines which pages changed. Only pages in sitemap.xml; the key file
+      # is <key>.txt at the site root. Never fails the publish.
+      - name: Tell search engines about changed pages
+        if: github.event_name == 'push'
+        continue-on-error: true
+        run: |
+          node - <<'EOF'
+          const fs = require("fs");
+          const KEY = "e61c2bc945cd09b230f7ff2e6981a3b0";
+          const SITE = "https://thegreatdarkness.com";
+          const ev = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+          const inMap = new Set([...fs.readFileSync("sitemap.xml", "utf8").matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
+          const files = new Set();
+          (ev.commits || []).forEach((c) => [].concat(c.added || [], c.modified || []).forEach((f) => files.add(f)));
+          const urls = [...files].filter((f) => /(^|\/)index\.html$/.test(f))
+            .map((f) => SITE + "/" + f.replace(/index\.html$/, ""))
+            .filter((u) => inMap.has(u));
+          if (!urls.length) { console.log("No sitemap pages changed."); process.exit(0); }
+          fetch("https://api.indexnow.org/indexnow", {
+            method: "POST",
+            headers: { "Content-Type": "application/json; charset=utf-8" },
+            body: JSON.stringify({ host: "thegreatdarkness.com", key: KEY, keyLocation: SITE + "/" + KEY + ".txt", urlList: urls.slice(0, 1000) })
+          }).then((r) => console.log("IndexNow answered " + r.status + " for " + urls.length + " page(s): " + urls.join(" ")))
+            .catch((e) => console.log("IndexNow not reached: " + e.message));
+          EOF
