@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+<script src="/assets/gsr.js"></script>
+<script src="/assets/monitor-time.js"></script>
+
+<meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="Live U.S. transportation monitor: FAA ground stops, airport closures and delay programs, plus DOT rail, maritime and highway incident reports.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Transportation Monitor">
+<meta property="og:description" content="Live U.S. transportation monitor: FAA ground stops, airport closures and delay programs, plus DOT rail, maritime and highway incident reports.">
+<meta property="og:url" content="https://thegreatdarkness.com/monitor/transport/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>OER // Transportation Monitor</title>
+
+<style>
+/* Transportation Monitor (2026-11-19). Same look as the Monitoring Grid
+   feed pages; reads the monitor's answer straight from Supabase (the
+   checking runs there, supabase/functions/transport-check). */
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    background: #000000;
+    color: #ffffff;
+    font-family: "Courier New", Courier, monospace;
+}
+
+body {
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.monitor-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* ---- Header ---- */
+.header {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.header-title {
+    color: #ff9900;
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 4px;
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.4);
+}
+
+.header-subtitle {
+    margin-top: 8px;
+    color: #aaaaaa;
+    font-size: 13px;
+    letter-spacing: 2px;
+}
+
+/* ---- Status ---- */
+.status-panel {
+    border: 2px solid #ffffff;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 18px;
+}
+
+.status-label {
+    font-size: 14px;
+    letter-spacing: 3px;
+}
+
+.status-value {
+    font-size: 54px;
+    font-weight: bold;
+    margin: 8px 0;
+}
+
+.status-text {
+    font-size: 18px;
+    letter-spacing: 3px;
+}
+
+.status-nominal { color: #00ff00; }
+.status-watch { color: #ffff00; }
+.status-elevated { color: #ff9900; }
+.status-critical { color: #ff0000; }
+.status-degraded { color: #888888; }
+
+.status-details {
+    margin-top: 12px;
+    color: #cccccc;
+    font-size: 12px;
+    letter-spacing: 1px;
+    line-height: 1.8;
+}
+
+.status-data {
+    margin-top: 10px;
+    color: #888888;
+    font-size: 11px;
+    letter-spacing: 1px;
+}
+
+/* ---- Message ---- */
+.message {
+    overflow-wrap: anywhere;
+    text-align: center;
+    padding: 15px;
+    border: 1px solid #ffffff;
+    margin-bottom: 18px;
+    font-size: 12px;
+    letter-spacing: 1px;
+}
+
+/* ---- Panels ---- */
+.panel {
+    border: 2px solid #ffffff;
+    padding: 18px;
+    margin-bottom: 18px;
+}
+
+.section-title {
+    text-align: center;
+    font-size: 17px;
+    letter-spacing: 3px;
+    margin-bottom: 18px;
+}
+
+.item-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.item-grid.compact {
+    grid-template-columns: repeat(8, 1fr);
+}
+
+.item-card {
+    border: 1px solid #ffffff;
+    padding: 12px 10px;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.item-grid.compact .item-card {
+    padding: 8px 4px;
+}
+
+.item-title {
+    font-size: 13px;
+    letter-spacing: 1px;
+    overflow-wrap: anywhere;
+}
+
+.item-value {
+    margin: 8px 0 6px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.item-grid.compact .item-value {
+    margin: 4px 0 0;
+    font-size: 11px;
+}
+
+.item-detail {
+    color: #aaaaaa;
+    font-size: 11px;
+    line-height: 1.6;
+    overflow-wrap: anywhere;
+}
+
+.empty-note {
+    text-align: center;
+    color: #888888;
+    font-size: 12px;
+    letter-spacing: 1px;
+    padding: 12px;
+}
+
+/* ---- History ---- */
+.range-controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.range-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 8px 14px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.range-button:hover,
+.range-button.active {
+    background: #ffffff;
+    color: #000000;
+}
+
+.graph-wrapper {
+    position: relative;
+    border: 1px solid #ffffff;
+    padding: 12px;
+    box-sizing: border-box;
+}
+
+.graph-title {
+    text-align: center;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+canvas {
+    display: block;
+    width: 100%;
+    height: 260px;
+}
+
+.graph-tooltip {
+    display: none;
+    position: absolute;
+    z-index: 20;
+    padding: 6px 8px;
+    background: #000000;
+    border: 1px solid #ffffff;
+    color: #cccccc;
+    font-size: 10px;
+    line-height: 1.5;
+    pointer-events: none;
+    white-space: nowrap;
+}
+
+/* ---- Status change log ---- */
+.event-list {
+    border: 1px inset #ffffff;
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.event-row {
+    padding: 10px;
+    border-bottom: 1px dashed #444444;
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+.event-row:last-child {
+    border-bottom: none;
+}
+
+.event-time {
+    color: #888888;
+}
+
+.event-detail {
+    color: #bbbbbb;
+}
+
+/* ---- Footer / close ---- */
+.footer {
+    text-align: center;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-top: 15px;
+    color: #aaaaaa;
+}
+
+.close-controls {
+    text-align: center;
+    margin-top: 18px;
+    padding-bottom: 10px;
+}
+
+.close-button {
+    background: #000000;
+    color: #ffffff;
+    border: 1px solid #ffffff;
+    padding: 9px 24px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 12px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.close-button:hover {
+    background: #ffffff;
+    color: #000000;
+}
+
+@media (max-width: 800px) {
+    body { padding: 10px; }
+    .header-title { font-size: 21px; }
+    .status-value { font-size: 42px; }
+    .item-grid { grid-template-columns: repeat(2, 1fr); }
+    .item-grid.compact { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 450px) {
+    .item-grid { grid-template-columns: 1fr; }
+    .item-grid.compact { grid-template-columns: repeat(3, 1fr); }
+    .range-button { flex: 1 1 28%; }
+}
+
+/* Contact lines in the log (2026-11-12) */
+.contact-toggle { margin-top: 4px; padding: 1px 6px; background: #111; color: #9fd8a8; border: 1px solid #555; font: 11px "Courier New", Courier, monospace; letter-spacing: 1px; cursor: pointer; }
+.contact-toggle:hover { background: #1c1c1c; }
+.contact-details { margin-top: 5px; padding: 6px 8px; background: #080808; border: 1px dashed #444; color: #cfcfcf; font-size: 11px; line-height: 1.5; }
+.contact-key { color: #8a8a8a; }
+.section-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.section-state { font-size: 12px; letter-spacing: 2px; }
+.item-official { margin-top: 6px; color: #bdbdbd; font-size: 11px; line-height: 1.45; }
+.item-card.quiet { opacity: 0.6; }
+</style>
+
+<style>:where(h1.oer-h1,h2.oer-h2,h3.oer-h3){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+</head>
+
+<body>
+
+<div class="monitor-container">
+
+    <div class="header">
+        <h1 id="pageTitle" class="header-title oer-h1">TRANSPORTATION MONITOR</h1>
+        <div id="pageSubtitle" class="header-subtitle">OER // U.S. TRANSPORTATION OPERATIONS</div>
+    </div>
+
+    <div class="status-panel">
+        <div id="statusLabel" class="status-label">ACTIVE DISRUPTIONS</div>
+        <div id="statusValue" class="status-value">--</div>
+        <div id="statusText" class="status-text status-degraded">STATUS: INITIALIZING</div>
+        <div id="statusDetails" class="status-details"></div>
+        <div id="statusData" class="status-data"></div>
+    </div>
+
+    <div id="message" class="message">MONITOR INITIALIZING...</div>
+
+    <div class="panel" data-section="AVIATION">
+        <div class="section-head"><h2 class="section-title oer-h2">AVIATION OPERATIONS</h2><span class="section-state"></span></div>
+        <div class="item-grid"></div>
+    </div>
+
+    <div class="panel" data-section="RAIL">
+        <div class="section-head"><h2 class="section-title oer-h2">RAIL / TRANSIT OPERATIONS</h2><span class="section-state"></span></div>
+        <div class="item-grid"></div>
+    </div>
+
+    <div class="panel" data-section="MARITIME">
+        <div class="section-head"><h2 class="section-title oer-h2">MARITIME / RIVER OPERATIONS</h2><span class="section-state"></span></div>
+        <div class="item-grid"></div>
+    </div>
+
+    <div class="panel" data-section="SURFACE">
+        <div class="section-head"><h2 class="section-title oer-h2">SURFACE TRANSPORTATION</h2><span class="section-state"></span></div>
+        <div class="item-grid"></div>
+    </div>
+
+    <div class="panel">
+        <h2 class="section-title oer-h2">HISTORY</h2>
+
+        <div class="range-controls">
+            <button class="range-button active" data-range="24" onclick="loadHistory(24)">24 HOURS</button>
+            <button class="range-button" data-range="168" onclick="loadHistory(168)">7 DAYS</button>
+            <button class="range-button" data-range="720" onclick="loadHistory(720)">30 DAYS</button>
+        </div>
+
+        <div class="graph-wrapper">
+            <div id="graphTitle" class="graph-title">ACTIVE DISRUPTIONS</div>
+            <canvas id="monitorGraph"></canvas>
+            <div id="graphTooltip" class="graph-tooltip"></div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2 class="section-title oer-h2">STATUS / CONTACT LOG</h2>
+        <div id="eventList" class="event-list">LOADING...</div>
+    </div>
+
+    <div id="footer" class="footer">FAA NAS STATUS // U.S. DOT TRANSPORTATION OPERATIONS CENTER</div>
+
+    <div class="close-controls">
+        <button type="button" class="close-button" onclick="window.close(); return false;">CLOSE</button>
+    </div>
+
+</div>
+
+
+<script>
+
+// The monitor's data lives on Supabase (project "tgd"); the checking runs
+// there every minute (supabase/functions/transport-check). The publishable
+// key is public by design: row-level security lets visitors read only.
+var SB_URL = "https://lshgovxyhbaznshylzhq.supabase.co/rest/v1/";
+var SB_KEY = "sb_publishable_gy85z3j_jLrWu1xPluTOrg_n8AJ_fb-";
+// Facility time (the Apps Script time zone, as on every monitor page).
+oerMonitorTime.useZone("America/Chicago");
+var STALE_MS = 15 * 60000;
+
+var STATUS_COLORS = { NOMINAL: "#00ff00", WATCH: "#ffff00", ELEVATED: "#ff9900", CRITICAL: "#ff0000", DEGRADED: "#888888" };
+var RANK = { NOMINAL: 0, WATCH: 1, ELEVATED: 2, CRITICAL: 3 };
+var SOURCE_NAMES = { FAA_NAS: "FAA NAS STATUS", USDOT_TOC: "U.S. DOT TRANSPORTATION OPERATIONS CENTER" };
+var historyHours = 24, historyPoints = [], graphPoints = [];
+
+function statusClass(s) {
+    s = String(s || "").toLowerCase();
+    return ["nominal", "watch", "elevated", "critical"].indexOf(s) !== -1 ? "status-" + s : "status-degraded";
+}
+function setText(id, text) { document.getElementById(id).textContent = text; }
+function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined) e.textContent = text;
+    return e;
+}
+
+function sb(path, body) {
+    if (window.oerRpcStart) window.oerRpcStart();
+    return fetch(SB_URL + path, {
+        method: body ? "POST" : "GET",
+        headers: Object.assign({ apikey: SB_KEY, Accept: "application/json" }, body ? { "Content-Type": "application/json" } : {}),
+        body: body ? JSON.stringify(body) : undefined,
+        cache: "no-store"
+    }).then(function(r) {
+        if (window.oerRpcEnd) window.oerRpcEnd(r.ok);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+    }, function(e) {
+        if (window.oerRpcEnd) window.oerRpcEnd(false);
+        throw e;
+    });
+}
+
+/* ---------- loading ---------- */
+
+function loadMonitor() {
+    var since = new Date(Date.now() - 30 * 86400000).toISOString();
+    Promise.all([
+        sb("transport_state?id=eq.1&select=*"),
+        sb("transport_incidents?active=eq.true&select=*"),
+        sb("transport_events?select=*&order=at.desc&limit=100&at=gt." + encodeURIComponent(since))
+    ]).then(function(a) {
+        render(a[0][0] || {}, a[1] || [], a[2] || []);
+    }).catch(function(e) {
+        setText("message", "MONITOR UNAVAILABLE // " + String(e && e.message || e).toUpperCase() + " // RETRYING");
+    });
+}
+
+function loadHistory(hours) {
+    historyHours = hours || historyHours;
+    Array.prototype.forEach.call(document.querySelectorAll(".range-button"), function(b) {
+        b.className = "range-button" + (Number(b.getAttribute("data-range")) === historyHours ? " active" : "");
+    });
+    sb("rpc/transport_history", { hours: historyHours }).then(function(points) {
+        historyPoints = points || [];
+        drawGraph();
+    }).catch(function() {
+        historyPoints = [];
+        drawGraph();
+    });
+}
+
+/* ---------- drawing ---------- */
+
+function render(state, incidents, events) {
+    var checked = Date.parse(state.checked_at || "");
+    var stale = !isFinite(checked) || Date.now() - checked > STALE_MS;
+    var present = stale ? "DEGRADED" : (state.status || "NOMINAL");
+
+    setText("statusValue", stale ? "--" : String(state.value || "0"));
+    document.getElementById("statusValue").className = "status-value " + statusClass(present);
+    var st = document.getElementById("statusText");
+    st.textContent = "STATUS: " + present + (stale && state.status ? " // LAST GOOD: " + state.status : "");
+    st.className = "status-text " + statusClass(present);
+
+    var details = document.getElementById("statusDetails");
+    details.innerHTML = "";
+    var sources = state.sources || {};
+    (state.details || []).concat(Object.keys(SOURCE_NAMES).map(function(k) {
+        var s = sources[k] || {};
+        return SOURCE_NAMES[k] + ": " + (s.ok ? "OK" : "NO DATA" + (s.problem ? " (" + s.problem + ")" : ""));
+    })).forEach(function(line) { details.appendChild(el("div", "", line)); });
+
+    var srcTimes = Object.keys(SOURCE_NAMES)
+        .map(function(k) { return Date.parse((sources[k] || {}).sourceAt || ""); })
+        .filter(function(t) { return isFinite(t); });
+    setText("statusData", oerMonitorTime.line({
+        lastCheck: oerMonitorTime(state.updated_at),
+        lastGood: oerMonitorTime(state.checked_at),
+        sourceAt: srcTimes.length ? oerMonitorTime(Math.min.apply(null, srcTimes)) : ""
+    }));
+    setText("message", stale ? "NO RECENT DATA // SHOWING LAST GOOD READING" : (state.summary || "MONITOR ONLINE."));
+
+    var sections = state.sections || {};
+    Array.prototype.forEach.call(document.querySelectorAll("[data-section]"), function(panel) {
+        var key = panel.getAttribute("data-section");
+        var sec = sections[key] || { status: "NOMINAL" };
+        var tag = panel.querySelector(".section-state");
+        tag.textContent = sec.status;
+        tag.className = "section-state " + statusClass(sec.status);
+        renderItems(panel.querySelector(".item-grid"), incidents.filter(function(i) { return i.section === key; }));
+    });
+
+    renderLog(events);
+}
+
+function renderItems(grid, list) {
+    grid.innerHTML = "";
+    list.sort(function(a, b) { return (RANK[b.status] - RANK[a.status]) || (Date.parse(b.first_seen) - Date.parse(a.first_seen)); });
+    if (!list.length) {
+        var none = el("div", "empty-note", "NO ACTIVE DISRUPTIONS");
+        none.style.gridColumn = "1 / -1";
+        grid.appendChild(none);
+        return;
+    }
+    list.forEach(function(i) {
+        var card = el("div", "item-card" + (RANK[i.status] ? "" : " quiet"));
+        card.appendChild(el("div", "item-title", i.kind));
+        card.appendChild(el("div", "item-value " + statusClass(i.status), RANK[i.status] ? i.status : "LISTED"));
+        card.appendChild(el("div", "item-detail", i.place));
+        (i.rows || []).forEach(function(r) {
+            if (/^(CONDITION|INCIDENT|AIRPORT|LOCATION|AIRPORT CLASS)$/.test(r[0])) return;
+            card.appendChild(el("div", "item-detail", r[0] + ": " + r[1]));
+        });
+        card.appendChild(el("div", "item-detail", "FIRST SEEN: " + oerMonitorTime(i.first_seen)));
+        if (i.official) card.appendChild(el("div", "item-official", "OFFICIAL REPORT (PRELIMINARY): " + i.official));
+        card.appendChild(el("div", "item-detail", "SOURCE: " + (SOURCE_NAMES[i.source] || i.source)));
+        grid.appendChild(card);
+    });
+}
+
+var CHANGE_WORDS = { NEW: "NEW CONTACT", RAISED: "CONTACT ESCALATED", UPDATED: "UPDATE", RESOLVED: "RESOLVED",
+    CORROBORATED: "CORROBORATED", SECTION: "SECTION STATUS" };
+
+function renderLog(events) {
+    var list = document.getElementById("eventList");
+    list.innerHTML = "";
+    if (!events.length) {
+        list.appendChild(el("div", "event-row", "NO STATUS CHANGES OR CONTACTS IN THE LAST 30 DAYS."));
+        return;
+    }
+    events.forEach(function(e) {
+        var row = el("div", "event-row");
+        row.appendChild(el("div", "event-time", oerMonitorTime(e.at)));
+        row.appendChild(el("div", statusClass(e.status), (CHANGE_WORDS[e.change] || e.change) + ": " +
+            (e.change === "RAISED" && e.previous_status ? e.previous_status + " > " : "") + e.status));
+        row.appendChild(el("div", "event-detail", e.text));
+        if (e.rows && e.rows.length) {
+            var toggle = el("button", "contact-toggle", "[ DETAILS ]");
+            toggle.type = "button";
+            var box = el("div", "contact-details");
+            box.hidden = true;
+            e.rows.forEach(function(r) {
+                var line = el("div");
+                line.appendChild(el("span", "contact-key", r[0] + ": "));
+                line.appendChild(document.createTextNode(r[1]));
+                box.appendChild(line);
+            });
+            toggle.addEventListener("click", function() {
+                box.hidden = !box.hidden;
+                toggle.textContent = box.hidden ? "[ DETAILS ]" : "[ HIDE ]";
+            });
+            row.appendChild(toggle);
+            row.appendChild(box);
+        }
+        list.appendChild(row);
+    });
+}
+
+function drawGraph() {
+    var canvas = document.getElementById("monitorGraph");
+    var width = Math.max(300, canvas.parentElement.clientWidth - 24), height = 260;
+    var ratio = window.devicePixelRatio || 1;
+    canvas.width = width * ratio;
+    canvas.height = height * ratio;
+    canvas.style.height = height + "px";
+    var g = canvas.getContext("2d");
+    g.setTransform(ratio, 0, 0, ratio, 0, 0);
+    g.clearRect(0, 0, width, height);
+    g.font = "10px Courier New";
+    graphPoints = [];
+    var pts = historyPoints
+        .map(function(p) { return { t: Date.parse(p.t), v: Number(p.metric) || 0, s: p.status }; })
+        .filter(function(p) { return isFinite(p.t); });
+    if (!pts.length) {
+        g.fillStyle = "#888888";
+        g.textAlign = "center";
+        g.fillText("NO READINGS IN THIS RANGE YET", width / 2, height / 2);
+        return;
+    }
+    var left = 46, right = width - 12, top = 12, bottom = height - 28;
+    var t1 = Date.now(), t0 = t1 - historyHours * 3600000;
+    var maxV = Math.max(4, Math.max.apply(null, pts.map(function(p) { return p.v; })) * 1.15);
+    var x = function(t) { return left + (t - t0) / (t1 - t0) * (right - left); };
+    var y = function(v) { return bottom - v / maxV * (bottom - top); };
+    g.strokeStyle = "#333333";
+    g.fillStyle = "#888888";
+    g.lineWidth = 1;
+    g.textAlign = "right";
+    for (var i = 0; i <= 4; i++) {
+        var v = maxV * i / 4, gy = y(v);
+        g.beginPath(); g.moveTo(left, gy); g.lineTo(right, gy); g.stroke();
+        g.fillText(String(Math.round(v)), left - 6, gy + 3);
+    }
+    g.textAlign = "center";
+    for (var j = 0; j <= 4; j++) {
+        var t = t0 + (t1 - t0) * j / 4, stamp = oerMonitorTime(t);
+        g.fillText(historyHours <= 24 ? stamp.slice(11, 16) : stamp.slice(5, 7) + "/" + stamp.slice(8, 10), x(t), height - 10);
+    }
+    var gap = historyHours <= 24 ? 15 * 60000 : historyHours <= 168 ? 3 * 3600000 : 12 * 3600000;
+    g.strokeStyle = "#ffffff";
+    g.lineWidth = 1.5;
+    g.beginPath();
+    pts.forEach(function(p, k) {
+        if (k && p.t - pts[k - 1].t <= gap) g.lineTo(x(p.t), y(p.v)); else g.moveTo(x(p.t), y(p.v));
+    });
+    g.stroke();
+    pts.forEach(function(p) {
+        g.fillStyle = STATUS_COLORS[p.s] || "#ffffff";
+        g.beginPath();
+        g.arc(x(p.t), y(p.v), pts.length > 200 ? 1.6 : 2.6, 0, Math.PI * 2);
+        g.fill();
+        graphPoints.push({ x: x(p.t), y: y(p.v), p: p });
+    });
+}
+
+document.getElementById("monitorGraph").addEventListener("mousemove", function(event) {
+    var tip = document.getElementById("graphTooltip"), rect = this.getBoundingClientRect(), mx = event.clientX - rect.left, best = null;
+    graphPoints.forEach(function(gp) {
+        var d = Math.abs(gp.x - mx);
+        if (!best || d < best.d) best = { d: d, gp: gp };
+    });
+    if (!best || best.d > 12) { tip.style.display = "none"; return; }
+    tip.textContent = oerMonitorTime(best.gp.p.t) + " // " + best.gp.p.v + " // " + best.gp.p.s;
+    tip.style.display = "block";
+    tip.style.left = Math.min(best.gp.x + 18, rect.width - 200) + "px";
+    tip.style.top = (best.gp.y + 30) + "px";
+});
+document.getElementById("monitorGraph").addEventListener("mouseleave", function() {
+    document.getElementById("graphTooltip").style.display = "none";
+});
+
+/* Title in the monitor's Source Register color (Config column J). */
+(function() {
+    var color = "#4FC3F7", n = parseInt(color.slice(1), 16), t = document.getElementById("pageTitle");
+    t.style.color = color;
+    t.style.textShadow = "0 0 8px rgba(" + (n >> 16 & 255) + ", " + (n >> 8 & 255) + ", " + (n & 255) + ", 0.4)";
+})();
+
+window.addEventListener("resize", drawGraph);
+
+// The check runs every minute on Supabase and reads are quick: refresh every minute.
+loadMonitor();
+loadHistory(24);
+oerEvery(loadMonitor, 60000);
+oerEvery(function() { loadHistory(historyHours); }, 300000);
+
+</script>
+
+<script src="/assets/notice.js" defer></script>
+<script src="/assets/alerts-link.js" defer></script>
+</body>
+</html>

@@ -31,7 +31,8 @@
       ["NETWORK", "/monitor/netout/"],
       ["GPS / NAV", "/monitor/gps/"],
       ["AI INCIDENT", "/monitor/aiinc/"],
-      ["NEAR-EARTH", "/monitor/neo/"]
+      ["NEAR-EARTH", "/monitor/neo/"],
+      ["TRANSPORT", "/monitor/transport/"]
     ]],
     ["ALERTS", "/alerts/"],
     ["RECORDS", [

@@ -85,7 +85,7 @@
 
     <div class="label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
     <h1>DATA HANDLING NOTICE</h1>
-    <div class="sub">PUBLIC ACCESS TERMINAL // REVISED 18 NOV 2026</div>
+    <div class="sub">PUBLIC ACCESS TERMINAL // REVISED 19 NOV 2026</div>
 
     <hr>
 
@@ -130,6 +130,7 @@
       <li><b>Google</b> (Apps Script and Sheets) provides the live data and stores the bulletin posts and high scores. A few images also load from Google.</li>
       <li><b>Cloudflare</b> passes the busiest live data (Radar, monitor pages, event feed) from Google to your browser and keeps a copy for a few seconds,
         so many visitors don't overload the source. It stores nothing about you.</li>
+      <li><b>Supabase</b> runs the Transportation monitor and serves its data to that page. It stores only public transportation data, nothing about you.</li>
       <li><b>Cloudflare</b> also runs the OER ALERTS service and stores the alert subscriptions described above. Alerts reach your device through the push
         service of your browser's maker (for example Google, Apple, Mozilla or Microsoft).</li>
     </ul>
