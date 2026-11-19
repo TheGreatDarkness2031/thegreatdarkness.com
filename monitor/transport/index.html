@@ -674,7 +674,7 @@ document.getElementById("monitorGraph").addEventListener("mouseleave", function(
 
 /* Title in the monitor's Source Register color (Config column J). */
 (function() {
-    var color = "#4FC3F7", n = parseInt(color.slice(1), 16), t = document.getElementById("pageTitle");
+    var color = "#D4A373", n = parseInt(color.slice(1), 16), t = document.getElementById("pageTitle");
     t.style.color = color;
     t.style.textShadow = "0 0 8px rgba(" + (n >> 16 & 255) + ", " + (n >> 8 & 255) + ", " + (n & 255) + ", 0.4)";
 })();
