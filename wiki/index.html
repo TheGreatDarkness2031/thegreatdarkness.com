@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+
+<meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="OER Operations Wiki: watch floor procedures, engineering runbooks, physical security and escalation paths.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Operations Wiki">
+<meta property="og:description" content="OER Operations Wiki: watch floor procedures, engineering runbooks, physical security and escalation paths.">
+<meta property="og:url" content="https://thegreatdarkness.com/wiki/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OER // Operations Wiki</title>
+
+<style>
+/* OPERATIONS WIKI (2026-11-21): the OER intranet's procedures pages, a room
+   like /hr/ and /maintenance/ (door plate, bracket links, the homepage's own
+   box). Articles come from /wiki/articles.json, built and checked by
+   C:\TGD\webtools\wiki\make_wiki.js. */
+:root {
+  --muted: #8a8a8a;
+  --line: #4a4a4a;
+  --green: #7fd18b;
+  --amber: #ffb84d;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #101010; color: #c4c4c4; font-family: "Courier New", Courier, monospace; }
+body { padding: 10px 12px 12px; }
+
+.office { width: 95%; max-width: 1000px; margin: 0 auto; }
+.door { text-align: center; margin: 0 0 8px; }
+.door-plate {
+  display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+  border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+}
+.door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+.door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+.door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 1.9; margin: 0 0 8px; }
+.office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+.office-nav a:hover { text-decoration: underline; }
+.office-nav a.on { color: #000; background: var(--green); }
+.desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+.pane { padding: 12px 18px 18px; min-height: 420px; border: 1px inset #888888; }
+@media (min-width: 901px) and (min-height: 480px) {
+  .office { height: calc(100vh - 88px - 22px); display: flex; flex-direction: column; }
+  .desk { flex: 1; min-height: 0; display: flex; }
+  .pane { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+  .pane::-webkit-scrollbar { width: 10px; }
+  .pane::-webkit-scrollbar-track { background: #0a0a0a; }
+  .pane::-webkit-scrollbar-thumb { background: #444; border: 1px solid #777; }
+}
+.pane h2 {
+  margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
+  color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
+}
+.pane h2::before { content: "=== "; }
+.pane h2::after { content: " ==="; }
+.note { color: var(--muted); font-size: 0.7rem; letter-spacing: 1px; margin: 0 0 14px; text-align: center; }
+
+/* search line */
+.search { display: flex; justify-content: center; gap: 6px; margin: 0 0 8px; font-size: 0.74rem; }
+.search label { color: var(--muted); letter-spacing: 1px; align-self: center; }
+.search input {
+  background: #000; color: #e8e8e8; border: 1px solid #666; padding: 3px 6px; width: 220px; max-width: 50vw;
+  font: inherit; font-size: 0.78rem; letter-spacing: 0.5px;
+}
+.search button {
+  background: #222; color: var(--green); border: 2px outset #888; font: inherit; font-size: 0.72rem; letter-spacing: 1px; padding: 1px 8px; cursor: pointer;
+}
+.search button:active { border-style: inset; }
+
+/* lists */
+.list { width: 100%; border-collapse: collapse; font-size: 0.76rem; }
+.list th { text-align: left; color: #fff; letter-spacing: 1px; padding: 6px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.list td { padding: 5px 8px; border-bottom: 1px solid #262626; vertical-align: top; }
+.list a { color: var(--green); text-decoration: none; }
+.list a:hover { text-decoration: underline; }
+.list .sum { color: #a8a8a8; }
+.list .when { white-space: nowrap; color: var(--muted); }
+.list .cat { white-space: nowrap; color: var(--muted); font-size: 0.68rem; letter-spacing: 1px; }
+.more { display: block; margin: 12px auto 0; background: #222; color: var(--green); border: 2px outset #888; font: inherit; font-size: 0.74rem; letter-spacing: 1px; padding: 3px 12px; cursor: pointer; }
+.cat-head { margin: 22px 0 6px; color: #fff; font-size: 0.8rem; letter-spacing: 2px; }
+.cat-head:first-of-type { margin-top: 8px; }
+
+/* article */
+.crumbs { font-size: 0.68rem; letter-spacing: 1px; color: var(--muted); margin: 0 0 4px; }
+.crumbs a { color: var(--green); text-decoration: none; }
+.art-meta { margin: 4px 0 14px; padding-bottom: 8px; border-bottom: 1px dashed #777; font-size: 0.68rem; letter-spacing: 1px; color: var(--muted); }
+.art-meta a { color: var(--green); text-decoration: none; }
+.art-meta a:hover { text-decoration: underline; }
+.art-sum { font-family: Arial, Helvetica, sans-serif; font-style: italic; color: #b0b0b0; font-size: 0.86rem; margin: 0 0 12px; }
+.art { font-family: Arial, Helvetica, sans-serif; font-size: 0.88rem; line-height: 1.6; color: #e2e2e2; max-width: 80ch; }
+.art p { margin: 0 0 0.85em; }
+.art h3 { font-family: "Courier New", Courier, monospace; color: #fff; font-size: 0.86rem; letter-spacing: 2px; margin: 1.5em 0 0.5em; padding-bottom: 3px; border-bottom: 1px solid #3a3a3a; text-transform: uppercase; }
+.art h4 { font-family: "Courier New", Courier, monospace; color: #ddd; font-size: 0.8rem; letter-spacing: 1px; margin: 1.2em 0 0.4em; text-transform: uppercase; }
+.art ul, .art ol { margin: 0 0 0.9em; padding-left: 1.6em; }
+.art li { margin: 0 0 0.25em; }
+.art b { color: #fff; }
+.art a { color: var(--green); text-decoration: none; border-bottom: 1px dotted #4f8a58; }
+.art a:hover { border-bottom-style: solid; }
+.art a.doc { color: var(--amber); border-bottom-color: #8a6a30; }
+.art a.doc::before { content: "\25A4 "; font-size: 0.8em; }
+.art a.who { color: #cfcfcf; border-bottom-color: #666; }
+.art a.red { color: #e06060; border-bottom-color: #803030; }
+.art .tbl { overflow-x: auto; margin: 0 0 1em; }
+.art table { border-collapse: collapse; font-size: 0.82rem; min-width: 60%; }
+.art th { text-align: left; background: #1d1d1d; color: #fff; padding: 5px 9px; border: 1px solid #444; font-weight: bold; }
+.art td { padding: 4px 9px; border: 1px solid #333; vertical-align: top; }
+.art .callout { margin: 0 0 1em; padding: 8px 12px; border: 1px solid #556; border-left: 4px solid #7f8fd1; background: #0d0d16; }
+.art .callout.warn { border-color: #6a4a20; border-left-color: var(--amber); background: #15100a; }
+.art-foot { margin-top: 26px; padding-top: 10px; border-top: 1px dashed #555; font-size: 0.68rem; letter-spacing: 1px; color: var(--muted); line-height: 1.8; }
+.art-foot a { color: var(--green); text-decoration: none; }
+.art-foot a:hover { text-decoration: underline; }
+.nopage { color: #e06060; font-size: 0.8rem; letter-spacing: 1px; text-align: center; margin: 30px 0; }
+
+/* main page panels */
+.mp-intro { margin: 6px 0 12px; }
+.mp-body { margin-top: 4px; }
+.mp-box { border: 1px solid #555; background: #0b0b0b; padding: 8px 12px 10px; max-width: 80ch; margin: 0 0 6px; }
+.mp-box h3 { margin: 0 0 6px; color: #fff; font-size: 0.76rem; letter-spacing: 2px; border-bottom: 1px solid #333; padding-bottom: 4px; }
+.mp-box h3 a { color: #fff; text-decoration: none; }
+.mp-box h3 a:hover { text-decoration: underline; }
+.mp-box ul { margin: 0; padding: 0; list-style: none; font-family: Arial, Helvetica, sans-serif; font-size: 0.8rem; line-height: 1.55; }
+.mp-box li a { color: var(--green); text-decoration: none; }
+.mp-box li a:hover { text-decoration: underline; }
+.mp-box .rc { font-family: "Courier New", Courier, monospace; font-size: 0.72rem; color: #aaa; }
+.mp-box .rc b { color: #ddd; font-weight: normal; }
+@media (max-width: 700px) {
+  .list .hide-narrow { display: none; }
+  .pane { padding: 10px 10px 14px; }
+}
+</style>
+<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+</head>
+
+<body>
+<div class="office">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">OER INTRANET // PROCEDURES</div>
+      <h1 class="door-name oer-h1">OPERATIONS WIKI</h1>
+      <div class="door-hours" id="counts">COPY OF RECORD: BINDER 1, LEAD POSITION</div>
+    </div>
+  </div>
+  <nav class="office-nav" id="tabs">
+    <a href="?" data-view="main">[ MAIN PAGE ]</a>
+    <a href="?view=watch" data-view="watch">[ WATCH FLOOR ]</a>
+    <a href="?view=eng" data-view="eng">[ ENGINEERING ]</a>
+    <a href="?view=sec" data-view="sec">[ PHYSICAL SECURITY ]</a>
+    <a href="?view=esc" data-view="esc">[ ESCALATION ]</a>
+    <a href="?view=all" data-view="all">[ ALL PAGES ]</a>
+    <a href="?view=recent" data-view="recent">[ RECENT CHANGES ]</a>
+  </nav>
+  <form class="search" id="search">
+    <label for="q">SEARCH</label>
+    <input type="text" id="q" name="q" autocomplete="off" spellcheck="false">
+    <button type="submit">[ GO ]</button>
+  </form>
+  <div class="desk"><div class="pane" id="pane"><p class="note">LOADING PAGES...</p></div></div>
+</div>
+
+<script>
+(function () {
+  var pane = document.getElementById("pane");
+  var DATA = null, BY = {};
+  var VIEW_CAT = { watch: "WATCH", eng: "ENG", sec: "SEC", esc: "ESC" };
+  var CAT_VIEW = { WATCH: "watch", ENG: "eng", SEC: "sec", ESC: "esc", GEN: "all" };
+  var MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+  function link(href, text, cls) { var a = el("a", cls, text); a.href = href; return a; }
+  function day(s) { var p = s.split("-"); return +p[2] + " " + MONTHS[+p[1] - 1] + " " + p[0]; }
+  function params() {
+    var o = {};
+    location.search.replace(/^\?/, "").split("&").forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf("=");
+      o[decodeURIComponent(i < 0 ? kv : kv.slice(0, i))] = i < 0 ? "" : decodeURIComponent(kv.slice(i + 1).replace(/\+/g, " "));
+    });
+    return o;
+  }
+  function go(url) { history.pushState(null, "", url); render(); window.scrollTo(0, 0); pane.scrollTop = 0; }
+  function last(a) { return a.revs[a.revs.length - 1]; }
+  function who(r) { return r.id ? link("/hr/?id=" + encodeURIComponent(r.id), r.by.toUpperCase()) : el("span", null, r.by.toUpperCase()); }
+  function articleLink(a) { return link("?a=" + a.id, a.title); }
+
+  // ---------------- views ----------------
+  function mainPage() {
+    var a = BY.main;
+    pane.appendChild(el("h2", null, "OER OPERATIONS WIKI"));
+    var blocks = a.html.split("\n");
+    var head = el("div", "art mp-intro");
+    head.innerHTML = blocks.slice(0, 2).join("\n");
+    pane.appendChild(head);
+    var rc = el("div", "mp-box");
+    var h = el("h3"); h.appendChild(link("?view=recent", "RECENT CHANGES")); rc.appendChild(h);
+    var ul = el("ul");
+    allRevs().slice(0, 6).forEach(function (r) {
+      var li = el("li", "rc");
+      li.appendChild(el("b", null, day(r.d) + "  "));
+      li.appendChild(link("?a=" + r.art.id, r.art.title));
+      li.appendChild(document.createTextNode("  // " + r.by + " // " + r.s));
+      ul.appendChild(li);
+    });
+    rc.appendChild(ul);
+    pane.appendChild(rc);
+    var art = el("div", "art mp-body");
+    art.innerHTML = blocks.slice(2).join("\n");
+    pane.appendChild(art);
+    pane.appendChild(foot(a));
+  }
+
+  function category(view) {
+    var cat = VIEW_CAT[view];
+    pane.appendChild(el("h2", null, DATA.cats[cat]));
+    var list = DATA.articles.filter(function (a) { return a.cat === cat; });
+    pane.appendChild(el("p", "note", list.length + " PAGES. PRINTED IN BINDER 1 AND BINDER 2."));
+    pane.appendChild(table(list, false));
+  }
+
+  function allPages() {
+    pane.appendChild(el("h2", null, "ALL PAGES"));
+    pane.appendChild(el("p", "note", DATA.articles.length + " PAGES // " + DATA.revisions + " EDITS SINCE 14 MARCH 2005"));
+    var list = DATA.articles.slice().sort(function (a, b) { return a.title < b.title ? -1 : 1; });
+    pane.appendChild(table(list, true));
+  }
+
+  function table(list, showCat) {
+    var t = el("table", "list");
+    var hr = el("tr");
+    hr.appendChild(el("th", null, "PAGE"));
+    if (showCat) hr.appendChild(el("th", "hide-narrow", "SECTION"));
+    hr.appendChild(el("th", "hide-narrow", "ABOUT"));
+    hr.appendChild(el("th", null, "LAST EDIT"));
+    t.appendChild(hr);
+    list.forEach(function (a) {
+      var tr = el("tr");
+      var td = el("td"); td.appendChild(articleLink(a)); tr.appendChild(td);
+      if (showCat) tr.appendChild(el("td", "cat hide-narrow", DATA.cats[a.cat]));
+      tr.appendChild(el("td", "sum hide-narrow", a.summary));
+      tr.appendChild(el("td", "when", last(a).d));
+      t.appendChild(tr);
+    });
+    return t;
+  }
+
+  function allRevs() {
+    var out = [];
+    DATA.articles.forEach(function (a) { a.revs.forEach(function (r, i) { out.push({ d: r.d, by: r.by, id: r.id, s: r.s, art: a, n: i + 1 }); }); });
+    out.sort(function (x, y) { return x.d === y.d ? (x.n > y.n ? -1 : 1) : (x.d > y.d ? -1 : 1); });
+    return out;
+  }
+
+  function recent() {
+    pane.appendChild(el("h2", null, "RECENT CHANGES"));
+    pane.appendChild(el("p", "note", "EVERY EDIT TO EVERY PAGE, NEWEST FIRST."));
+    var revs = allRevs(), shown = 0;
+    var t = el("table", "list");
+    var hr = el("tr");
+    ["DATE", "PAGE", "EDITED BY", "SUMMARY"].forEach(function (h, i) { hr.appendChild(el("th", i === 3 ? "hide-narrow" : null, h)); });
+    t.appendChild(hr);
+    pane.appendChild(t);
+    var more = el("button", "more", "[ OLDER CHANGES ]");
+    more.type = "button";
+    function page() {
+      revs.slice(shown, shown + 60).forEach(function (r) {
+        var tr = el("tr");
+        tr.appendChild(el("td", "when", r.d));
+        var td = el("td"); td.appendChild(link("?a=" + r.art.id, r.art.title)); tr.appendChild(td);
+        var tw = el("td", "when"); tw.appendChild(who(r)); tr.appendChild(tw);
+        tr.appendChild(el("td", "sum hide-narrow", r.s));
+        t.appendChild(tr);
+      });
+      shown += 60;
+      if (shown >= revs.length) more.remove();
+    }
+    more.onclick = page;
+    page();
+    if (shown < revs.length) pane.appendChild(more);
+  }
+
+  function crumbs(a) {
+    var c = el("div", "crumbs");
+    c.appendChild(link("?", "MAIN PAGE"));
+    if (a.cat !== "GEN") {
+      c.appendChild(document.createTextNode(" // "));
+      c.appendChild(link("?view=" + CAT_VIEW[a.cat], DATA.cats[a.cat]));
+    }
+    return c;
+  }
+
+  function article(id, q) {
+    var a = BY[id];
+    if (!a) {
+      pane.appendChild(el("h2", null, "NO SUCH PAGE"));
+      pane.appendChild(el("p", "nopage", "THERE IS NO PAGE CALLED \"" + String(id).toUpperCase() + "\" IN THIS WIKI."));
+      var p = el("p", "note"); p.appendChild(link("?view=all", "[ ALL PAGES ]")); pane.appendChild(p);
+      return;
+    }
+    if (a.id === "main") return mainPage();
+    pane.appendChild(crumbs(a));
+    pane.appendChild(el("h2", null, a.title.toUpperCase()));
+    var r = last(a);
+    var meta = el("div", "art-meta");
+    meta.appendChild(document.createTextNode("LAST EDITED " + day(r.d).toUpperCase() + " BY "));
+    meta.appendChild(who(r));
+    meta.appendChild(document.createTextNode(" // " + a.revs.length + " EDITS // "));
+    meta.appendChild(link("?a=" + a.id + "&hist=1", q.hist ? "[ PAGE ]" : "[ HISTORY ]"));
+    pane.appendChild(meta);
+    if (q.hist) return history_(a);
+    pane.appendChild(el("p", "art-sum", a.summary));
+    var body = el("div", "art");
+    body.innerHTML = a.html;
+    pane.appendChild(body);
+    pane.appendChild(foot(a));
+  }
+
+  function foot(a) {
+    var f = el("div", "art-foot");
+    if (a.back && a.back.length) {
+      f.appendChild(document.createTextNode("PAGES THAT LINK HERE: "));
+      a.back.forEach(function (id, i) {
+        if (!BY[id]) return;
+        if (i) f.appendChild(document.createTextNode(" // "));
+        f.appendChild(link("?a=" + id, BY[id].title));
+      });
+      f.appendChild(el("br"));
+    }
+    f.appendChild(document.createTextNode("PRINTED COPIES ARE UNCONTROLLED. DURING A WIKI OUTAGE THE BINDER AT THE LEAD POSITION IS THE COPY OF RECORD."));
+    return f;
+  }
+
+  function history_(a) {
+    pane.appendChild(el("p", "note", "EDIT HISTORY // NEWEST FIRST"));
+    var t = el("table", "list");
+    var hr = el("tr");
+    ["EDIT", "DATE", "EDITED BY", "SUMMARY"].forEach(function (h) { hr.appendChild(el("th", null, h)); });
+    t.appendChild(hr);
+    a.revs.slice().reverse().forEach(function (r, i) {
+      var tr = el("tr");
+      tr.appendChild(el("td", "when", String(a.revs.length - i)));
+      tr.appendChild(el("td", "when", r.d));
+      var tw = el("td", "when"); tw.appendChild(who(r)); tr.appendChild(tw);
+      tr.appendChild(el("td", "sum", r.s));
+      t.appendChild(tr);
+    });
+    pane.appendChild(t);
+    var p = el("p", "note"); p.style.marginTop = "14px";
+    p.textContent = "PAGE CREATED " + day(a.revs[0].d).toUpperCase() + " BY " + a.revs[0].by.toUpperCase() + ".";
+    pane.appendChild(p);
+  }
+
+  function search(q) {
+    var words = q.toLowerCase().split(/\s+/).filter(Boolean);
+    pane.appendChild(el("h2", null, "SEARCH"));
+    var hits = [];
+    DATA.articles.forEach(function (a) {
+      if (!a.text) { var d = document.createElement("div"); d.innerHTML = a.html; a.text = (d.textContent || "").replace(/\s+/g, " "); }
+      var title = a.title.toLowerCase(), sum = a.summary.toLowerCase(), body = a.text.toLowerCase(), score = 0, ok = true;
+      words.forEach(function (w) {
+        var s = (title.indexOf(w) >= 0 ? 6 : 0) + (sum.indexOf(w) >= 0 ? 3 : 0) + (body.indexOf(w) >= 0 ? 1 : 0);
+        if (!s) ok = false;
+        score += s;
+      });
+      if (ok && words.length) hits.push({ a: a, score: score });
+    });
+    hits.sort(function (x, y) { return y.score - x.score || (x.a.title < y.a.title ? -1 : 1); });
+    pane.appendChild(el("p", "note", hits.length + " PAGE" + (hits.length === 1 ? "" : "S") + " FOR \"" + q.toUpperCase() + "\""));
+    if (!hits.length) return;
+    var t = el("table", "list");
+    hits.forEach(function (h) {
+      var tr = el("tr");
+      var td = el("td"); td.appendChild(articleLink(h.a));
+      var body = h.a.text, i = body.toLowerCase().indexOf(words[0]);
+      if (i >= 0) {
+        var snip = el("div", "sum");
+        snip.style.fontSize = "0.72rem";
+        snip.textContent = (i > 60 ? "..." : "") + body.slice(Math.max(0, i - 60), i + 110) + "...";
+        td.appendChild(snip);
+      }
+      tr.appendChild(td);
+      tr.appendChild(el("td", "cat hide-narrow", DATA.cats[h.a.cat]));
+      t.appendChild(tr);
+    });
+    pane.appendChild(t);
+  }
+
+  function render() {
+    if (!DATA) return;
+    var q = params();
+    var view = q.a ? (q.a === "main" ? "main" : CAT_VIEW[(BY[q.a] || {}).cat] || "all") : q.q !== undefined ? "" : (q.view || "main");
+    pane.textContent = "";
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs a"), function (a) {
+      a.classList.toggle("on", a.getAttribute("data-view") === view);
+    });
+    document.getElementById("q").value = q.q || "";
+    var title = "OER // Operations Wiki";
+    if (q.a) { article(q.a, q); if (BY[q.a] && q.a !== "main") title += " // " + BY[q.a].title; }
+    else if (q.q !== undefined) search(q.q);
+    else if (VIEW_CAT[view]) category(view);
+    else if (view === "all") allPages();
+    else if (view === "recent") recent();
+    else mainPage();
+    document.title = title;
+  }
+
+  // Links inside the wiki stay on the page; everything else navigates.
+  document.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest ? e.target.closest("a") : null;
+    if (!a) return;
+    var href = a.getAttribute("href") || "";
+    if (href.charAt(0) !== "?") return;
+    e.preventDefault();
+    go(href === "?" ? location.pathname : href);
+  });
+  document.getElementById("search").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var v = document.getElementById("q").value.trim();
+    go(v ? "?q=" + encodeURIComponent(v) : location.pathname);
+  });
+  window.addEventListener("popstate", render);
+
+  fetch("/wiki/articles.json", { cache: "no-cache" }).then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function (d) {
+    DATA = d;
+    d.articles.forEach(function (a) { BY[a.id] = a; });
+    document.getElementById("counts").textContent = d.articles.length + " PAGES // " + d.revisions + " EDITS // COPY OF RECORD: BINDER 1, LEAD POSITION";
+    render();
+  }).catch(function () {
+    pane.textContent = "";
+    pane.appendChild(el("h2", null, "WIKI UNAVAILABLE"));
+    pane.appendChild(el("p", "nopage", "THE WIKI HOST DID NOT ANSWER. USE THE BINDER AT THE LEAD POSITION."));
+  });
+})();
+</script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>
