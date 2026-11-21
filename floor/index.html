@@ -2345,9 +2345,35 @@
     </div>
   </div>
 
+  <div
+    id="radarDetail"
+    class="radar-detail"
+  >
+    <div class="radar-detail-top">
+      <span id="radarDetailTitle">=== CONTACT DETAIL ===</span>
+      <button
+        class="radar-detail-close"
+        type="button"
+        onclick="closeRadarDetail_()"
+      >
+        X
+      </button>
+    </div>
+
+    <div
+      id="radarDetailSignal"
+      class="radar-detail-signal"
+    ></div>
+
+    <div id="radarDetailList"></div>
+  </div>
+
   <script>
     const API_URL =
       TGD_API_URL;
+
+    /* Watch Floor: click a contact or stack for its details, as on the Radar. */
+    const RADAR_INSPECT_ENABLED = true;
 
     let allLogPosts = [];
     let currentLogView = "current";
