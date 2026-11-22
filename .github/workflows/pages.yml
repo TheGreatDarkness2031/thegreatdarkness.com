@@ -27,9 +27,9 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Build feed.xml
         run: |
@@ -175,12 +175,25 @@ jobs:
           })();
           EOF
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      # Node 24 versions of the Pages actions (2026-11-21; the v3/v4/v5 set
+      # ran on Node 20, which GitHub is retiring).
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: .
+
+      # GitHub sometimes can't find the artifact it just uploaded
+      # ("No artifacts named github-pages were found", 2026-11-21). One
+      # more try after a short wait before the run is marked failed.
       - id: deploy
-        uses: actions/deploy-pages@v4
+        continue-on-error: true
+        uses: actions/deploy-pages@v5
+      - name: Wait before the second deploy try
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 45
+      - id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v5
 
       # IndexNow (Bing and others, 2026-11-18): after a push, tell the search
       # engines which pages changed. Only pages in sitemap.xml; the key file

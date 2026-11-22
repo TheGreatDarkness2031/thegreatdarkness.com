@@ -4794,9 +4794,17 @@
 
       const rows = [];
       const add = function(label, value) {
-        if (value !== undefined && value !== null && value !== "" && value !== "--") {
-          rows.push([label, String(value)]);
+        if (value === undefined || value === null || value === "" || value === "--") {
+          return;
         }
+
+        /* One line per label: the monitor's rows repeat some of the
+           page's own (quake, temperature, power grid). */
+        if (rows.some(function(r) { return r[0] === label; })) {
+          return;
+        }
+
+        rows.push([label, String(value)]);
       };
 
       if (contact.sourceId === "USGS") {
