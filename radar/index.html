@@ -2551,7 +2551,6 @@
         add("DEPTH", Number.isFinite(Number(d.depthKm)) ? radarFixed_(d.depthKm, 1) + " KM" : "");
         add("LOCATION", Number.isFinite(Number(d.latitude)) ? radarFixed_(d.latitude, 2) + ", " + radarFixed_(d.longitude, 2) : "");
         add("SECTOR", d.sectorName);
-        add("NEAREST CITY", d.nearestCity ? d.nearestCity + (Number.isFinite(Number(d.distanceKm)) ? " (" + radarWhole_(d.distanceKm) + " KM)" : "") : "");
         add("USGS EVENT", d.usgsEventId);
       } else if (contact.sourceId === "EIA") {
         add("SECTOR", d.sectorName);

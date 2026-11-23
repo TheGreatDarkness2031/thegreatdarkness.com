@@ -9,7 +9,7 @@
 // matching page on tap.
 //
 // Changing this file: raise VERSION so browsers drop the old cache.
-const VERSION = "oer-alerts-7";
+const VERSION = "oer-alerts-8";
 const OFFLINE_URL = "/alerts/offline.html";
 
 self.addEventListener("install", function (event) {
@@ -57,11 +57,16 @@ function saveTraffic(rec) {
       var db = rq.result;
       var tx = db.transaction("traffic", "readwrite");
       var st = tx.objectStore("traffic");
-      st.add(rec);
-      var keys = st.getAllKeys();
-      keys.onsuccess = function () {
-        var k = keys.result || [];
-        for (var i = 0; i < k.length - TRAFFIC_KEEP; i++) st.delete(k[i]);
+      // A push delivered twice (same ref) is listed once.
+      var all = st.getAll();
+      all.onsuccess = function () {
+        var dup = rec.ref && (all.result || []).some(function (r) { return r.ref === rec.ref; });
+        if (!dup) st.add(rec);
+        var keys = st.getAllKeys();
+        keys.onsuccess = function () {
+          var k = keys.result || [];
+          for (var i = 0; i < k.length - TRAFFIC_KEEP; i++) st.delete(k[i]);
+        };
       };
       tx.oncomplete = function () { resolve(); };
       tx.onerror = function () { resolve(); };

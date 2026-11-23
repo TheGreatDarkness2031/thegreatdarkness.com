@@ -422,6 +422,7 @@
     .radar-screen {
       position: relative;
       width: min(88vw, 440px);
+      max-width: 100%;
       aspect-ratio: 1 / 1;
       overflow: hidden;
       margin: 0 auto;
@@ -1296,6 +1297,15 @@
       font-size: clamp(0.95rem, 2.4vw, 1.2rem);
       font-weight: bold;
       letter-spacing: 1px;
+    }
+
+    .oer-monitor-unit {
+      display: block;
+      margin-top: 1px;
+      color: #b8b8b8;
+      font-size: 0.52rem;
+      font-weight: bold;
+      letter-spacing: 0.6px;
     }
 
     .oer-monitor-status {
@@ -2317,8 +2327,11 @@
 
         <span class="status-separator">|</span>
 
-        ARCHIVE:
-        <span class="status-offline">OFFLINE</span>
+        CENTRAL&nbsp;ARCHIVE:&nbsp;<span class="status-offline">UNREACHABLE</span>
+
+        <span class="status-separator">|</span>
+
+        RECORD&nbsp;MIRRORS:&nbsp;<span class="status-online">AVAILABLE</span>
 
       </div>
     </section>
@@ -2903,6 +2916,15 @@
           String(
             system.status || "--"
           );
+
+        // What the number counts (GPS 32/32 = satellites healthy...).
+        if (system.unit) {
+          const unit =
+            document.createElement("span");
+          unit.className = "oer-monitor-unit";
+          unit.textContent = String(system.unit);
+          value.appendChild(unit);
+        }
       }
 
       cell.appendChild(id);
@@ -5012,7 +5034,6 @@
         add("DEPTH", Number.isFinite(Number(d.depthKm)) ? radarFixed_(d.depthKm, 1) + " KM" : "");
         add("LOCATION", Number.isFinite(Number(d.latitude)) ? radarFixed_(d.latitude, 2) + ", " + radarFixed_(d.longitude, 2) : "");
         add("SECTOR", d.sectorName);
-        add("NEAREST CITY", d.nearestCity ? d.nearestCity + (Number.isFinite(Number(d.distanceKm)) ? " (" + radarWhole_(d.distanceKm) + " KM)" : "") : "");
         add("USGS EVENT", d.usgsEventId);
       } else if (contact.sourceId === "EIA") {
         add("SECTOR", d.sectorName);

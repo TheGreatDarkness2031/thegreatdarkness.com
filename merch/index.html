@@ -146,35 +146,37 @@
     <h1>GET THE MERCH</h1>
     <p class="sub">THE GREAT DARKNESS // 01 JULY 2031</p>
 
-    <div class="status" id="depotStatus">
-      DEPOT STATUS: <b>COMING SOON</b><br>
-      INVENTORY: NOT YET RELEASED<span class="blink">_</span>
+    <div class="status open" id="depotStatus">
+      DEPOT STATUS: <b>OPEN</b><br>INVENTORY: AVAILABLE
     </div>
 
-    <span class="store off" id="storeButton" aria-disabled="true">[ ENTER THE STORE ]</span>
+    <a class="store" id="storeButton" href="https://thegreatdarkness.printful.me/" target="_blank" rel="noopener">[ ENTER THE STORE ]</a>
   </div>
 
   <a class="back" href="/">&lt;&lt; HOME</a>
 </main>
 
 <script>
+  // The page ships OPEN (what search engines and link previews read).
+  // MERCH_STORE_OPEN = false (or no store address) turns it back to
+  // COMING SOON; ?depot=open still shows the store then.
   (function() {
     var url = String(MERCH_STORE_URL || "").trim();
-    if (!/^https:\/\//.test(url)) return;
-    if (!MERCH_STORE_OPEN && !/[?&]depot=open(&|$)/.test(location.search)) return;
-
-    var link = document.createElement("a");
-    link.className = "store";
-    link.id = "storeButton";
-    link.href = url;
-    link.target = "_blank";
-    link.rel = "noopener";
-    link.textContent = "[ ENTER THE STORE ]";
-    document.getElementById("storeButton").replaceWith(link);
+    var link = document.getElementById("storeButton");
+    if (/^https:\/\//.test(url) && (MERCH_STORE_OPEN || /[?&]depot=open(&|$)/.test(location.search))) {
+      link.href = url;
+      return;
+    }
+    var off = document.createElement("span");
+    off.className = "store off";
+    off.id = "storeButton";
+    off.setAttribute("aria-disabled", "true");
+    off.textContent = "[ ENTER THE STORE ]";
+    link.replaceWith(off);
 
     var status = document.getElementById("depotStatus");
-    status.className = "status open";
-    status.innerHTML = "DEPOT STATUS: <b>OPEN</b><br>INVENTORY: AVAILABLE";
+    status.className = "status";
+    status.innerHTML = "DEPOT STATUS: <b>COMING SOON</b><br>INVENTORY: NOT YET RELEASED<span class=\"blink\">_</span>";
   })();
 </script>
 <script src="/assets/notice.js" defer></script>

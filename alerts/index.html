@@ -260,12 +260,21 @@
       return new Promise(function (resolve) {
         var tx = db.transaction("traffic", "readwrite");
         var st = tx.objectStore("traffic");
-        recs.forEach(function (r) { st.add(r); });
+        // A message already listed (same ref) is never added twice.
+        var all = st.getAll();
+        all.onsuccess = function () {
+          var have = {};
+          (all.result || []).forEach(function (r) { if (r.ref) have[r.ref] = 1; });
+          recs.forEach(function (r) { if (!r.ref || !have[r.ref]) { have[r.ref] = 1; st.add(r); } });
+          trim();
+        };
+        function trim() {
         var keys = st.getAllKeys();
         keys.onsuccess = function () {
           var k = keys.result || [];
           for (var i = 0; i < k.length - 200; i++) st.delete(k[i]);
         };
+        }
         tx.oncomplete = function () { resolve(); };
         tx.onerror = function () { resolve(); };
       });
@@ -557,13 +566,16 @@
   // added to MESSAGE TRAFFIC quietly (no notification), marked HELD.
   // manual = the [ CHECK FOR HELD MESSAGES ] link: says what it found.
   function heldSay(text) { $("heldStatus").textContent = text; }
+  var heldBusy = null;
   function collectMissed(manual) {
+    // One check at a time: opening the app can ask from several places.
+    if (heldBusy) { if (manual) heldBusy.then(function () { collectMissed(true); }); return; }
     lastHeldCheck = Date.now();
     if (manual) {
       heldSay("CHECKING...");
       setTimeout(function () { if ($("heldStatus").textContent === "CHECKING...") heldSay("CHECK FAILED. TRY AGAIN."); }, 15000);
     }
-    current().then(function (sub) {
+    heldBusy = current().then(function (sub) {
       if (!sub) { if (manual) heldSay("THIS DEVICE IS NOT SUBSCRIBED."); return null; }
       return post("/missed", { endpoint: sub.endpoint });
     }).then(function (d) {
@@ -589,7 +601,8 @@
         if (view === "traffic" && !document.hidden) renderTraffic(); else badgeFromTraffic();
         ctlSay(recs.length + " HELD MESSAGE(S) ADDED TO MESSAGE TRAFFIC.");
       });
-    }).catch(function () { if (manual) heldSay("CHECK FAILED. CHECK THE CONNECTION."); });
+    }).catch(function () { if (manual) heldSay("CHECK FAILED. CHECK THE CONNECTION."); })
+      .then(function () { heldBusy = null; });
   }
   $("heldCheck").addEventListener("click", function (e) { e.preventDefault(); collectMissed(true); });
   function saveSettings(change, okText) {
