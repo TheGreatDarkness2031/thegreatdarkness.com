@@ -72,13 +72,13 @@
     box.innerHTML = "";
     Object.keys(sc1.levels).forEach(function (k) {
       var L = sc1.levels[k], b = document.createElement("button");
-      b.innerHTML = "<b>" + esc(L.name) + "</b><span class='time'>" + (L.hidden ? "RESCUE: UNKNOWN" : "RESCUE BY HOUR " + L.rescueH) + "</span><br>" + esc(L.blurb);
+      b.innerHTML = "<b>" + esc(L.name) + "</b><span class='time'>" + (L.hidden ? "RESCUE: UNKNOWN" : "RESCUE BY HOUR " + L.rescueH) + "</span>" + esc(L.blurb);
       b.addEventListener("click", function () { newGame(picked, k, b); });
       box.appendChild(b);
     });
     var runs = bestRuns();
     $("bestPanel").hidden = !runs.length;
-    $("bestTable").innerHTML = "<tr><th>SCORE</th><th>RESULT</th><th>SCENARIO</th><th>LEVEL</th><th>HOURS</th></tr>" + runs.slice(0, 8).map(function (r) {
+    $("bestTable").innerHTML = "<tr><th>SCORE</th><th>RESULT</th><th>SCENARIO</th><th>LEVEL</th><th>HOURS</th></tr>" + runs.slice(0, 10).map(function (r) {
       var s3 = scenarioOf(r.scenario);
       return "<tr><td>" + r.score + "</td><td>" + esc(r.result) + "</td><td>" + esc(s3.name) + "</td><td>" + esc(s3.levels[r.level] ? s3.levels[r.level].name : r.level) + "</td><td>" + r.hours + "</td></tr>";
     }).join("");

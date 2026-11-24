@@ -15,13 +15,13 @@
   body { min-height: 100vh; }
   a { color: var(--green); }
   button { font: inherit; cursor: pointer; }
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 14px 14px 24px; }
-  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 12px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 10px 14px 12px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; border-bottom: 1px solid var(--line); padding-bottom: 6px; margin-bottom: 10px; }
   h1 { margin: 0; font-size: 22px; letter-spacing: 6px; color: var(--green); }
   .tag { color: var(--dim); font-size: 13px; }
   .links { font-size: 13px; }
   .links a { margin-left: 10px; }
-  .panel { border: 1px solid var(--line); background: #070b07; padding: 10px 12px; margin-bottom: 12px; }
+  .panel { border: 1px solid var(--line); background: #070b07; padding: 10px 12px; margin-bottom: 10px; }
   .panel h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 2px; color: var(--amber); font-weight: normal; }
   .topline { color: var(--green); font-size: 16px; }
   .search { color: var(--cyan); font-size: 13px; margin-top: 2px; }
@@ -63,7 +63,23 @@
   .levels button { display: flex; flex-direction: column; justify-content: flex-start; text-align: left; background: #0b120b; color: var(--fg); border: 1px solid var(--line); padding: 9px 12px; }
   .levels button:hover, .levels button:focus-visible { border-color: var(--green); }
   .levels b { color: var(--green); display: block; font-weight: normal; letter-spacing: 3px; margin-bottom: 4px; }
-  .levels .time { color: var(--amber); font-size: 13px; }
+  .levels .time { color: var(--amber); font-size: 13px; margin-bottom: 6px; }
+  /* Wide screens: best runs beside the level cards, scrolling inside a box as tall as the cards. */
+  @media (min-width: 1000px) {
+    .newrow { display: grid; grid-template-columns: 1fr 330px; gap: 10px; margin-bottom: 10px; }
+    .best-panel .best td, .best-panel .best th { font-size: 12px; padding-right: 8px; }
+    .newrow > .panel { margin-bottom: 0; }
+    .newrow > .panel[hidden] { display: none; }
+    .newrow:has(> .best-panel[hidden]) { grid-template-columns: 1fr; }
+    .best-panel { position: relative; min-height: 120px; }
+    .best-scroll { position: absolute; inset: 10px 12px; overflow-y: auto; }
+    .levels { grid-template-columns: repeat(4, 1fr); }
+  }
+  @media (min-width: 1000px) and (max-width: 1199px) {
+    .newrow { grid-template-columns: 1fr 300px; }
+    .levels { gap: 8px; }
+    .levels button { padding: 8px 9px; }
+  }
   .big { background: #0b120b; color: var(--green); border: 1px solid var(--green); padding: 9px 16px; margin: 4px 8px 4px 0; }
   .quiet { background: none; color: var(--dim); border: 1px solid var(--line); padding: 6px 12px; margin: 4px 8px 4px 0; }
   .intro p { margin: 0 0 8px; max-width: 1000px; }
@@ -93,12 +109,14 @@
       <p class="game-not-training">This is a game, not survival training. The rules follow real outdoor and search-and-rescue guidance as closely as a game can, but do not rely on it in the field.</p>
       <div id="continueBox" hidden><button class="big" id="continueBtn">CONTINUE</button><span id="continueInfo" class="tag"></span></div>
     </div>
-    <div class="panel">
-      <h2 id="levelsTitle">NEW GAME // CHOOSE HOW LONG UNTIL RESCUE</h2>
-      <div class="levels" id="levels"></div>
-      <p class="tag" id="abandonNote" hidden>Starting a new game ends the one in progress.</p>
+    <div class="newrow">
+      <div class="panel">
+        <h2 id="levelsTitle">NEW GAME // CHOOSE HOW LONG UNTIL RESCUE</h2>
+        <div class="levels" id="levels"></div>
+        <p class="tag" id="abandonNote" hidden>Starting a new game ends the one in progress.</p>
+      </div>
+      <div class="panel best-panel" id="bestPanel" hidden><div class="best-scroll" tabindex="0"><h2 title="Kept in this browser only">YOUR BEST RUNS</h2><table class="best" id="bestTable"></table></div></div>
     </div>
-    <div class="panel" id="bestPanel" hidden><h2>YOUR BEST RUNS (THIS BROWSER)</h2><table class="best" id="bestTable"></table></div>
   </section>
 
   <!-- Playing -->
