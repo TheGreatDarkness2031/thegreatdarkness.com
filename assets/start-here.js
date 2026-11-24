@@ -19,14 +19,20 @@
     return e;
   }
   function pad(n) { return (n < 10 ? "0" : "") + n; }
-  // "23 NOV 2026 21:14 CENTRAL" (facility time).
+  // "23 NOV 2026 21:14 CENTRAL" (facility time). Worked out with the US
+  // clock-change rule (2007+: second Sunday of March to first Sunday of
+  // November, 02:00 local) instead of Intl's time zone tables, which cost
+  // ~70 ms on a slow phone the first time they load.
   function facilityTime(ms) {
-    var o = {};
-    new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Chicago", year: "numeric", month: "numeric", day: "numeric",
-      hour: "numeric", minute: "2-digit", hourCycle: "h23"
-    }).formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = p.value; });
-    return pad(+o.day) + " " + MONTHS[+o.month - 1] + " " + o.year + " " + pad(+o.hour) + ":" + o.minute + " CENTRAL";
+    var y = new Date(ms).getUTCFullYear();
+    function sunday(month, n) {
+      var first = new Date(Date.UTC(y, month, 1)).getUTCDay();
+      return 1 + (7 - first) % 7 + 7 * (n - 1);
+    }
+    var dst = ms >= Date.UTC(y, 2, sunday(2, 2), 8) && ms < Date.UTC(y, 10, sunday(10, 1), 7);
+    var c = new Date(ms - (dst ? 5 : 6) * 3600000);
+    return pad(c.getUTCDate()) + " " + MONTHS[c.getUTCMonth()] + " " + c.getUTCFullYear() + " " +
+      pad(c.getUTCHours()) + ":" + pad(c.getUTCMinutes()) + " CENTRAL";
   }
 
   // ---- the pass ----
