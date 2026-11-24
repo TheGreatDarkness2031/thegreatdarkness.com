@@ -915,7 +915,7 @@
     // =======================================================
     // COMMANDS
     // =======================================================
-    var GROUPS = ["NAVIGATION", "READING", "SEARCHING", "SYSTEM", "HELP"];
+    var GROUPS = ["NAVIGATION", "READING", "SEARCHING", "RECORDS", "SYSTEM", "HELP"];
 
     var COMMANDS = {
       ls: {
@@ -1012,10 +1012,50 @@
         detail: [
           "Lists every file and folder inside a folder.",
           "  -name pattern   only names that match; * = anything",
-          "Examples:  find /docs     find / -name \"*.log\""
+          "Examples:  find /docs     find / -name \"*.log\"",
+          "To search the OER records, use search."
         ],
         run: cmdFind
       },
+      search: {
+        group: "RECORDS", usage: "search [-y YEAR] <text>", summary: "search the OER records",
+        detail: [
+          "Searches personnel files, the maintenance log,",
+          "engineering projects, the document register and",
+          "the operations wiki. Put text with spaces in quotes.",
+          "  -y YEAR   also search that year's watch log",
+          "            (1998-2026; one year at a time)",
+          "FIND does the same.",
+          "Examples:  search \"site b\"     search -y 2003 outage"
+        ],
+        run: cmdSearch
+      },
+      lookup: {
+        group: "RECORDS", usage: "lookup <id | name>", summary: "show one record in full",
+        detail: [
+          "Shows one record: a person (employee number or",
+          "full name), a maintenance entry (ML-000042 or 42),",
+          "a watch log record (199800001), a project",
+          "(ENG-26-01), a document (SWA-003) or a wiki page.",
+          "Examples:  lookup OER-2016-001     lookup ML-000001",
+          "           lookup \"Mara Voss\"     lookup SWA-003"
+        ],
+        run: cmdLookup
+      },
+      open: {
+        group: "RECORDS", usage: "open <id | name>", summary: "open a record on the OER network",
+        detail: [
+          "Leaves the terminal and opens the record's page:",
+          "the personnel file, the log entry, the project,",
+          "the register entry or the wiki page.",
+          "Example:  open ENG-26-01"
+        ],
+        run: cmdOpen
+      },
+      FIND: { group: "HIDDEN", usage: "FIND [-y YEAR] <text>", summary: "same as search", detail: ["Same as search."], run: cmdSearch },
+      SEARCH: { group: "HIDDEN", usage: "SEARCH [-y YEAR] <text>", summary: "same as search", detail: ["Same as search."], run: cmdSearch },
+      LOOKUP: { group: "HIDDEN", usage: "LOOKUP <id | name>", summary: "same as lookup", detail: ["Same as lookup."], run: cmdLookup },
+      OPEN: { group: "HIDDEN", usage: "OPEN <id | name>", summary: "same as open", detail: ["Same as open."], run: cmdOpen },
       unlock: {
         group: "SYSTEM", usage: "unlock <file>", summary: "open a locked file with a password",
         detail: [
@@ -1097,6 +1137,268 @@
         }
       }
     };
+
+    // ---------- records: search, lookup, open (2026-11-23) ----------
+    // Read only the public copies the website already publishes; nothing
+    // from the file system above, never the restricted or sealed folders.
+    var REC = {};
+    var REC_WATCH_FIRST = 1998, REC_WATCH_LAST = 2026;
+    var REC_CAP = 15;
+    var REC_HIDDEN_DOCS = { "NET-003": 1, "NET-004": 1, "PWR-003": 1, "PWR-004": 1 };
+
+    function recGet(url, asText) {
+      if (REC[url]) return REC[url];
+      REC[url] = fetch(url, { cache: "default" }).then(function(r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return asText ? r.text() : r.json();
+      });
+      REC[url].catch(function() { delete REC[url]; });
+      return REC[url];
+    }
+    function recPeople() {
+      return recGet("/hr/data.js", true).then(function(t) {
+        return JSON.parse(t.replace(/^[\s\S]*?window\.HR\s*=\s*/, "").replace(/;\s*$/, "")).people || [];
+      });
+    }
+    function recBios() { return recGet("/hr/bios.json").then(function(b) { return b.bios || {}; }).catch(function() { return {}; }); }
+    function recMaint() { return recGet("/data/maintenance.json").then(function(d) { return d.records || []; }); }
+    function recProjects() { return recGet("/maintenance/projects.json").then(function(d) { return d.projects || []; }); }
+    function recDocs() {
+      return recGet("/maintenance/register.json").then(function(d) {
+        return (d.documents || []).filter(function(x) { return !REC_HIDDEN_DOCS[x.no]; });
+      });
+    }
+    function recWiki() { return recGet("/wiki/articles.json").then(function(d) { return d.articles || []; }); }
+    function recWatch(year) {
+      return recGet("/data/watch/WatchLog_" + year + ".json").then(function(d) { return d.records || []; });
+    }
+
+    function recPlain(html) {
+      var d = document.createElement("div");
+      d.innerHTML = String(html || "").replace(/(<\/(p|li|h\d|tr|div)>)/g, "$1\n");
+      return d.textContent || "";
+    }
+    function recClip(text, n) {
+      text = String(text || "").replace(/\s+/g, " ").trim();
+      return text.length > n ? text.slice(0, n - 3) + "..." : text;
+    }
+    function recWidth() { return Math.max(30, Math.min(charsPerLine() || 60, 76)); }
+    function recMl(id) { return "ML-" + String(id).padStart(6, "0"); }
+
+    // What an id or name names: { kind, key } or null.
+    function recKind(word) {
+      var w = String(word || "").trim();
+      var up = w.toUpperCase();
+      if (/^(OER-(19|20)\d\d-\d{3}|NX-10\d\d)$/.test(up)) return { kind: "person", key: up };
+      if (/^ENG-\d\d-\d\d$/.test(up)) return { kind: "project", key: up };
+      if (/^ML-?\d{1,6}$/.test(up) || /^#?\d{1,4}$/.test(up)) return { kind: "maint", key: String(Number(up.replace(/\D/g, ""))) };
+      if (/^(199[89]|20[0-2]\d)\d{5}$/.test(up)) return { kind: "watch", key: up };
+      if (/^[A-Z]{2,4}(-[A-Z]{1,4})?-\d{2,3}$/.test(up)) return { kind: "doc", key: up };
+      if (/^[a-z0-9]+(-[a-z0-9]+)*$/.test(w)) return { kind: "wiki", key: w };
+      if (/\s/.test(w)) return { kind: "name", key: w };
+      return null;
+    }
+
+    function recUrl(kind, key) {
+      if (kind === "person") return "/hr/?id=" + encodeURIComponent(key);
+      if (kind === "project") return "/maintenance/?view=projects&p=" + key;
+      if (kind === "maint") return "/maintenance/?view=records&rec=" + key;
+      if (kind === "watch") return "/watch/?rec=" + key;
+      if (kind === "doc") return "/maintenance/?view=register&doc=" + key;
+      if (kind === "wiki") return "/wiki/?a=" + encodeURIComponent(key);
+      return "";
+    }
+
+    function recPersonByName(people, name) {
+      var n = name.toLowerCase().replace(/^dr\.?\s+/, "");
+      var hits = people.filter(function(p) { return p.name.toLowerCase() === n; });
+      return hits.length === 1 ? hits[0] : null;
+    }
+
+    // An id or name -> { kind, key, rec } (the record found), or null.
+    function recResolve(word) {
+      var k = recKind(word);
+      if (!k) return Promise.resolve(null);
+      if (k.kind === "person") return recPeople().then(function(ps) {
+        var p = ps.filter(function(x) { return x.id === k.key; })[0];
+        return p ? { kind: "person", key: p.id, rec: p } : null;
+      });
+      if (k.kind === "name") return recPeople().then(function(ps) {
+        var p = recPersonByName(ps, k.key);
+        return p ? { kind: "person", key: p.id, rec: p } : null;
+      });
+      if (k.kind === "project") return recProjects().then(function(ps) {
+        var p = ps.filter(function(x) { return x.code === k.key; })[0];
+        return p ? { kind: "project", key: p.code, rec: p } : null;
+      });
+      if (k.kind === "doc") return recDocs().then(function(ds) {
+        var d = ds.filter(function(x) { return x.no === k.key; })[0];
+        return d ? { kind: "doc", key: d.no, rec: d } : null;
+      });
+      if (k.kind === "maint") return recMaint().then(function(rs) {
+        var r = rs.filter(function(x) { return String(x.id) === k.key; })[0];
+        return r ? { kind: "maint", key: String(r.id), rec: r } : null;
+      });
+      if (k.kind === "watch") return recWatch(k.key.slice(0, 4)).then(function(rs) {
+        var r = rs.filter(function(x) { return String(x.recordId) === k.key; })[0];
+        return r ? { kind: "watch", key: k.key, rec: r } : null;
+      }, function() { return null; });
+      if (k.kind === "wiki") return recWiki().then(function(as) {
+        var a = as.filter(function(x) { return x.id === k.key; })[0];
+        return a ? { kind: "wiki", key: a.id, rec: a } : null;
+      });
+      return Promise.resolve(null);
+    }
+
+    function cmdSearch(args) {
+      var year = "", words = [];
+      for (var i = 0; i !== args.length; i++) {
+        if (args[i] === "-y" && args[i + 1]) { year = args[++i]; continue; }
+        words.push(args[i]);
+      }
+      var q = words.join(" ").trim().toLowerCase();
+      if (q.length === 0) {
+        print("search: usage: " + COMMANDS.search.usage + "  (type help search)", "err");
+        return;
+      }
+      if (q.length === 1) {
+        print("search: give at least two characters.", "err");
+        return;
+      }
+      if (year && !(/^\d{4}$/.test(year) && Number(year) >= REC_WATCH_FIRST && REC_WATCH_LAST >= Number(year))) {
+        print("search: -y takes a watch log year, " + REC_WATCH_FIRST + "-" + REC_WATCH_LAST + ".", "err");
+        return;
+      }
+      print("SEARCHING OER RECORDS FOR \"" + q.toUpperCase() + "\"" + (year ? " (WATCH LOG " + year + ")" : "") + "...", "dim");
+      var has = function(t) { return String(t || "").toLowerCase().indexOf(q) !== -1; };
+      var w = recWidth();
+      return Promise.all([recPeople(), recBios(), recProjects(), recDocs(), recWiki(), recMaint(),
+        year ? recWatch(year) : Promise.resolve(null)]).then(function(d) {
+        var people = d[0], bios = d[1], total = 0;
+        var section = function(title, hits, line) {
+          if (!hits.length) return;
+          total += hits.length;
+          print("");
+          print(title + " (" + hits.length + ")", "hdr");
+          hits.slice(0, REC_CAP).forEach(function(h) { print(recClip(line(h), w)); });
+          if (hits.length > REC_CAP) print("  ... " + (hits.length - REC_CAP) + " MORE. NARROW THE SEARCH.", "dim");
+        };
+        section("PERSONNEL", people.filter(function(p) {
+          return has(p.name) || has(p.id) || has(p.title) || has(p.unit) || has(bios[p.id]);
+        }), function(p) { return p.id + "  " + p.name + ", " + p.title; });
+        section("PROJECTS", d[2].filter(function(p) {
+          return has(p.code) || has(p.title) || has(p.scope);
+        }), function(p) { return p.code + "  " + p.title; });
+        section("DOCUMENT REGISTER", d[3].filter(function(x) {
+          return has(x.no) || has(x.title) || x.revs.some(function(r) { return has(r[2]); });
+        }), function(x) { return x.no + "  " + x.title; });
+        section("OPERATIONS WIKI", d[4].filter(function(a) {
+          return has(a.title) || has(a.summary) || has(recPlain(a.html));
+        }), function(a) { return a.id + "  " + a.title; });
+        section("MAINTENANCE LOG", d[5].filter(function(r) {
+          return has(r.entry) || has(r.system) || has(r.author) || has(recMl(r.id));
+        }).sort(function(a, b) { return b.idNumber - a.idNumber; }), function(r) {
+          return recMl(r.id) + " " + r.date + "  " + r.entry;
+        });
+        if (d[6]) {
+          section("WATCH LOG " + year, d[6].filter(function(r) {
+            return has(r.logEntry) || has(r.name) || has(r.recordId) || has(r.systemArea) || has(r.followUpOrDisposition);
+          }), function(r) { return r.recordId + " " + r.timestampLocal + "  " + r.logEntry; });
+        }
+        print("");
+        if (!total) print("NO RECORDS FOUND.");
+        else print(total + " RECORD(S). lookup <id> SHOWS ONE IN FULL; open <id> OPENS ITS PAGE.", "dim");
+        if (!year) print("WATCH LOG NOT SEARCHED. ADD -y YEAR (" + REC_WATCH_FIRST + "-" + REC_WATCH_LAST + ").", "dim");
+      });
+    }
+
+    function recField(label, value) {
+      if (value === undefined || value === null || value === "") return;
+      print(label + ": " + value);
+    }
+
+    function cmdLookup(args) {
+      var word = args.join(" ").trim();
+      if (!word) {
+        print("lookup: usage: " + COMMANDS.lookup.usage + "  (type help lookup)", "err");
+        return;
+      }
+      return Promise.all([recResolve(word), recBios()]).then(function(got) {
+        var f = got[0], bios = got[1];
+        if (!f) {
+          print("lookup: " + word + ": NO RECORD.", "err");
+          return;
+        }
+        var r = f.rec;
+        if (f.kind === "person") {
+          print("PERSONNEL FILE " + r.id, "hdr");
+          recField("NAME", (r.hon ? r.hon + " " : "") + r.name + (r.known ? " (" + r.known + ")" : ""));
+          recField("TITLE", r.title);
+          recField("UNIT", r.unit);
+          recField("HIRED", r.hire);
+          recField("SEPARATED", r.sep);
+          if (bios[r.id]) { print(""); print(bios[r.id]); }
+        } else if (f.kind === "project") {
+          print("PROJECT FILE " + r.code, "hdr");
+          recField("TITLE", r.title);
+          recField("OUTCOME", r.outcome);
+          recField("WINDOW", r.from + " TO " + r.to);
+          recField("DOCUMENTS", (r.docs || []).join(", "));
+          print(""); print(r.scope);
+        } else if (f.kind === "doc") {
+          print("REGISTER ENTRY " + r.no, "hdr");
+          recField("TITLE", r.title);
+          recField("SERIES", r.series);
+          r.revs.slice().reverse().forEach(function(v, i) {
+            print("");
+            print("REV " + v[0] + "  " + v[1] + (i === 0 ? "  CURRENT" : "  SUPERSEDED"), i === 0 ? "hdr" : "dim");
+            print(v[2]);
+          });
+        } else if (f.kind === "maint") {
+          print("MAINTENANCE RECORD " + recMl(r.id), "hdr");
+          recField("DATE", r.date);
+          recField("AUTHOR", r.author + (r.role ? ", " + r.role : ""));
+          recField("SYSTEM", r.system);
+          recField("ACTION", r.action);
+          print(""); print(r.entry);
+        } else if (f.kind === "watch") {
+          print("WATCH LOG RECORD " + r.recordId, "hdr");
+          recField("TIME", r.timestampLocal);
+          recField("SIGNED", r.name + (r.responsibleRole ? ", " + r.responsibleRole : ""));
+          recField("TYPE", r.entryType);
+          recField("STATUS", [r.condition, r.priority].filter(Boolean).join(" / "));
+          recField("SYSTEM", r.systemArea);
+          recField("REFERENCE", r.relatedReference);
+          print(""); print(r.logEntry);
+          recField("DISPOSITION", r.followUpOrDisposition);
+        } else if (f.kind === "wiki") {
+          print("WIKI PAGE " + r.id, "hdr");
+          recField("TITLE", r.title);
+          var last = (r.revs || [])[(r.revs || []).length - 1];
+          if (last) recField("LAST EDIT", last.d + " " + last.by);
+          print(""); print(recPlain(r.html).replace(/\n{3,}/g, "\n\n").trim());
+        }
+        print("");
+        print("open " + (f.kind === "maint" ? recMl(f.key) : f.key) + " OPENS THIS RECORD'S PAGE.", "dim");
+      });
+    }
+
+    function cmdOpen(args) {
+      var word = args.join(" ").trim();
+      if (!word) {
+        print("open: usage: " + COMMANDS.open.usage + "  (type help open)", "err");
+        return;
+      }
+      return recResolve(word).then(function(f) {
+        if (!f) {
+          print("open: " + word + ": NO RECORD.", "err");
+          return;
+        }
+        var url = recUrl(f.kind, f.key);
+        print("OPENING " + url + " ...");
+        setTimeout(function() { location.href = url; }, 400);
+      });
+    }
 
     // ---------- help ----------
     function cmdHelp(args) {
@@ -1606,7 +1908,23 @@
         } else if (!COMMANDS[name]) {
           print(name + ": command not found. Type help or ? to list commands.", "err");
         } else {
-          COMMANDS[name].run(args);
+          var result = COMMANDS[name].run(args);
+          // Records commands read files over the network: hold the prompt
+          // until they answer, then page their output like any other.
+          if (result && typeof result.then === "function") {
+            var hadFocus = document.activeElement === input;
+            mode = "busy";
+            inputLine.style.display = "none";
+            result.catch(function() {
+              print("RECORDS UNAVAILABLE. TRY AGAIN LATER.", "err");
+            }).then(function() {
+              mode = "cmd";
+              inputLine.style.display = "";
+              finish(firstNew);
+              if (hadFocus && mode === "cmd") input.focus({ preventScroll: true });
+            });
+            return;
+          }
         }
       }
 
@@ -1697,7 +2015,7 @@
 
       if (lastSpace === -1) {
         candidates = Object.keys(COMMANDS).filter(function(c) {
-          return c.indexOf(word) === 0 && c !== "?";
+          return c.indexOf(word) === 0 && c !== "?" && c === c.toLowerCase();
         }).map(function(c) { return c + " "; });
       } else {
         var slash = word.lastIndexOf("/");
