@@ -1991,6 +1991,27 @@
   .door { flex-direction: column; gap: 4px; min-height: 64px; }
   .door small { font: normal 11px "Courier New", monospace; color: #9a9a9a; text-decoration: none; letter-spacing: 1px; }
   .door-wide { grid-column: 1 / -1; }
+  /* VISITOR ORIENTATION (2026-11-23): same box as the directory. */
+  .orient-steps { list-style: none; margin: 0; padding: 0; text-align: left; }
+  .orient-step { display: flex; gap: 12px; padding: 9px 2px; border-top: 1px dashed #444444; }
+  .orient-step:first-child { border-top: 0; }
+  .orient-no { flex: 0 0 auto; min-width: 30px; color: #7fd18b; font: bold 16px "Courier New", monospace; letter-spacing: 1px; }
+  .orient-body { flex: 1; min-width: 0; font: 12px "Courier New", monospace; letter-spacing: 1px; color: #cfcfcf; line-height: 1.45; }
+  .orient-name { color: #ffffff; font-weight: bold; letter-spacing: 2px; margin-bottom: 2px; }
+  .orient-line { overflow-wrap: anywhere; }
+  .orient-line a, .orient-go { color: #7fd18b; }
+  .orient-go { display: inline-block; margin-top: 4px; text-decoration: none; white-space: nowrap; }
+  .orient-line a { white-space: nowrap; }
+  .orient-go:hover, .orient-go:focus { text-decoration: underline; }
+  .orient-meta { color: #b0b0b0; font-size: 11px; margin-top: 6px; overflow-wrap: anywhere; }
+  .orient-quote { margin: 4px 0 2px; padding: 6px 9px; border-left: 2px solid #7fd18b; background: #0b0b0b; color: #e6e6e6; overflow-wrap: anywhere; }
+  .orient-btn { margin: 4px 8px 0 0; padding: 3px 6px; background: #1b1b1b; color: #e6e6e6; border: 1px solid #8a8a8a; font: 12px "Courier New", monospace; letter-spacing: 1px; cursor: pointer; }
+  .orient-btn:hover { background: #262626; }
+  .orient-btn:disabled { color: #777777; border-color: #555555; cursor: default; }
+  .orient-reader { margin-top: 6px; }
+  .orient-rec-head { color: #ffffff; font-size: 11px; margin-top: 4px; }
+  .orient-nav { margin-top: 4px; }
+  .orient-nav .orient-go { margin-right: 8px; }
   .page-shell > .oer-term-link { margin-top: 0; }
 </style>
 <style>
@@ -2336,6 +2357,46 @@
       </div>
     </section>
 
+    <section class="late-addendum facility-directory orientation" aria-labelledby="orientTitle">
+      <div class="late-addendum-inner">
+        <div class="retained-resources-title" id="orientTitle">=== VISITOR ORIENTATION ===</div>
+        <ol class="orient-steps">
+          <li class="orient-step">
+            <span class="orient-no">01</span>
+            <div class="orient-body">
+              <div class="orient-name">BRIEFING</div>
+              <div class="orient-line">READ THE PUBLIC BRIEFING BEFORE YOU GO ON THE FLOOR.</div>
+              <a class="orient-go" href="/whatisit/">[ WHAT IT IS ]</a>
+            </div>
+          </li>
+          <li class="orient-step">
+            <span class="orient-no">02</span>
+            <div class="orient-body">
+              <div class="orient-name">TODAY'S WATCH</div>
+              <div id="orientWatch"><div class="orient-line">SEE THE <a href="/schedule/">WATCH SCHEDULE</a> AND THE <a href="/watch/">WATCH LOG</a>.</div></div>
+            </div>
+          </li>
+          <li class="orient-step">
+            <span class="orient-no">03</span>
+            <div class="orient-body">
+              <div class="orient-name">FROM THE BEGINNING</div>
+              <div class="orient-line">TEN RECORDS FROM THE MAINTENANCE AND WATCH LOGS, 1996 TO COMMISSIONING DAY.</div>
+              <button type="button" class="orient-btn" id="orientBegin">[ BEGIN READING ]</button>
+              <div class="orient-reader" id="orientReader" aria-live="polite" hidden></div>
+            </div>
+          </li>
+          <li class="orient-step">
+            <span class="orient-no">04</span>
+            <div class="orient-body">
+              <div class="orient-name">LEAVE A LINE</div>
+              <div class="orient-line">ADD YOUR ENTRY TO THE PUBLIC LOG BULLETIN.</div>
+              <a class="orient-go" id="orientLeave" href="#publicLog">[ GO TO THE PUBLIC LOG ]</a>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
     <section class="late-addendum facility-directory">
       <div class="late-addendum-inner">
         <div class="retained-resources-title">=== OER FACILITY DIRECTORY ===</div>
@@ -2430,7 +2491,7 @@
 
     
 
-    <section class="bbs-container">
+    <section class="bbs-container" id="publicLog">
 
       <div class="bbs-header">
         === PUBLIC LOG BULLETIN ===
@@ -5641,6 +5702,8 @@
     })();
   </script>
 
+<script src="/assets/start-path.js" defer></script>
+<script src="/assets/start-here.js" defer></script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>

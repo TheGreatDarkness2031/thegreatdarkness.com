@@ -624,6 +624,27 @@
       .stream-panel, .details-panel { display: flex; flex-direction: column; min-height: 0; }
       .watch-log-stream, .selected-details-body { flex: 1; min-height: 0; max-height: none; overflow-y: auto; }
     }
+    /* Phones (2026-11-23, owner): records first; year, filters and sort
+       fold away behind [ FILTERS ]. Paging stays under the records.
+       Computers are unchanged (the bar is hidden there). */
+    .phone-filter-bar { display: none; }
+    @media (max-width: 720px) {
+      .window-body.desk { display: flex; flex-direction: column; }
+      .phone-filter-bar { display: block; order: 0; margin: 0 0 8px; }
+      .phone-filter-bar button { width: 100%; padding: 6px 4px; }
+      body.watch-filters-open .phone-filter-bar button { color: #000; background: #7fd18b; }
+      .controls-panel { order: 4; }
+      #statusStrip { order: 1; }
+      #archiveNote { order: 2; }
+      .content-layout { order: 3; }
+      .controls-panel .controls-title,
+      .controls-panel .view-controls,
+      .controls-panel .filter-panel { display: none; }
+      body.watch-filters-open .controls-panel { order: 0; margin-bottom: 8px; }
+      body.watch-filters-open .controls-panel .controls-title,
+      body.watch-filters-open .controls-panel .view-controls,
+      body.watch-filters-open .controls-panel .filter-panel { display: block; }
+    }
     @media (max-width: 720px) {
       body { padding: 7px 4px; }
       .office-switch { position: static; display: block; margin-top: 6px; }
@@ -660,7 +681,11 @@
 
     <section class="window-body desk">
 
-      <section class="controls-panel bevel-outset">
+      <div class="phone-filter-bar">
+        <button id="filtersToggle" type="button" aria-expanded="false" aria-controls="watchControls">[ FILTERS ]</button>
+      </div>
+
+      <section class="controls-panel bevel-outset" id="watchControls">
 
         <div class="controls-title">
           WATCH LOG DISPLAY CONTROLS
@@ -1039,6 +1064,16 @@
 
 
     function initializeWatchLogView() {
+
+      // Phones: [ FILTERS ] shows or hides the year, filter and sort controls.
+      var filtersToggle = document.getElementById("filtersToggle");
+      if (filtersToggle) {
+        filtersToggle.addEventListener("click", function() {
+          var open = document.body.classList.toggle("watch-filters-open");
+          filtersToggle.setAttribute("aria-expanded", open ? "true" : "false");
+          filtersToggle.textContent = open ? "[ HIDE FILTERS ]" : "[ FILTERS ]";
+        });
+      }
 
       // Links from the Watch Schedule open one day: ?year=2001&date=2001-09-11
       var startParams = new URLSearchParams(location.search);
