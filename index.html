@@ -1991,17 +1991,22 @@
   .door { flex-direction: column; gap: 4px; min-height: 64px; }
   .door small { font: normal 11px "Courier New", monospace; color: #9a9a9a; text-decoration: none; letter-spacing: 1px; }
   .door-wide { grid-column: 1 / -1; }
-  /* VISITOR ORIENTATION (2026-11-23): same box as the directory. */
-  .orient-steps { list-style: none; margin: 0; padding: 0; text-align: left; }
-  .orient-step { display: flex; gap: 12px; padding: 9px 2px; border-top: 1px dashed #444444; }
-  .orient-step:first-child { border-top: 0; }
-  .orient-no { flex: 0 0 auto; min-width: 30px; color: #7fd18b; font: bold 16px "Courier New", monospace; letter-spacing: 1px; }
-  .orient-body { flex: 1; min-width: 0; font: 12px "Courier New", monospace; letter-spacing: 1px; color: #cfcfcf; line-height: 1.45; }
-  .orient-name { color: #ffffff; font-weight: bold; letter-spacing: 2px; margin-bottom: 2px; }
-  .orient-line { overflow-wrap: anywhere; }
-  .orient-line a, .orient-go { color: #7fd18b; }
-  .orient-go { display: inline-block; margin-top: 4px; text-decoration: none; white-space: nowrap; }
-  .orient-line a { white-space: nowrap; }
+  /* VISITOR PASS (2026-11-23, owner): same box as the directory. */
+  .pass-card { text-align: left; font: 12px "Courier New", monospace; letter-spacing: 1px; color: #cfcfcf; line-height: 1.5; }
+  .pass-head { padding: 0 2px 8px; border-bottom: 1px dashed #444444; }
+  .pass-badge { color: #ffffff; font-weight: bold; font-size: 14px; letter-spacing: 2px; }
+  .pass-escort { color: #e0b050; }
+  .pass-line { overflow-wrap: anywhere; }
+  .pass-sub { margin: 9px 0 3px; color: #9a9a9a; font-size: 11px; letter-spacing: 3px; }
+  .pass-areas { list-style: none; margin: 0; padding: 0; }
+  .pass-areas li { display: flex; flex-wrap: wrap; gap: 0 10px; padding: 2px 0; }
+  .pass-areas li::before { content: ">"; color: #7fd18b; }
+  .pass-areas li > a { min-width: 120px; color: #7fd18b; font-weight: bold; text-decoration: none; white-space: nowrap; }
+  .pass-areas li > a:hover, .pass-areas li > a:focus { text-decoration: underline; }
+  .pass-areas span { color: #b8b8b8; }
+  .pass-areas span a { color: #b8b8b8; }
+  @media (max-width: 520px) { .pass-areas span { flex-basis: 100%; padding-left: 18px; } }
+  .orient-go { display: inline-block; margin-top: 4px; color: #7fd18b; text-decoration: none; white-space: nowrap; }
   .orient-go:hover, .orient-go:focus { text-decoration: underline; }
   .orient-meta { color: #b0b0b0; font-size: 11px; margin-top: 6px; overflow-wrap: anywhere; }
   .orient-quote { margin: 4px 0 2px; padding: 6px 9px; border-left: 2px solid #7fd18b; background: #0b0b0b; color: #e6e6e6; overflow-wrap: anywhere; }
@@ -2357,43 +2362,25 @@
       </div>
     </section>
 
-    <section class="late-addendum facility-directory orientation" aria-labelledby="orientTitle">
+    <section class="late-addendum facility-directory visitor-pass" aria-labelledby="passTitle">
       <div class="late-addendum-inner">
-        <div class="retained-resources-title" id="orientTitle">=== VISITOR ORIENTATION ===</div>
-        <ol class="orient-steps">
-          <li class="orient-step">
-            <span class="orient-no">01</span>
-            <div class="orient-body">
-              <div class="orient-name">BRIEFING</div>
-              <div class="orient-line">READ THE PUBLIC BRIEFING BEFORE YOU GO ON THE FLOOR.</div>
-              <a class="orient-go" href="/whatisit/">[ WHAT IT IS ]</a>
-            </div>
-          </li>
-          <li class="orient-step">
-            <span class="orient-no">02</span>
-            <div class="orient-body">
-              <div class="orient-name">TODAY'S WATCH</div>
-              <div id="orientWatch"><div class="orient-line">SEE THE <a href="/schedule/">WATCH SCHEDULE</a> AND THE <a href="/watch/">WATCH LOG</a>.</div></div>
-            </div>
-          </li>
-          <li class="orient-step">
-            <span class="orient-no">03</span>
-            <div class="orient-body">
-              <div class="orient-name">FROM THE BEGINNING</div>
-              <div class="orient-line">TEN RECORDS FROM THE MAINTENANCE AND WATCH LOGS, 1996 TO COMMISSIONING DAY.</div>
-              <button type="button" class="orient-btn" id="orientBegin">[ BEGIN READING ]</button>
-              <div class="orient-reader" id="orientReader" aria-live="polite" hidden></div>
-            </div>
-          </li>
-          <li class="orient-step">
-            <span class="orient-no">04</span>
-            <div class="orient-body">
-              <div class="orient-name">LEAVE A LINE</div>
-              <div class="orient-line">ADD YOUR ENTRY TO THE PUBLIC LOG BULLETIN.</div>
-              <a class="orient-go" id="orientLeave" href="#publicLog">[ GO TO THE PUBLIC LOG ]</a>
-            </div>
-          </li>
-        </ol>
+        <div class="retained-resources-title" id="passTitle">=== VISITOR PASS ===</div>
+        <div class="pass-card">
+          <div class="pass-head">
+            <div class="pass-badge" id="passBadge">BADGE GN-<span id="passNo">--</span> // NOT CLEARED</div>
+            <div class="pass-line" id="passIssued">ISSUED --</div>
+            <div class="pass-line pass-escort">ESCORT: NONE AVAILABLE. PROCEED UNESCORTED.</div>
+          </div>
+          <div class="pass-sub">PERMITTED AREAS</div>
+          <ul class="pass-areas">
+            <li><a href="/floor/">WATCH FLOOR</a><span>RADAR, MONITORS, EVENT FEED</span></li>
+            <li><a href="/watch/">RECORDS</a><span>WATCH AND <a href="/maintenance/?view=records">MAINTENANCE</a> LOGS</span></li>
+            <li><a href="#publicLog" id="passLeave">PUBLIC LOG</a><span>SIGN IN BEFORE YOU LEAVE</span></li>
+          </ul>
+          <div class="pass-sub">SUGGESTED READING</div>
+          <div class="pass-line">FIRST RECORDS, 1996-1998 <button type="button" class="orient-btn" id="orientBegin">[ BEGIN ]</button></div>
+          <div class="orient-reader" id="orientReader" aria-live="polite" hidden></div>
+        </div>
       </div>
     </section>
 

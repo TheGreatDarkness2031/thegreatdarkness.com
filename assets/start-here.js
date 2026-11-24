@@ -1,15 +1,15 @@
-// VISITOR ORIENTATION panel on the homepage (2026-11-23).
-// Settings (reading path, last watch record) live in /assets/start-path.js.
+// VISITOR PASS on the homepage (2026-11-23, owner). The visitor is a guest
+// on a GN (not cleared) badge, like the guests in the watch log, but no
+// escort is available. The badge number and first issue time stay in this
+// browser (localStorage oerVisitorPass); nothing is sent anywhere.
+// The reading path lives in /assets/start-path.js.
 // Nothing here calls Apps Script; the reading path reads the published log
 // copies only when a visitor opens it.
 (function () {
   "use strict";
 
-  var DAY = 86400000;
-  // Same rotation as /schedule/ and the watch log (WatchLogGen.js wlgCrew_):
-  // a 10-day cycle from 24 June 1998, Red on days 0, 1, 5, 6, 7. A crew holds
-  // the floor 07:00-07:00 Central. The rotation was posted through 2026.
-  var POSTED_END = Date.UTC(2027, 0, 1, 6, 0);
+  var PASS_KEY = "oerVisitorPass";
+  var MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
   function $(id) { return document.getElementById(id); }
   function el(tag, cls, text) {
@@ -18,52 +18,37 @@
     if (text != null) e.textContent = text;
     return e;
   }
-  function crewOn(y, m, d) {
-    var n = Math.floor((Date.UTC(y, m, d) - Date.UTC(1998, 5, 24)) / DAY);
-    n = ((n % 10) + 10) % 10;
-    return [0, 1, 5, 6, 7].indexOf(n) >= 0 ? "RED" : "BLUE";
-  }
-  function central(ms) {
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  // "23 NOV 2026 21:14 CENTRAL" (facility time).
+  function facilityTime(ms) {
     var o = {};
     new Intl.DateTimeFormat("en-US", {
-      timeZone: "America/Chicago", year: "numeric", month: "numeric", day: "numeric", hour: "numeric", hourCycle: "h23"
+      timeZone: "America/Chicago", year: "numeric", month: "numeric", day: "numeric",
+      hour: "numeric", minute: "2-digit", hourCycle: "h23"
     }).formatToParts(new Date(ms)).forEach(function (p) { o[p.type] = p.value; });
-    return { y: +o.year, m: +o.month - 1, d: +o.day, h: +o.hour };
+    return pad(+o.day) + " " + MONTHS[+o.month - 1] + " " + o.year + " " + pad(+o.hour) + ":" + o.minute + " CENTRAL";
   }
 
-  // ---- 02 TODAY'S WATCH ----
-  function renderWatch() {
-    var box = $("orientWatch");
-    if (!box) return;
-    box.textContent = "";
-    var line = el("div", "orient-line");
-    if (Date.now() >= POSTED_END) {
-      line.textContent = "NO WATCH BILL POSTED.";
-    } else {
-      var c = central(Date.now());
-      var base = c.h < 7 ? new Date(Date.UTC(c.y, c.m, c.d) - DAY) : new Date(Date.UTC(c.y, c.m, c.d));
-      var crew = crewOn(base.getUTCFullYear(), base.getUTCMonth(), base.getUTCDate());
-      var day = c.h >= 7 && c.h < 19;
-      line.appendChild(document.createTextNode("POSTED: "));
-      line.appendChild(el("b", null, crew + " CREW // " + (day ? "DAY WATCH 07:00-19:00" : "NIGHT WATCH 19:00-07:00") + " CENTRAL"));
-      line.appendChild(document.createTextNode(" "));
-      var bill = el("a", null, "[ WATCH BILL ]");
-      bill.href = "/schedule/";
-      line.appendChild(bill);
+  // ---- the pass ----
+  // GN-01..GN-10, the guest pool that is not cleared (OER_Personnel Badges).
+  function readPass() {
+    var pass = null;
+    try { pass = JSON.parse(localStorage.getItem(PASS_KEY) || "null"); } catch (e) { pass = null; }
+    if (!pass || !(pass.no >= 1 && pass.no <= 10) || !(pass.at > 0)) {
+      pass = { no: 1 + Math.floor(Math.random() * 10), at: Date.now() };
+      try { localStorage.setItem(PASS_KEY, JSON.stringify(pass)); } catch (e) {}
     }
-    box.appendChild(line);
-
-    var last = window.OER_START_LAST_WATCH;
-    if (last && last.text) {
-      box.appendChild(el("div", "orient-meta", "LAST WATCH LOG ENTRY // " + last.date + " " + last.time + " // " + last.role));
-      box.appendChild(el("blockquote", "orient-quote", last.text));
-      var more = el("a", "orient-go", "[ READ THE WATCH LOG ]");
-      more.href = "/watch/?year=" + last.date.slice(0, 4) + "&date=" + last.date;
-      box.appendChild(more);
-    }
+    return pass;
+  }
+  function renderPass() {
+    var no = $("passNo"), issued = $("passIssued");
+    if (!no || !issued) return;
+    var pass = readPass();
+    no.textContent = pad(pass.no);
+    issued.textContent = "ISSUED " + facilityTime(pass.at);
   }
 
-  // ---- 03 FROM THE BEGINNING ----
+  // ---- SUGGESTED READING ----
   var path = Array.isArray(window.OER_START_PATH) ? window.OER_START_PATH : [];
   var files = {};       // url -> Promise of records
   var maintIndex = null;
@@ -153,7 +138,7 @@
   }
 
   function start() {
-    renderWatch();
+    renderPass();
     var begin = $("orientBegin");
     if (begin) {
       if (!path.length) { begin.hidden = true; }
@@ -163,7 +148,7 @@
         renderReader();
       });
     }
-    var leave = $("orientLeave");
+    var leave = $("passLeave");
     if (leave) {
       leave.addEventListener("click", function (e) {
         var target = $("publicLog");
