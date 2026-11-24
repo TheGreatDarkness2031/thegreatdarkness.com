@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<script src="/assets/config.js"></script>
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/console.js"></script>
+<script src="/assets/nav.js"></script>
+
+<meta charset="UTF-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="OER Trouble Tickets: the IT support queue of the watch floor and engineering, 2002 to 2026, with work logs and yearly reports.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Trouble Tickets">
+<meta property="og:description" content="OER Trouble Tickets: the IT support queue of the watch floor and engineering, 2002 to 2026, with work logs and yearly reports.">
+<meta property="og:url" content="https://thegreatdarkness.com/support/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OER // Trouble Tickets</title>
+
+<style>
+/* TROUBLE TICKETS (2026-11-24): the OER intranet's ticket system, 2002-2026,
+   in the IT SUPPORT area with the Operations Wiki. Same room look as /wiki/.
+   Tickets come from /support/data/<year>.json, built and checked by
+   C:\TGD\webtools\tickets\make_tickets.js. */
+:root {
+  --muted: #8a8a8a;
+  --line: #4a4a4a;
+  --green: #7fd18b;
+  --amber: #ffb84d;
+  --red: #ff7070;
+}
+* { box-sizing: border-box; }
+html, body { min-height: 100%; margin: 0; background: #101010; color: #c4c4c4; font-family: "Courier New", Courier, monospace; }
+body { padding: 10px 12px 12px; }
+
+.office { width: 95%; max-width: 1100px; margin: 0 auto; }
+.door { text-align: center; margin: 0 0 8px; }
+.door-plate {
+  display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+  border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+}
+.door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+.door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+.door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+.office-nav { text-align: center; font-size: 0.74rem; letter-spacing: 1px; line-height: 1.9; margin: 0 0 8px; }
+.office-nav a { color: var(--green); text-decoration: none; white-space: nowrap; margin: 0 2px; padding: 1px 2px; }
+.office-nav a:hover { text-decoration: underline; }
+.office-nav a.on { color: #000; background: var(--green); }
+.desk { padding: 4px; background: #050505; border: 2px solid #888888; }
+.pane { padding: 12px 18px 18px; min-height: 420px; border: 1px inset #888888; }
+@media (min-width: 901px) and (min-height: 480px) {
+  .office { height: calc(100vh - 88px - 22px); display: flex; flex-direction: column; }
+  .desk { flex: 1; min-height: 0; display: flex; }
+  .pane { flex: 1; min-height: 0; overflow-y: auto; scrollbar-color: #555 #0a0a0a; scrollbar-width: thin; }
+  .pane::-webkit-scrollbar { width: 10px; }
+  .pane::-webkit-scrollbar-track { background: #0a0a0a; }
+  .pane::-webkit-scrollbar-thumb { background: #444; border: 1px solid #777; }
+}
+.pane h2 {
+  margin: 0 0 6px; padding-bottom: 8px; border-bottom: 1px dashed #777777; text-align: center;
+  color: #cccccc; font-size: 0.82rem; letter-spacing: 2px;
+}
+.pane h2::before { content: "=== "; }
+.pane h2::after { content: " ==="; }
+.note { color: var(--muted); font-size: 0.7rem; letter-spacing: 1px; margin: 0 0 12px; text-align: center; }
+.nopage { color: var(--red); font-size: 0.8rem; letter-spacing: 1px; text-align: center; margin: 30px 0; }
+
+/* controls */
+.controls { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px; margin: 0 0 10px; font-size: 0.72rem; }
+.controls label { color: var(--muted); letter-spacing: 1px; }
+.controls select, .controls input {
+  background: #000; color: #e8e8e8; border: 1px solid #666; padding: 2px 5px; font: inherit; font-size: 0.74rem;
+}
+.controls input { width: 180px; max-width: 46vw; }
+.controls button, .more, .sheet-nav button {
+  background: #222; color: var(--green); border: 2px outset #888; font: inherit; font-size: 0.72rem; letter-spacing: 1px; padding: 1px 8px; cursor: pointer;
+}
+.controls button:active, .more:active, .sheet-nav button:active { border-style: inset; }
+
+/* queue */
+.list { width: 100%; border-collapse: collapse; font-size: 0.74rem; }
+.list th { text-align: left; color: #fff; letter-spacing: 1px; padding: 6px 7px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.list td { padding: 4px 7px; border-bottom: 1px solid #262626; vertical-align: top; }
+.list tbody tr { cursor: pointer; }
+.list tbody tr:hover td { background: #171717; }
+.list a { color: var(--green); text-decoration: none; }
+.list a:hover { text-decoration: underline; }
+.list .id, .list .when { white-space: nowrap; }
+.list .when, .list .who { color: #a8a8a8; }
+.list .cat { white-space: nowrap; color: var(--muted); font-size: 0.68rem; letter-spacing: 1px; }
+.pri { white-space: nowrap; }
+.pri.P1 { color: var(--red); font-weight: bold; }
+.pri.P2 { color: var(--amber); }
+.st { white-space: nowrap; font-size: 0.68rem; letter-spacing: 1px; }
+.st.OPEN { color: var(--amber); }
+.more { display: block; margin: 12px auto 0; font-size: 0.74rem; padding: 3px 12px; }
+
+/* ticket sheet */
+.sheet-nav { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.sheet { max-width: 86ch; margin: 0 auto; border: 1px solid #555; background: #0b0b0b; }
+.sheet-head { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid #444; background: #161616; }
+.sheet-head .tid { color: #fff; font-size: 0.95rem; letter-spacing: 2px; font-weight: bold; }
+.sheet-head .st { font-size: 0.8rem; align-self: center; }
+.fields { display: grid; grid-template-columns: 12ch 1fr 10ch 1fr; gap: 4px 10px; padding: 10px 12px; font-size: 0.74rem; border-bottom: 1px dashed #444; }
+.fields .k { color: var(--muted); letter-spacing: 1px; }
+.fields .v { color: #e2e2e2; }
+.fields .v a { color: var(--green); text-decoration: none; }
+.fields .v a:hover { text-decoration: underline; }
+.fields .wide { grid-column: 2 / -1; }
+.ttl { padding: 10px 12px 4px; color: #fff; font-size: 0.86rem; letter-spacing: 1px; }
+.desc { padding: 0 12px 12px; font-family: Arial, Helvetica, sans-serif; font-size: 0.86rem; line-height: 1.55; color: #dcdcdc; border-bottom: 1px dashed #444; }
+.sec { padding: 8px 12px 2px; color: #cfcfcf; font-size: 0.72rem; letter-spacing: 2px; }
+.work { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin: 0 0 6px; }
+.work td { padding: 4px 12px; vertical-align: top; border-bottom: 1px solid #222; }
+.work .t { white-space: nowrap; color: #a8a8a8; width: 17ch; }
+.work .w { white-space: nowrap; color: #cfcfcf; width: 20ch; }
+.work .x { font-family: Arial, Helvetica, sans-serif; color: #e2e2e2; line-height: 1.5; }
+.empty { padding: 6px 12px 10px; color: var(--muted); font-size: 0.72rem; letter-spacing: 1px; }
+.foot { padding: 8px 12px; font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; border-top: 1px solid #333; }
+
+/* reports */
+.rep { border-collapse: collapse; font-size: 0.74rem; margin: 0 auto 14px; }
+.rep th { color: #fff; letter-spacing: 1px; padding: 5px 9px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+.rep th:first-child, .rep td:first-child { text-align: left; }
+.rep td { padding: 3px 9px; border-bottom: 1px solid #262626; text-align: right; white-space: nowrap; }
+.rep td a { color: var(--green); text-decoration: none; }
+.rep td a:hover { text-decoration: underline; }
+.rep .bar { display: inline-block; height: 8px; background: #4f8a58; vertical-align: middle; }
+.scroll-x { overflow-x: auto; }
+
+@media (max-width: 700px) {
+  .list .hide-narrow { display: none; }
+  .pane { padding: 10px 8px 14px; }
+  .fields { grid-template-columns: 11ch 1fr; }
+  .fields .wide { grid-column: 2; }
+  .work .w { width: auto; }
+  .work td { display: block; border: 0; padding: 2px 12px; }
+  .work tr { display: block; border-bottom: 1px solid #222; padding: 4px 0; }
+}
+</style>
+<style>:where(h1.oer-h1){margin:0;font-size:inherit;font-weight:inherit;line-height:inherit;letter-spacing:inherit}</style>
+</head>
+
+<body>
+<div class="office">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">OER INTRANET // IT SUPPORT</div>
+      <h1 class="door-name oer-h1">TROUBLE TICKETS</h1>
+      <div class="door-hours" id="counts">P1 AFTER HOURS: ENGINEERING DUTY PAGER, EXT 4030</div>
+    </div>
+  </div>
+  <nav class="office-nav" id="tabs">
+    <a href="?" data-view="queue">[ TICKET QUEUE ]</a>
+    <a href="?view=open" data-view="open">[ OPEN TICKETS ]</a>
+    <a href="?view=reports" data-view="reports">[ REPORTS ]</a>
+    <a href="/wiki/">[ OPS WIKI ]</a>
+  </nav>
+  <div class="desk"><div class="pane" id="pane" data-xref data-xref-ignore=".list .id, .list .who"><p class="note">LOADING TICKETS...</p></div></div>
+</div>
+
+<script>
+(function () {
+  var pane = document.getElementById("pane");
+  var INDEX = null, YEARS = {}, LOADING = {};
+  var CATS = ["CONSOLE", "WORKSTATION", "ACCOUNT", "PRINTER", "PHONE", "BADGE", "NETWORK", "MAIL", "SOFTWARE", "SERVER", "DATA",
+    "FEED", "NODE", "POWER", "FACILITIES", "SECURITY", "SYSTEM"];
+  var STATUS = ["OPEN", "CLOSED", "CLOSED - NO FAULT", "CLOSED - DUPLICATE", "CLOSED - REFERRED"];
+  var PAGE = 60;
+  var shown = PAGE;
+
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+  function link(href, text, cls) { var a = el("a", cls, text); a.href = href; return a; }
+  function params() {
+    var o = {};
+    location.search.replace(/^\?/, "").split("&").forEach(function (kv) {
+      if (!kv) return;
+      var i = kv.indexOf("=");
+      o[decodeURIComponent(i < 0 ? kv : kv.slice(0, i))] = i < 0 ? "" : decodeURIComponent(kv.slice(i + 1).replace(/\+/g, " "));
+    });
+    return o;
+  }
+  function query(o) {
+    var parts = [];
+    Object.keys(o).forEach(function (k) { if (o[k] !== "" && o[k] != null) parts.push(encodeURIComponent(k) + "=" + encodeURIComponent(o[k])); });
+    return parts.length ? "?" + parts.join("&") : location.pathname;
+  }
+  function go(url, keepScroll) {
+    history.pushState(null, "", url);
+    render();
+    if (!keepScroll) { window.scrollTo(0, 0); pane.scrollTop = 0; }
+  }
+  function person(name, id) { return id ? link("/hr/?id=" + encodeURIComponent(id), name.toUpperCase()) : el("span", null, (name || "UNASSIGNED").toUpperCase()); }
+
+  function year(y) {
+    y = String(y);
+    if (YEARS[y]) return Promise.resolve(YEARS[y]);
+    if (!LOADING[y]) {
+      LOADING[y] = fetch("/support/data/" + y + ".json", { cache: "no-cache" }).then(function (r) {
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }).then(function (d) { YEARS[y] = d.tickets; return d.tickets; });
+    }
+    return LOADING[y];
+  }
+  function allYears() { return Promise.all(INDEX.years.map(function (y) { return year(y.year); })).then(function (lists) { return [].concat.apply([], lists); }); }
+  function fail() {
+    pane.textContent = "";
+    pane.appendChild(el("h2", null, "TICKET SYSTEM UNAVAILABLE"));
+    pane.appendChild(el("p", "nopage", "THE TICKET HOST DID NOT ANSWER. USE THE PAPER TROUBLE BOOK AT THE LEAD POSITION."));
+  }
+
+  // ---------------- queue ----------------
+  function select(id, label, options, value) {
+    var w = el("span");
+    var l = el("label", null, label + " "); l.htmlFor = id;
+    var s = el("select"); s.id = id;
+    options.forEach(function (o) {
+      var op = el("option", null, o[1]); op.value = o[0];
+      if (String(o[0]) === String(value)) op.selected = true;
+      s.appendChild(op);
+    });
+    w.appendChild(l); w.appendChild(s);
+    return w;
+  }
+  function controls(q) {
+    var f = el("form", "controls");
+    var yrs = [["ALL", "ALL YEARS"]].concat(INDEX.years.map(function (y) { return [y.year, String(y.year)]; }));
+    f.appendChild(select("fy", "YEAR", yrs, q.y || INDEX.years[0].year));
+    f.appendChild(select("fc", "CATEGORY", [["", "ALL"]].concat(CATS.map(function (c) { return [c, c]; })), q.cat || ""));
+    f.appendChild(select("fs", "STATUS", [["", "ALL"]].concat(STATUS.map(function (c) { return [c, c]; })), q.st || ""));
+    var w = el("span");
+    var l = el("label", null, "SEARCH "); l.htmlFor = "fq";
+    var i = el("input"); i.id = "fq"; i.type = "text"; i.autocomplete = "off"; i.spellcheck = false; i.value = q.q || "";
+    w.appendChild(l); w.appendChild(i);
+    f.appendChild(w);
+    f.appendChild(el("button", null, "[ GO ]"));
+    function apply(e) {
+      if (e) e.preventDefault();
+      shown = PAGE;
+      go(query({ y: f.querySelector("#fy").value, cat: f.querySelector("#fc").value, st: f.querySelector("#fs").value, q: f.querySelector("#fq").value.trim() }));
+    }
+    f.addEventListener("submit", apply);
+    Array.prototype.forEach.call(f.querySelectorAll("select"), function (s) { s.addEventListener("change", apply); });
+    return f;
+  }
+  function matches(t, q) {
+    if (q.cat && t.cat !== q.cat) return false;
+    if (q.st && t.st !== q.st) return false;
+    if (q.q) {
+      var hay = (t.id + " " + t.t + " " + t.d + " " + t.by + " " + t.to + " " + t.loc + " " + t.cat + " " + (t.ml || "") + " " +
+        t.log.map(function (l) { return l[1] + " " + l[2]; }).join(" ")).toLowerCase();
+      var ok = true;
+      q.q.toLowerCase().split(/\s+/).forEach(function (w) { if (w && hay.indexOf(w) < 0) ok = false; });
+      if (!ok) return false;
+    }
+    return true;
+  }
+  function table(list, q) {
+    var t = el("table", "list");
+    var head = el("tr");
+    [["TICKET"], ["OPENED"], ["PRI"], ["CATEGORY", "hide-narrow"], ["SUMMARY"], ["REQUESTER", "hide-narrow"], ["ASSIGNED", "hide-narrow"], ["STATUS"]].forEach(function (h) {
+      head.appendChild(el("th", h[1], h[0]));
+    });
+    var th = el("thead"); th.appendChild(head); t.appendChild(th);
+    var body = el("tbody");
+    list.slice(0, shown).forEach(function (k) {
+      var tr = el("tr");
+      var id = el("td", "id"); id.appendChild(link("?t=" + k.id + (q ? "&back=" + encodeURIComponent(location.search) : ""), k.id)); tr.appendChild(id);
+      tr.appendChild(el("td", "when", k.o));
+      tr.appendChild(el("td", "pri " + k.p, k.p));
+      tr.appendChild(el("td", "cat hide-narrow", k.cat));
+      tr.appendChild(el("td", null, k.t));
+      tr.appendChild(el("td", "who hide-narrow", k.by.toUpperCase()));
+      tr.appendChild(el("td", "who hide-narrow", (k.to || "UNASSIGNED").toUpperCase()));
+      tr.appendChild(el("td", "st " + (k.st === "OPEN" ? "OPEN" : ""), k.st));
+      tr.addEventListener("click", function (e) {
+        if (e.target.closest("a")) return;
+        id.querySelector("a").click();
+      });
+      body.appendChild(tr);
+    });
+    t.appendChild(body);
+    var wrap = el("div", "scroll-x"); wrap.appendChild(t);
+    return wrap;
+  }
+  function moreButton(list, again) {
+    if (list.length <= shown) return null;
+    var b = el("button", "more", "[ SHOW " + Math.min(PAGE, list.length - shown) + " MORE OF " + (list.length - shown) + " ]");
+    b.addEventListener("click", function () { shown += PAGE; again(); });
+    return b;
+  }
+  function queueView(q) {
+    var y = q.y || String(INDEX.years[0].year);
+    pane.appendChild(el("h2", null, "TICKET QUEUE // " + (y === "ALL" ? "ALL YEARS" : y)));
+    pane.appendChild(controls(q));
+    var spot = el("div"); pane.appendChild(spot);
+    spot.appendChild(el("p", "note", "LOADING..."));
+    (y === "ALL" ? allYears() : year(y)).then(function (all) {
+      var list = all.filter(function (t) { return matches(t, q); }).sort(function (a, b) { return a.o < b.o ? 1 : a.o > b.o ? -1 : 0; });
+      function draw() {
+        spot.textContent = "";
+        spot.appendChild(el("p", "note", list.length + " TICKET" + (list.length === 1 ? "" : "S") + ", NEWEST FIRST. TIMES ARE FACILITY TIME (CENTRAL)."));
+        if (!list.length) return;
+        spot.appendChild(table(list, true));
+        var m = moreButton(list, draw);
+        if (m) spot.appendChild(m);
+      }
+      draw();
+    }).catch(fail);
+  }
+  function openView() {
+    pane.appendChild(el("h2", null, "OPEN TICKETS"));
+    var spot = el("div"); pane.appendChild(spot);
+    var yrs = INDEX.years.filter(function (y) { return y.open > 0; });
+    Promise.all(yrs.map(function (y) { return year(y.year); })).then(function (lists) {
+      var list = [].concat.apply([], lists).filter(function (t) { return t.st === "OPEN"; }).sort(function (a, b) { return a.o < b.o ? 1 : -1; });
+      spot.appendChild(el("p", "note", list.length + " OPEN. NEWEST FIRST."));
+      if (list.length) spot.appendChild(table(list, true));
+    }).catch(fail);
+  }
+
+  // ---------------- one ticket ----------------
+  function ticketView(id, q) {
+    var y = (/^TT-(\d{4})-\d{4}$/.exec(id) || [])[1];
+    var known = y && INDEX.years.some(function (x) { return String(x.year) === y; });
+    if (!known) { pane.appendChild(el("h2", null, "NO SUCH TICKET")); pane.appendChild(el("p", "nopage", id.toUpperCase() + " IS NOT ON FILE.")); return; }
+    year(y).then(function (list) {
+      var i = -1;
+      list.forEach(function (t, n) { if (t.id === id) i = n; });
+      if (i < 0) { pane.appendChild(el("h2", null, "NO SUCH TICKET")); pane.appendChild(el("p", "nopage", id + " IS NOT ON FILE.")); return; }
+      var t = list[i];
+      document.title = "OER // Trouble Tickets // " + t.id;
+      pane.appendChild(el("h2", null, "TROUBLE TICKET"));
+      var nav = el("div", "sheet-nav");
+      var back = el("button", null, "[ RETURN TO QUEUE ]");
+      back.addEventListener("click", function () { go(q.back || query({ y: y })); });
+      nav.appendChild(back);
+      var step = el("span");
+      function stepTo(n, label) {
+        var b = el("button", null, label);
+        if (n < 0 || n >= list.length) b.disabled = true;
+        else b.addEventListener("click", function () { go(query({ t: list[n].id, back: q.back || "" })); });
+        step.appendChild(b);
+        step.appendChild(document.createTextNode(" "));
+      }
+      stepTo(i - 1, "[ << PRIOR ]");
+      stepTo(i + 1, "[ NEXT >> ]");
+      nav.appendChild(step);
+      pane.appendChild(nav);
+
+      var s = el("div", "sheet");
+      var h = el("div", "sheet-head");
+      h.appendChild(el("span", "tid", t.id));
+      h.appendChild(el("span", "st " + (t.st === "OPEN" ? "OPEN" : ""), "STATUS: " + t.st));
+      s.appendChild(h);
+      var f = el("div", "fields");
+      function field(k, v, wide) {
+        f.appendChild(el("span", "k", k));
+        var d = el("span", "v" + (wide ? " wide" : ""));
+        if (typeof v === "string") d.textContent = v; else d.appendChild(v);
+        f.appendChild(d);
+      }
+      field("OPENED", t.o);
+      field("PRIORITY", t.p);
+      field("CATEGORY", t.cat);
+      field("CLOSED", t.c || "--");
+      field("REQUESTER", person(t.by, t.byId), true);
+      field("LOCATION", t.loc, true);
+      field("ASSIGNED", t.to === "FACILITIES" ? el("span", null, "FACILITIES (REFERRED, EXT 4040)") : person(t.to, t.toId), true);
+      if (t.ml) field("ENG RECORD", t.ml, true);
+      if (t.dup) { field("DUPLICATE OF", link("?t=" + t.dup, t.dup), true); }
+      s.appendChild(f);
+      s.appendChild(el("div", "ttl", t.t));
+      s.appendChild(el("div", "desc", t.d));
+      s.appendChild(el("div", "sec", "WORK LOG"));
+      if (!t.log.length) s.appendChild(el("div", "empty", "NO ENTRIES."));
+      else {
+        var w = el("table", "work");
+        t.log.forEach(function (l) {
+          var tr = el("tr");
+          tr.appendChild(el("td", "t", l[0]));
+          tr.appendChild(el("td", "w", (l[1] || "FACILITIES").toUpperCase()));
+          tr.appendChild(el("td", "x", l[2]));
+          w.appendChild(tr);
+        });
+        s.appendChild(w);
+      }
+      s.appendChild(el("div", "foot", "TIMES ARE FACILITY TIME (CENTRAL). TICKET " + (i + 1) + " OF " + list.length + " FOR " + y + "."));
+      pane.appendChild(s);
+    }).catch(fail);
+  }
+
+  // ---------------- reports ----------------
+  function reportsView() {
+    pane.appendChild(el("h2", null, "REPORTS"));
+    pane.appendChild(el("p", "note", INDEX.total + " TICKETS SINCE " + INDEX.from + ". TIME TO CLOSE = MEDIAN HOURS FROM OPENED TO CLOSED, RESOLVED TICKETS ONLY."));
+    var max = 0;
+    INDEX.years.forEach(function (y) { max = Math.max(max, y.count); });
+    var t = el("table", "rep");
+    var hr = el("tr");
+    ["YEAR", "TICKETS", "", "P1", "OPEN", "TIME TO CLOSE"].forEach(function (x) { hr.appendChild(el("th", null, x)); });
+    t.appendChild(hr);
+    INDEX.years.forEach(function (y) {
+      var tr = el("tr");
+      var a = el("td"); a.appendChild(link(query({ y: y.year }), String(y.year))); tr.appendChild(a);
+      tr.appendChild(el("td", null, String(y.count)));
+      var b = el("td"); var bar = el("span", "bar"); bar.style.width = Math.round(120 * y.count / max) + "px"; b.appendChild(bar); tr.appendChild(b);
+      tr.appendChild(el("td", null, String(y.p1)));
+      tr.appendChild(el("td", null, String(y.open)));
+      tr.appendChild(el("td", null, y.medianHours.toFixed(1) + " H"));
+      t.appendChild(tr);
+    });
+    var w1 = el("div", "scroll-x"); w1.appendChild(t); pane.appendChild(w1);
+
+    pane.appendChild(el("p", "note", "BY CATEGORY"));
+    var cats = CATS.filter(function (c) { return INDEX.years.some(function (y) { return y.cats[c]; }); });
+    var c = el("table", "rep");
+    var ch = el("tr"); ch.appendChild(el("th", null, "CATEGORY"));
+    INDEX.years.slice(0, 8).forEach(function (y) { ch.appendChild(el("th", null, String(y.year))); });
+    ch.appendChild(el("th", null, "ALL"));
+    c.appendChild(ch);
+    cats.forEach(function (cat) {
+      var tr = el("tr");
+      var a = el("td"); a.appendChild(link(query({ y: "ALL", cat: cat }), cat)); tr.appendChild(a);
+      var sum = 0;
+      INDEX.years.forEach(function (y) { sum += y.cats[cat] || 0; });
+      INDEX.years.slice(0, 8).forEach(function (y) { tr.appendChild(el("td", null, String(y.cats[cat] || 0))); });
+      tr.appendChild(el("td", null, String(sum)));
+      c.appendChild(tr);
+    });
+    var w2 = el("div", "scroll-x"); w2.appendChild(c); pane.appendChild(w2);
+  }
+
+  function render() {
+    if (!INDEX) return;
+    var q = params();
+    var view = q.t ? "" : q.view === "open" ? "open" : q.view === "reports" ? "reports" : "queue";
+    pane.textContent = "";
+    Array.prototype.forEach.call(document.querySelectorAll("#tabs a[data-view]"), function (a) {
+      a.classList.toggle("on", a.getAttribute("data-view") === view);
+    });
+    document.title = "OER // Trouble Tickets";
+    if (q.t) ticketView(q.t.toUpperCase(), q);
+    else if (view === "open") openView();
+    else if (view === "reports") reportsView();
+    else queueView(q);
+  }
+
+  document.addEventListener("click", function (e) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    var a = e.target.closest ? e.target.closest("a") : null;
+    if (!a || a.classList.contains("oer-xref")) return;
+    var href = a.getAttribute("href") || "";
+    if (href.charAt(0) !== "?") return;
+    e.preventDefault();
+    shown = PAGE;
+    go(href === "?" ? location.pathname : href);
+  });
+  window.addEventListener("popstate", render);
+
+  fetch("/support/data/index.json", { cache: "no-cache" }).then(function (r) {
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return r.json();
+  }).then(function (d) {
+    INDEX = d;
+    document.getElementById("counts").textContent = d.total + " TICKETS // P1 AFTER HOURS: ENGINEERING DUTY PAGER, EXT 4030";
+    render();
+  }).catch(fail);
+})();
+</script>
+<script src="/assets/xref.js" defer></script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>

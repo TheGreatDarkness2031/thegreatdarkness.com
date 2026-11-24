@@ -8,13 +8,15 @@
                      a name two people share is never linked)
      ML-005118       maintenance entry    -> /maintenance/?view=records&rec=
      199800001       watch log record     -> /watch/?rec=
+     TT-2014-0031    trouble ticket       -> /support/?t=
    Codes are linked only when they exist in the published lists
-   (/maintenance/projects.json, /maintenance/register.json, /hr/data.js).
+   (/maintenance/projects.json, /maintenance/register.json, /hr/data.js,
+   /support/data/index.json).
    A page marks the parts to link with data-xref; data-xref-skip="doc eng"
    leaves out kinds that would only point back at the same list. Links keep
    the page's own text colour, underlined. Nothing outside the site is read. */
 (function () {
-  var KINDS = ["eng", "doc", "emp", "name", "ml", "watch"];
+  var KINDS = ["eng", "doc", "emp", "name", "ml", "watch", "tt"];
   var SKIP_TAGS = { A: 1, BUTTON: 1, SELECT: 1, OPTION: 1, INPUT: 1, TEXTAREA: 1, SCRIPT: 1, STYLE: 1, LABEL: 1 };
   var data = null, loading = null;
 
@@ -24,9 +26,9 @@
 
   function load() {
     if (loading) return loading;
-    loading = Promise.all([getText("/maintenance/projects.json"), getText("/maintenance/register.json"), getText("/hr/data.js")])
+    loading = Promise.all([getText("/maintenance/projects.json"), getText("/maintenance/register.json"), getText("/hr/data.js"), getText("/support/data/index.json")])
       .then(function (t) {
-        var d = { eng: {}, doc: {}, emp: {}, name: {} };
+        var d = { eng: {}, doc: {}, emp: {}, name: {}, tt: {} };
         try { (JSON.parse(t[0]).projects || []).forEach(function (p) { d.eng[p.code] = 1; }); } catch (e) {}
         try { (JSON.parse(t[1]).documents || []).forEach(function (x) { d.doc[x.no] = 1; }); } catch (e) {}
         try {
@@ -38,6 +40,7 @@
           });
           (hr.people || []).forEach(function (p) { if (count[p.name] === 1 && /\s/.test(p.name)) d.name[p.name] = p.id; });
         } catch (e) {}
+        try { (JSON.parse(t[3]).years || []).forEach(function (y) { d.tt[y.year] = Number(y.last.slice(-4)); }); } catch (e) {}
         // Never the Site C / D documents (terminal only).
         ["NET-003", "NET-004", "PWR-003", "PWR-004"].forEach(function (k) { delete d.doc[k]; });
         var names = Object.keys(d.name).sort(function (a, b) { return b.length - a.length; })
@@ -48,7 +51,8 @@
           "(OER-(?:19|20)\\d\\d-\\d{3}|NX-10\\d\\d)",
           names.length ? "(" + names.join("|") + ")" : "(?!)",
           "(ML-\\d{6})",
-          "((?:199[89]|20[0-2]\\d)\\d{5})"
+          "((?:199[89]|20[0-2]\\d)\\d{5})",
+          "(TT-20[0-2]\\d-\\d{4})"
         ];
         d.re = new RegExp("(?<![\\w-])(?:" + parts.join("|") + ")(?![\\w-])", "g");
         data = d;
@@ -65,6 +69,10 @@
     if (m[4] && data.name[m[4]]) return { kind: "name", href: "/hr/?id=" + encodeURIComponent(data.name[m[4]]) };
     if (m[5]) return { kind: "ml", href: "/maintenance/?view=records&rec=" + Number(m[5].slice(3)) };
     if (m[6]) return { kind: "watch", href: "/watch/?rec=" + m[6] };
+    if (m[7]) {
+      var n = Number(m[7].slice(8)), top = data.tt[m[7].slice(3, 7)];
+      return top && n >= 1 && n <= top ? { kind: "tt", href: "/support/?t=" + m[7] } : null;
+    }
     return null;
   }
 

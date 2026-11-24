@@ -19,7 +19,10 @@
     ["SCHEDULE", "/schedule/"],
     ["ENGINEERING", "/maintenance/?view=projects"],
     ["PERSONNEL", "/hr/"],
-    ["OPS WIKI", "/wiki/"],
+    ["IT SUPPORT", [
+      ["TROUBLE TICKETS", "/support/"],
+      ["OPS WIKI", "/wiki/"]
+    ]],
     ["RADAR", "/radar/"],
     ["MONITORS", [
       ["SEISMIC", "/monitor/quake/"],
@@ -52,7 +55,7 @@
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
   // Screens sized to fit the window exactly: no footer below them.
-  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/", "/maintenance/", "/watch/", "/wiki/"];
+  var NO_FOOTER = ["/radar/", "/terminal/", "/schedule/", "/hr/", "/floor/", "/maintenance/", "/watch/", "/wiki/", "/support/"];
   var framed = !window.OER_NO_FRAME;
 
   function el(tag, cls, text) {
