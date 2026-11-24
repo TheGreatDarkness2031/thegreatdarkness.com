@@ -28,7 +28,7 @@
     J_PER_KCAL: 4184,
     // Thresholds.
     WATER_THIRSTY: 1.5, WATER_WEAK: 3, WATER_CONFUSED: 5, WATER_DEAD: 7,
-    KCAL_LOW: 2500, KCAL_VERY_LOW: 5000,
+    KCAL_LOW: 2500, KCAL_VERY_LOW: 5000, KCAL_STARVING: 10000, KCAL_WASTING: 20000,
     CORE_COLD: 36.0, CORE_MILD: 35.0, CORE_SEVERE: 32.0, CORE_DEAD: 28.0,
     SLEEP_TIRED: 4, SLEEP_EXHAUSTED: 8, SLEEP_SPENT: 14,
     STEP_MIN: 5
@@ -48,7 +48,7 @@
       injuries: (opts.injuries || []).slice(),
       illnesses: (opts.illnesses || []).slice(),
       alive: true,
-      cause: null,          // DEHYDRATION | HYPOTHERMIA | INJURY | ILLNESS
+      cause: null,          // DEHYDRATION | HYPOTHERMIA | INFECTION
       diedAtMin: null
     };
   }
@@ -97,7 +97,8 @@
   function shiverFor(body, activity) {
     if (body.coreC >= 36.8 || body.coreC <= C.CORE_SEVERE) return 0;
     var s = C.SHIVER_MAX_W * clamp((36.8 - body.coreC) / 1.0, 0, 1);
-    if (body.kcalDeficit > C.KCAL_VERY_LOW) s *= 0.4;
+    if (body.kcalDeficit > C.KCAL_STARVING) s *= 0.3;
+    else if (body.kcalDeficit > C.KCAL_VERY_LOW) s *= 0.4;
     else if (body.kcalDeficit > C.KCAL_LOW) s *= 0.7;
     if (body.waterShortL > C.WATER_WEAK) s *= 0.8;
     if (activity === "sleep") s *= 0.6;   // a sleeper shivers less, and wakes cold
@@ -126,6 +127,7 @@
 
     // Food.
     b.kcalDeficit += ((C.KCAL_H[activity] || C.KCAL_H.rest) + b.shiverW * 3600 / C.J_PER_KCAL) * hrs;
+    b.illnesses.forEach(function (ill) { if (ill.active) b.kcalDeficit += (ill.kcalLH || 0) * hrs; });
 
     // Sleep: owed rises 0.5 h per hour awake; good sleep pays 1 h per hour,
     // cold sleep half, very cold a quarter.
@@ -190,6 +192,8 @@
     if (body.waterShortL >= C.WATER_WEAK) slow *= 1.25;
     if (body.waterShortL >= C.WATER_CONFUSED) { fumble += 0.25; }
     if (body.kcalDeficit >= C.KCAL_LOW) slow *= 1.15;
+    if (body.kcalDeficit >= C.KCAL_STARVING) { slow *= 1.2; fumble += 0.05; }
+    if (body.kcalDeficit >= C.KCAL_WASTING) slow *= 1.15;
     if (body.coreC < C.CORE_MILD) { slow *= 1.3; fumble += 0.3; }
     else if (body.coreC < C.CORE_COLD) { fumble += 0.1; }
     if (body.sleepOwedH >= C.SLEEP_SPENT) { slow *= 1.3; fumble += 0.25; }
@@ -207,7 +211,7 @@
     var w = body.waterShortL, k = body.kcalDeficit, c = body.coreC, s = body.sleepOwedH, wet = body.wetPct;
     return {
       water: w >= C.WATER_CONFUSED ? "SEVERELY DEHYDRATED" : w >= C.WATER_WEAK ? "DEHYDRATED" : w >= C.WATER_THIRSTY ? "THIRSTY" : "OK",
-      food: k >= C.KCAL_VERY_LOW ? "STARVING" : k >= C.KCAL_LOW ? "WEAK FROM HUNGER" : k >= 1200 ? "HUNGRY" : "OK",
+      food: k >= C.KCAL_WASTING ? "WASTING" : k >= C.KCAL_STARVING ? "STARVING" : k >= C.KCAL_VERY_LOW ? "VERY WEAK FROM HUNGER" : k >= C.KCAL_LOW ? "WEAK FROM HUNGER" : k >= 1200 ? "HUNGRY" : "OK",
       temp: c < C.CORE_SEVERE ? "SEVERE HYPOTHERMIA" : c < C.CORE_MILD ? "HYPOTHERMIC" : c < C.CORE_COLD ? "SHIVERING" : c < 36.6 ? "COLD" : "OK",
       wet: wet >= 70 ? "SOAKED" : wet >= 35 ? "WET" : wet >= 10 ? "DAMP" : "DRY",
       sleep: s >= C.SLEEP_SPENT ? "SPENT" : s >= C.SLEEP_EXHAUSTED ? "EXHAUSTED" : s >= C.SLEEP_TIRED ? "TIRED" : "RESTED"

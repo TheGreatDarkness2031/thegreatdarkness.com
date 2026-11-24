@@ -10,7 +10,6 @@
     // Clock (clock.js reads these).
     startHour: 12, startMinute: 0, year: 2026, month: 9, day: 24,
     sunrise: "07:30", sunset: "18:15",
-    rescueHour: 72,
 
     // The player at the start: where, what they know, what they carry.
     start: {
@@ -27,7 +26,6 @@
       leanto:   { name: "LEAN-TO",    clo: 0.3, wind: 0.6,  rain: 0.7, bed: 0.5, reflector: true },
       overhang: { name: "ROCK OVERHANG", clo: 0.1, wind: 0.4, rain: 0.95, bed: 0 }
     },
-    searchStartsHour: 48,
 
     // Zones. micro = how the place changes the open-ground weather:
     //   wind / rain: share that reaches you; dayC: air difference by day;
@@ -100,9 +98,21 @@
       [60,   -1,  5,  0,    0],
       [66,   -2,  4,  0,    0],
       [69,    2,  6,  0,    0.1],
-      [72,    6,  8,  0,    0.2],
-      [120,   8,  8,  0,    0.2]
+      [72,    6,  8,  0,    0.2]
     ],
+    // After the scripted days the seed writes the weather (world.js frames()).
+    generated: { untilHours: 400, highC: 11, coolPerDay: 0.25, swingC: 6, frontChance: 0.35 },
+
+    // Difficulty = how long until rescue (owner, 2026-11-24). The search starts
+    // at searchH; from halfway to rescueH a ground team can find you, sooner if
+    // you are findable; a search plane that sees your smoke brings them in about
+    // 2 h. At rescueH they reach you if you are alive. LOST hides the times.
+    levels: {
+      short:    { name: "SHORT",    rescueH: 48,  searchH: 24,  scoreMult: 0.5, blurb: "Two days. One cold night, one wet one. Learn the basics." },
+      standard: { name: "STANDARD", rescueH: 72,  searchH: 48,  scoreMult: 1,   blurb: "Three days. Shelter, fire and water all matter." },
+      long:     { name: "LONG",     rescueH: 168, searchH: 96,  scoreMult: 2,   blurb: "A week. Food runs short, wood runs out near camp, the water catches up with you." },
+      lost:     { name: "LOST",     rescueH: 336, searchH: 192, scoreMult: 3,   hidden: true, blurb: "Two weeks, maybe. Nobody tells you when they are coming." }
+    },
 
     // Creek: rain fills it, it drains slowly; the bottomland floods above floodAt.
     creek: { fill: 0.5, drainHours: 16, floodAt: 1.2 },
@@ -120,11 +130,11 @@
         text: "A gust brings a dead limb down with a crack, close enough to hear it hit.",
         data: { adds: { "large branch": 1 } } },
       { id: "AIRCRAFT", slot: 120, chance: 0.4,
-        when: function (w) { return !w.dark && w.cloud < 0.8 && w.hour < 48; },
+        when: function (w, ctx) { return !w.dark && w.cloud < 0.8 && w.hour < (ctx.searchH || 48); },
         text: "A jet drones high overhead, far too high to see you.",
         data: { signal: false } },
       { id: "SEARCH_AIRCRAFT", slot: 90, chance: 0.5,
-        when: function (w) { return !w.dark && w.cloud < 0.9 && w.hour >= 48; },
+        when: function (w, ctx) { return !w.dark && w.cloud < 0.9 && w.hour >= (ctx.searchH || 48); },
         text: "A small plane passes low over the trees, slow, turning in a wide circle.",
         data: { signal: true } },
       { id: "COYOTES", slot: 180, chance: 0.2,

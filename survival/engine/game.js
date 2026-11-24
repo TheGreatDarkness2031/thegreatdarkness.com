@@ -60,10 +60,14 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function copy(o) { return JSON.parse(JSON.stringify(o)); }
 
-  function newGame(scenario, seed) {
+  function newGame(scenario, seed, level) {
     var st = scenario.start;
+    level = level && scenario.levels[level] ? level : "standard";
     var g = {
-      v: 1, scenario: scenario.id, seed: seed != null ? seed : World.newSeed(),
+      v: 1, scenario: scenario.id, level: level, seed: seed != null ? seed : World.newSeed(),
+      order: "REST", actions: [],
+      stats: { coldestC: 37, hypoMin: 0, severeAt: null, maxWaterShort: 0, thirstyAt: null, drinks: 0, kcalEaten: 0,
+               wettest: 0, nightsWarm: 0, nightsCold: 0, rawCrayfish: false, untreatedDrinks: 0 },
       min: 0, n: 0, trips: 0, zone: st.zone,
       known: st.known.slice(), visited: [st.zone],
       body: Body.newBody(st.body),
@@ -79,6 +83,58 @@
     };
     log(g, "You wake in leaf litter at the edge of a clearing. Your head aches and you are thirsty. You don't know where you are.");
     return g;
+  }
+
+  function levelOf(g, scenario) { return scenario.levels[g.level] || scenario.levels.standard; }
+
+  // ---- rescue ----
+  // Checked on every whole game hour. Spotted by a search plane: a team reaches
+  // you about 2 h later (never before the search is 3 h old). Ground search:
+  // from halfway between the search start and the rescue hour, a chance each hour
+  // that grows with how findable you are. At the rescue hour they reach you.
+  function findability(g, scenario) {
+    var z = scenario.zones[g.zone], f = 0.04, why = [];
+    if (z.open) { f += 0.06; why.push("in the open"); }
+    if (g.zone === scenario.start.zone) { f += 0.08; why.push("near where you went missing"); }
+    if (g.signals.marker) { f += 0.06; why.push("a ground marker"); }
+    if (fireAt(g, g.zone) === "burning") { f += 0.04; why.push("a fire going"); }
+    return { chance: f, why: why };
+  }
+
+  function checkRescue(g, scenario, hour) {
+    var L = levelOf(g, scenario), t = hour * 60;
+    if (g.over || hour < L.searchH) return;
+    var rescueAt = null, how = null;
+    if (g.flags.spottedAt != null) {
+      var due = Math.max(g.flags.spottedAt + 120, (L.searchH + 3) * 60);
+      if (t >= due) { rescueAt = t; how = "SPOTTED"; }
+    }
+    var mid = L.searchH + (L.rescueH - L.searchH) / 2;
+    if (rescueAt === null && hour >= mid && World.roll(g.seed, "found", hour) < findability(g, scenario).chance) { rescueAt = t; how = "GROUND SEARCH"; }
+    if (rescueAt === null && hour >= L.rescueH) { rescueAt = t; how = "GROUND SEARCH"; }
+    if (rescueAt === null) return;
+    g.min = rescueAt;
+    g.over = { result: "RESCUED", how: how, atMin: rescueAt };
+    log(g, how === "SPOTTED"
+      ? "The thud of rotor blades, then orange jackets coming through the trees, calling your name. They saw your smoke."
+      : "A voice, then another, calling your name. Two people in orange vests push through the brush and stop when they see you. \"We've got you.\"", rescueAt);
+  }
+
+  function spot(g, scenario, atMin, text) {
+    if (g.flags.spottedAt != null) return;
+    g.flags.spottedAt = atMin;
+    log(g, text || "The plane banks hard, comes back low and rocks its wings over you. They've seen you.", atMin);
+  }
+
+  // A search plane passing: smoke in the air, a ground marker, a fire in the open.
+  function planePass(g, scenario, atMin) {
+    g.flags.planes = (g.flags.planes || []).concat([atMin]);
+    var smoke = g.signals.smoke.some(function (s) { return s <= atMin && atMin - s <= 40; });
+    var z = scenario.zones[g.zone];
+    var r = World.roll(g.seed, "pass", atMin);
+    if (smoke) return spot(g, scenario, atMin);
+    if (g.signals.marker && r < 0.3) return spot(g, scenario, atMin, "The plane circles twice over the clearing, low, and rocks its wings. They've seen your marker.");
+    if (z.open && fireAt(g, g.zone) === "burning" && r < 0.15) return spot(g, scenario, atMin);
   }
 
   function worldOf(g, scenario) { return World.newWorld(scenario, g.seed); }
@@ -169,20 +225,62 @@
       var w = World.conditions(world, g.zone, t);
       burnFires(g, scenario, world, t, dt);
       dampGear(g, w, sh, dt, extra.fireW > 0);
+      heal(g, t + dt);
+      track(g, t, dt);
       g.min += dt;
+      if (!g.body.alive) break;
+      for (var h = Math.floor(t / 60) + 1; h <= Math.floor(g.min / 60); h++) { checkRescue(g, scenario, h); if (g.over) break; }
+      if (g.over) break;
     }
-    if (!g.body.alive) {
+    if (!g.body.alive && !g.over) {
       g.min = g.body.diedAtMin != null ? g.body.diedAtMin : g.min;
       g.over = { result: "DEAD", cause: g.body.cause, atMin: g.min };
     }
-    var evs = World.events(world, start, g.min, { zone: g.zone, inShelter: inShelter });
+    var evs = World.events(world, start, g.min, { zone: g.zone, inShelter: inShelter, searchH: levelOf(g, scenario).searchH });
+    var outEvs = [];
     evs.forEach(function (e) {
+      if (g.over && e.atMin > g.over.atMin) return;
       if (e.data && e.data.adds) Object.keys(e.data.adds).forEach(function () { pile(g, g.zone).fuel += 1; });
       if (e.data && e.data.hint && g.known.indexOf(e.data.hint) < 0) { g.known.push(e.data.hint); }
-      if (e.data && e.data.signal) g.flags.searchSeen = (g.flags.searchSeen || 0) + 1;
       log(g, e.text, e.atMin);
+      if (e.data && e.data.signal) planePass(g, scenario, e.atMin);
+      outEvs.push(e);
     });
-    return evs;
+    g.journal.sort(function (a, b) { return a.min - b.min; });
+    return outEvs;
+  }
+
+  // Injuries heal; an uncleaned cut can turn bad (infection, then blood poisoning).
+  function heal(g, t) {
+    g.body.injuries.forEach(function (i) {
+      if (i.healed) return;
+      if (i.kind === "CUT HAND" && !i.cleaned && i.infectAt == null && t - i.atMin >= 6 * 60) {
+        i.infectAt = World.roll(g.seed, "infect", i.atMin) < 0.35 ? i.atMin + 48 * 60 : -1;
+      }
+      if (i.kind === "CUT HAND" && i.infectAt > 0 && !i.cleaned && t >= i.infectAt) {
+        i.kind = "INFECTED CUT"; i.infectedAt = t; i.healMin = null;
+        g.body.illnesses.push({ kind: "FEVER", active: true, waterLH: 0.04, kcalLH: 40, endMin: Infinity, from: "cut" });
+        log(g, "Your hand is hot, swollen and throbbing, red streaking up from the cut. You feel feverish.", t);
+      }
+      if (i.kind === "INFECTED CUT" && t - i.infectedAt >= 5 * 24 * 60 && !i.spread) {
+        i.spread = true; i.deathAt = t + 48 * 60;
+        log(g, "Red lines have spread up past your wrist. Shaking chills come and go. This is getting serious.", t);
+      }
+      if (i.kind === "INFECTED CUT" && i.deathAt && t >= i.deathAt && g.body.alive) {
+        g.body.alive = false; g.body.cause = "INFECTION"; g.body.diedAtMin = t;
+      }
+      if (i.healMin != null && t >= i.healMin) { i.healed = true; log(g, i.kind === "SPRAINED ANKLE" ? "Your ankle takes your weight again." : i.kind === "BLISTERED FEET" ? "The blisters on your feet have dried and toughened." : "The cut on your hand has closed.", i.healMin); }
+    });
+  }
+
+  function track(g, t, dt) {
+    var st = g.stats, b = g.body, sc = null;
+    if (b.coreC < st.coldestC) st.coldestC = b.coreC;
+    if (b.coreC < 35) st.hypoMin += dt;
+    if (b.coreC < 32 && st.severeAt == null) st.severeAt = { min: t + dt, zone: g.zone, wet: b.wetPct, shelter: !!g.inShelter, fire: fireAt(g, g.zone) };
+    if (b.waterShortL > st.maxWaterShort) st.maxWaterShort = b.waterShortL;
+    if (b.waterShortL >= 5 && st.thirstyAt == null) st.thirstyAt = t + dt;
+    if (b.wetPct > st.wettest) st.wettest = b.wetPct;
   }
 
   function burnFires(g, scenario, world, t, dt) {
@@ -226,12 +324,12 @@
   function startIllnesses(g, t) {
     g.pending = g.pending.filter(function (p) {
       if (p.onsetMin > t) return true;
-      g.body.illnesses.push({ kind: p.kind, active: true, waterLH: p.waterLH, endMin: p.onsetMin + p.hours * 60 });
+      g.body.illnesses.push({ kind: p.kind, active: true, waterLH: p.waterLH, kcalLH: p.kcalLH || 0, endMin: p.onsetMin + p.hours * 60 });
       log(g, p.text, p.onsetMin);
       return false;
     });
     g.body.illnesses.forEach(function (i) {
-      if (i.active && i.endMin <= t) { i.active = false; log(g, "Your stomach has settled.", i.endMin); }
+      if (i.active && i.endMin <= t) { i.active = false; if (i.kind !== "FEVER") log(g, "Your stomach has settled.", i.endMin); }
     });
   }
 
@@ -261,7 +359,13 @@
     var before = g.min, logFrom = g.journal.length;
     var r = function (key) { return World.roll(g.seed, "act", g.n, id, key || ""); };
     var text;
-    if (def.travel) {
+    g.actions.push(arg != null ? [id, arg] : [id]);
+    // A confused or exhausted mind slips now and then.
+    var slip = (c.e.confused || g.body.sleepOwedH >= Body.C.SLEEP_SPENT) && !def.fixedTime && r("slip") < 0.15;
+    if (slip) {
+      advance(g, scenario, 15, "rest");
+      text = g.over ? null : "You meant to " + def.name.toLowerCase() + ", but you lose the thread and find yourself sitting, staring at nothing.";
+    } else if (def.travel) {
       text = def.travel(g, c, arg, r);
     } else {
       var mins = typeof def.minutes === "function" ? def.minutes(g, c, arg) : def.minutes;
@@ -274,13 +378,14 @@
     }
     g.n++;
     if (text) log(g, text);
-    if (g.over && g.over.result === "DEAD") log(g, deathText(g.over.cause));
+    if (g.over && g.over.result === "DEAD" && !g.over.logged) { g.over.logged = true; log(g, deathText(g.over.cause)); }
     return { ok: true, text: text, minutes: g.min - before, journal: g.journal.slice(logFrom), over: g.over };
   }
 
   function deathText(cause) {
     return cause === "HYPOTHERMIA" ? "The cold has taken you. You stopped shivering a while ago, and you stopped caring soon after."
       : cause === "DEHYDRATION" ? "Without water your body has given out."
+      : cause === "INFECTION" ? "The infection from the cut has gone into your blood. Your body could not fight it alone."
       : "You did not survive.";
   }
 
@@ -319,7 +424,7 @@
 
   var api = {
     ITEMS: ITEMS, CARRY_MAX: CARRY_MAX, TINDER: TINDER, FIRE: FIRE,
-    newGame: newGame, perform: perform, advance: advance, available: available, status: status,
+    newGame: newGame, perform: perform, advance: advance, levelOf: levelOf, findability: findability, spot: spot, deathText: deathText, available: available, status: status,
     effects: effects, fireAt: fireAt, fireBurning: fireBurning, shelterHere: shelterHere, fireHeat: fireHeat,
     has: has, add: add, pile: pile, near: near, useNear: useNear, carried: carried, room: room,
     gatherDamp: gatherDamp, mixDamp: mixDamp, log: log, worldOf: worldOf,

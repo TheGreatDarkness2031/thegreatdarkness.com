@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="description" content="SURVIVAL: a text survival game. Stay alive until rescue.">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<title>SURVIVAL</title>
+<style>
+  :root { --bg: #050805; --fg: #c8d0c8; --dim: #8f998f; --green: #4dff88; --amber: #ffb000; --red: #ff6b6b; --cyan: #6fe3ff; --line: #2c3a2c; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--fg); font: 15px/1.45 "Lucida Console", "Courier New", monospace; }
+  body { min-height: 100vh; }
+  a { color: var(--green); }
+  button { font: inherit; cursor: pointer; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 14px 14px 24px; }
+  header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 18px; border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 12px; }
+  h1 { margin: 0; font-size: 22px; letter-spacing: 6px; color: var(--green); }
+  .tag { color: var(--dim); font-size: 13px; }
+  .links { font-size: 13px; }
+  .links a { margin-left: 10px; }
+  .panel { border: 1px solid var(--line); background: #070b07; padding: 10px 12px; margin-bottom: 12px; }
+  .panel h2 { margin: 0 0 8px; font-size: 13px; letter-spacing: 2px; color: var(--amber); font-weight: normal; }
+  .topline { color: var(--green); font-size: 16px; }
+  .search { color: var(--cyan); font-size: 13px; margin-top: 2px; }
+  .grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .grid { grid-template-columns: 1fr; } }
+  .status { display: grid; grid-template-columns: max-content 1fr; gap: 2px 14px; font-size: 14px; }
+  .status .k { color: var(--dim); }
+  .ok { color: var(--green); } .warn { color: var(--amber); } .bad { color: var(--red); }
+  .sit { font-size: 15px; }
+  ol.acts { margin: 0; padding: 0; list-style: none; columns: 2; column-gap: 10px; }
+  @media (max-width: 560px) { ol.acts { columns: 1; } }
+  ol.acts li { break-inside: avoid; margin: 0 0 4px; }
+  ol.acts button { width: 100%; text-align: left; background: #0b120b; color: var(--fg); border: 1px solid var(--line); padding: 6px 8px; }
+  ol.acts button:hover, ol.acts button:focus-visible { border-color: var(--green); color: #fff; }
+  ol.acts .n { color: var(--green); display: inline-block; min-width: 2.4em; }
+  ol.acts .m { color: var(--dim); float: right; margin-left: 6px; }
+  .prompt { display: flex; gap: 8px; margin-top: 10px; }
+  .prompt label { color: var(--green); align-self: center; }
+  .prompt input { flex: 1; min-width: 0; background: #000; color: var(--green); border: 1px solid var(--line); padding: 7px 8px; font: inherit; }
+  .prompt input:focus { outline: 2px solid var(--amber); outline-offset: 1px; }
+  .reply { margin-top: 8px; min-height: 1.4em; }
+  .reply.err { color: var(--amber); }
+  .order { margin-top: 10px; font-size: 13px; color: var(--dim); display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .order select { background: #000; color: var(--fg); border: 1px solid var(--line); font: inherit; padding: 4px; }
+  .journal { max-height: 430px; overflow-y: auto; font-size: 13.5px; }
+  .journal div { margin-bottom: 4px; }
+  .journal .t { color: var(--dim); margin-right: 8px; }
+  .journal .away { color: var(--dim); }
+  .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+  .tabs button { background: none; border: 1px solid var(--line); color: var(--dim); padding: 3px 10px; }
+  .tabs button[aria-selected="true"] { color: var(--green); border-color: var(--green); }
+  ul.plain { margin: 0; padding-left: 18px; }
+  .awaybox { border: 1px solid var(--amber); background: #120d00; }
+  .awaybox h2 { color: var(--amber); }
+  .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
+  .levels button { display: flex; flex-direction: column; justify-content: flex-start; text-align: left; background: #0b120b; color: var(--fg); border: 1px solid var(--line); padding: 12px; }
+  .levels button:hover, .levels button:focus-visible { border-color: var(--green); }
+  .levels b { color: var(--green); display: block; font-weight: normal; letter-spacing: 3px; margin-bottom: 4px; }
+  .levels .time { color: var(--amber); font-size: 13px; }
+  .big { background: #0b120b; color: var(--green); border: 1px solid var(--green); padding: 9px 16px; margin: 4px 8px 4px 0; }
+  .quiet { background: none; color: var(--dim); border: 1px solid var(--line); padding: 6px 12px; margin: 4px 8px 4px 0; }
+  .intro p { margin: 0 0 10px; max-width: 760px; }
+  .game-not-training { color: var(--dim); font-size: 13px; }
+  .end h2 { font-size: 20px; letter-spacing: 6px; }
+  .end .score { color: var(--green); font-size: 18px; margin: 8px 0; }
+  .best td, .best th { padding: 2px 12px 2px 0; text-align: left; font-weight: normal; }
+  .best th { color: var(--dim); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>SURVIVAL</h1>
+    <span class="tag">The world doesn't care if you're ready.</span>
+    <span class="links"><a href="#" id="helpLink">HOW TO PLAY</a><a href="/">TGD HOME</a></span>
+  </header>
+
+  <!-- New game / continue -->
+  <section id="titleScreen" hidden>
+    <div class="panel intro">
+      <h2>SCENARIO 1 // TREELINE</h2>
+      <p>You wake in leaf litter at the edge of a clearing in a hardwood forest, late October. A T-shirt, a hoodie, jeans, sneakers, a wool blanket. Nothing in your pockets. Someone will report you missing. Stay alive until they find you.</p>
+      <p>Time moves only when you act. When you leave, the world keeps going at a quarter of real time (an 8-hour day away is 2 hours out there) and you follow your standing order. Death is permanent.</p>
+      <p class="game-not-training">This is a game, not survival training. The rules follow real outdoor and search-and-rescue guidance as closely as a game can, but do not rely on it in the field.</p>
+      <div id="continueBox" hidden><button class="big" id="continueBtn">CONTINUE</button><span id="continueInfo" class="tag"></span></div>
+    </div>
+    <div class="panel">
+      <h2 id="levelsTitle">NEW GAME // CHOOSE HOW LONG UNTIL RESCUE</h2>
+      <div class="levels" id="levels"></div>
+      <p class="tag" id="abandonNote" hidden>Starting a new game ends the one in progress.</p>
+    </div>
+    <div class="panel" id="bestPanel" hidden><h2>YOUR BEST RUNS (THIS BROWSER)</h2><table class="best" id="bestTable"></table></div>
+  </section>
+
+  <!-- Playing -->
+  <section id="playScreen" hidden>
+    <div class="panel">
+      <div class="topline" id="topLine"></div>
+      <div class="search" id="searchLine"></div>
+    </div>
+    <div class="panel awaybox" id="awayBox" hidden>
+      <h2 id="awayTitle">WHILE YOU WERE AWAY</h2>
+      <div id="awayLines" class="journal"></div>
+      <button class="quiet" id="awayClose">OK</button>
+    </div>
+    <div class="grid">
+      <div>
+        <div class="panel">
+          <h2>STATUS</h2>
+          <div class="status" id="status"></div>
+        </div>
+        <div class="panel">
+          <h2>SITUATION</h2>
+          <div class="sit" id="situation"></div>
+        </div>
+        <div class="panel">
+          <h2>WHAT YOU CAN DO</h2>
+          <ol class="acts" id="acts"></ol>
+          <form class="prompt" id="prompt" autocomplete="off">
+            <label for="cmd">&gt;</label>
+            <input id="cmd" type="text" placeholder="type what you want to do, or a number" aria-label="Command">
+          </form>
+          <div class="reply" id="reply" aria-live="polite"></div>
+          <div class="order">
+            <label for="order">WHILE YOU'RE AWAY:</label>
+            <select id="order"></select>
+            <span id="orderBlurb"></span>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="tabs" role="tablist">
+            <button role="tab" aria-selected="true" data-tab="journal">JOURNAL</button>
+            <button role="tab" aria-selected="false" data-tab="inventory">CARRYING</button>
+            <button role="tab" aria-selected="false" data-tab="map">MAP</button>
+            <button role="tab" aria-selected="false" data-tab="help">HELP</button>
+          </div>
+          <div id="tab-journal" class="journal" tabindex="0" aria-label="Journal"></div>
+          <div id="tab-inventory" hidden></div>
+          <div id="tab-map" hidden></div>
+          <div id="tab-help" hidden></div>
+        </div>
+        <button class="quiet" id="newGameBtn">NEW GAME</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- The end -->
+  <section id="endScreen" hidden>
+    <div class="panel end">
+      <h2 id="endTitle"></h2>
+      <div id="endLines"></div>
+      <div class="score" id="endScore"></div>
+      <div id="endRight"></div>
+      <div id="endWrong"></div>
+      <div id="endAfter"></div>
+      <p><button class="big" id="againBtn">NEW GAME</button><button class="quiet" id="endJournalBtn">READ THE JOURNAL</button></p>
+      <div id="endJournal" class="journal" hidden></div>
+    </div>
+  </section>
+</div>
+<script src="/survival/engine/body.js"></script>
+<script src="/survival/engine/clock.js"></script>
+<script src="/survival/engine/world.js"></script>
+<script src="/survival/engine/treeline.js"></script>
+<script src="/survival/engine/game.js"></script>
+<script src="/survival/engine/actions.js"></script>
+<script src="/survival/engine/session.js"></script>
+<script src="/survival/engine/parser.js"></script>
+<script src="/survival/app.js"></script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>

@@ -75,12 +75,22 @@
     return parts.join(" ");
   }
 
-  function scheduleIllness(g, r, chance, onsetFrom, onsetTo, why) {
-    if (g.pending.length || g.body.illnesses.some(function (i) { return i.active; })) return;
-    if (r("ill") >= chance) return;
-    var onset = g.min + Math.round((onsetFrom + r("onset") * (onsetTo - onsetFrom)) * 60);
-    g.pending.push({ kind: "STOMACH ILLNESS", onsetMin: onset, hours: 24, waterLH: 0.15, why: why,
-                     text: "Cramps fold you over. Your stomach is turning itself out; you are losing water fast." });
+  // Quick stomach bugs show in 12-48 h. Giardia (a parasite common in clean-looking
+  // streams) takes 1-2 weeks, so in a short game it only shows in the epilogue.
+  var ILLS = {
+    "STOMACH ILLNESS": { hours: 24, waterLH: 0.15, kcalLH: 0, text: "Cramps fold you over. Your stomach is turning itself out; you are losing water fast." },
+    "GIARDIA": { hours: 240, waterLH: 0.08, kcalLH: 60, text: "Your gut churns with foul gas and cramps that come in waves. Something you drank days ago has caught up with you." }
+  };
+  function scheduleIllness(g, r, kind, chance, onsetFrom, onsetTo, why) {
+    var busy = g.pending.some(function (p) { return p.kind === kind; }) || g.body.illnesses.some(function (i) { return i.kind === kind; });
+    if (busy || r("ill" + kind) >= chance) return;
+    var I = ILLS[kind], onset = g.min + Math.round((onsetFrom + r("onset" + kind) * (onsetTo - onsetFrom)) * 60);
+    g.pending.push({ kind: kind, onsetMin: onset, hours: I.hours, waterLH: I.waterLH, kcalLH: I.kcalLH, why: why, text: I.text });
+  }
+  function untreatedWater(g, r, why) {
+    g.stats.untreatedDrinks++;
+    scheduleIllness(g, r, "STOMACH ILLNESS", 0.06, 12, 48, why);
+    scheduleIllness(g, r, "GIARDIA", 0.04, 7 * 24, 14 * 24, why);
   }
 
   function injure(g, kind, text) {
@@ -138,10 +148,12 @@
       } },
 
     // ---- gathering ----
-    { id: "gather_wood", name: "Gather firewood", verbs: ["gather wood", "collect wood", "get firewood", "gather firewood", "find wood"], minutes: 30, gather: true,
-      need: function (g, c) { if (!res(c, "fuel")) return "There's no dead wood worth carrying here."; return fuelLeft(g, c) > 0 ? null : "You have already picked up all the dead wood near here."; },
-      run: function (g, c) { g.taken[g.zone] = (g.taken[g.zone] || 0) + 1; gatherTo(g, c, "fuel", 1, "fuel");
-        return "You drag in an armload of dead branches and stack it here." + (g.damp.fuel > 0.4 ? " It's wet." : ""); } },
+    { id: "gather_wood", name: "Gather firewood", verbs: ["gather wood", "collect wood", "get firewood", "gather firewood", "find wood"], gather: true,
+      // In the big woods there is always more, but once the near wood is gone it is a long walk.
+      minutes: function (g, c) { return fuelLeft(g, c) > 0 ? 30 : 60; },
+      need: function (g, c) { if (!res(c, "fuel")) return "There's no dead wood worth carrying here."; return fuelLeft(g, c) > 0 || res(c, "ridgepole") ? null : "You have already picked up all the dead wood near here."; },
+      run: function (g, c) { var far = fuelLeft(g, c) <= 0; g.taken[g.zone] = (g.taken[g.zone] || 0) + 1; gatherTo(g, c, "fuel", 1, "fuel");
+        return (far ? "The near wood is long gone. You range out and drag back an armload of dead branches." : "You drag in an armload of dead branches and stack it here.") + (g.damp.fuel > 0.4 ? " It's wet." : ""); } },
     { id: "gather_kindling", name: "Gather kindling", verbs: ["gather kindling", "collect kindling", "get sticks", "small sticks"], minutes: 15, gather: true,
       need: function (g, c) { return res(c, "kindling") ? full(c, g, 1) : "Nothing here makes good kindling."; },
       run: function (g, c) { gatherTo(g, c, "kindling", 1, "kindling"); return "You snap a bundle of pencil-thin dead twigs from low branches." + (g.damp.kindling > 0.4 ? " They're damp." : ""); } },
@@ -177,10 +189,10 @@
     { id: "dig_cattail", name: "Dig cattail roots", verbs: ["dig cattail", "cattail roots", "dig roots", "cattails"], minutes: 45,
       need: function (g, c) { if (!res(c, "cattail")) return "There are no cattails here."; if (c.w.flooded) return "The cattails stand in floodwater."; return null; },
       run: function (g, c) { g.body.wetPct = Math.min(100, g.body.wetPct + 30); c.G.add(g, "cattail"); return "Up to your elbows in cold mud, you pull a bundle of starchy cattail roots."; } },
-    { id: "take", name: "Pick up", verbs: ["take", "pick up", "carry", "grab"], args: "item", minutes: 2, fixedTime: true,
+    { id: "take", name: "Pick up", verbs: ["take", "pick up", "carry", "grab"], args: "item", minutes: 2, fixedTime: true, hidden: true,
       need: function (g, c, item) { item = item || "fuel"; var p = c.G.pile(g, g.zone); if (!p[item]) return "There's nothing like that piled here."; return full(c, g, c.G.ITEMS[item].weight); },
       run: function (g, c, item) { item = item || "fuel"; c.G.pile(g, g.zone)[item] -= 1; c.G.add(g, item); return "You pick up an " + c.G.ITEMS[item].name + "."; } },
-    { id: "drop", name: "Put down", verbs: ["drop", "put down", "set down", "stack"], args: "item", minutes: 1, fixedTime: true,
+    { id: "drop", name: "Put down", verbs: ["drop", "put down", "set down", "stack"], args: "item", minutes: 1, fixedTime: true, hidden: true,
       need: function (g, c, item) { item = item || "fuel"; return c.G.has(g, item) ? null : "You aren't carrying that."; },
       run: function (g, c, item) { item = item || "fuel"; c.G.add(g, item, -1); if (c.G.ITEMS[item].bulky) c.G.pile(g, g.zone)[item] += 1; else { var p = c.G.pile(g, g.zone); p[item] = (p[item] || 0) + 1; }
         if (item === "blanket") g.wrapped = false; return "You put down the " + c.G.ITEMS[item].name + "."; } },
@@ -191,12 +203,14 @@
       run: function (g, c, a, r) {
         if (!res(c, "water")) {
           var l = Math.min(g.bowl.litres, g.body.waterShortL); g.body = Body.drink(g.body, l); g.bowl.litres -= l;
-          if (!g.bowl.safe) scheduleIllness(g, r, 0.06, 12, 48, "water");
+          g.stats.drinks++;
+          if (!g.bowl.safe) untreatedWater(g, r, "water");
           return "You drink " + l.toFixed(1) + " L from the bowl" + (g.bowl.safe ? "." : ". It tastes of the creek.");
         }
         var drunk = Math.min(1.5, g.body.waterShortL);
         g.body = Body.drink(g.body, drunk);
-        scheduleIllness(g, r, 0.06, 12, 48, "creek water");
+        g.stats.drinks++;
+        untreatedWater(g, r, "creek water");
         return drunk > 0.2 ? "You lie on the bank and drink until your stomach is tight. The water is so cold it hurts your teeth." : "You aren't thirsty, but you drink a little anyway.";
       } },
     { id: "eat", name: "Eat", verbs: ["eat", "eat food", "have food"], args: "item", minutes: 10, act: "rest",
@@ -209,7 +223,8 @@
         var n = food.indexOf("crayfish") >= 0 ? g.inv[food] : 1;
         c.G.add(g, food, -n);
         g.body = Body.eat(g.body, c.G.ITEMS[food].kcal * n);
-        if (food === "crayfish") { scheduleIllness(g, r, 0.2, 6, 24, "raw crayfish"); return "You crack the raw crayfish and eat the tails. There isn't much to them."; }
+        g.stats.kcalEaten += c.G.ITEMS[food].kcal * n;
+        if (food === "crayfish") { g.stats.rawCrayfish = true; scheduleIllness(g, r, "STOMACH ILLNESS", 0.2, 6, 24, "raw crayfish"); return "You crack the raw crayfish and eat the tails. There isn't much to them."; }
         if (food === "acorns") { g.body.waterShortL += 0.1; return "Raw acorns: so bitter your mouth puckers dry. You get them down."; }
         return "You eat the " + c.G.ITEMS[food].name.replace(/^(handful|bundle) of /, "") + ".";
       } },
@@ -328,6 +343,7 @@
       run: function (g, c) {
         var s = c.sc.shelters.debris;
         g.shelters[g.zone] = { type: "debris", name: s.name, clo: s.clo, wind: s.wind, rain: s.rain, bed: s.bed };
+        if (g.flags.shelterAt == null) g.flags.shelterAt = g.min;
         if (!res(c, "leaves")) c.G.useNear(g, "leaves", 10);
         return "You prop a ridgepole on a stump, lean ribs of dead branches along both sides and heap leaves over it all, arm-deep. It's barely bigger than you, which is the point.";
       } },
@@ -340,6 +356,7 @@
       run: function (g, c) {
         var s = c.sc.shelters.leanto;
         g.shelters[g.zone] = { type: "leanto", name: s.name, clo: s.clo, wind: s.wind, rain: s.rain, bed: s.bed };
+        if (g.flags.shelterAt == null) g.flags.shelterAt = g.min;
         if (!res(c, "boughs")) c.G.useNear(g, "boughs", 4);
         return "You lash a crosspole between two trees and lean a roof of pine boughs against it. With a fire in front, it will throw the heat back at you.";
       } },
@@ -349,7 +366,7 @@
         return "You pile on another thick layer and weigh it down with branches."; } },
 
     // ---- body ----
-    { id: "wrap", name: "Wrap up in the blanket", verbs: ["wrap blanket", "wear blanket", "use blanket", "wrap up", "put on blanket"], minutes: 1, fixedTime: true,
+    { id: "wrap", name: "Wrap up in the blanket", verbs: ["wrap", "wrap blanket", "wear blanket", "use blanket", "wrap up", "put on blanket", "blanket"], minutes: 1, fixedTime: true,
       need: function (g, c) { if (!c.G.has(g, "blanket")) return "You don't have the blanket."; return g.wrapped ? "You are already wrapped in it." : null; },
       run: function (g) { g.wrapped = true; return "You wrap the wool blanket around your shoulders."; } },
     { id: "unwrap", name: "Take off the blanket", verbs: ["unwrap", "take off blanket", "remove blanket"], minutes: 1, fixedTime: true, hidden: true,
@@ -373,11 +390,22 @@
       run: function (g) { return g.body.wetPct > 20 ? "You turn slowly in front of the fire. Steam lifts off your jeans." : "You sit close to the fire, warm through for the first time in a while."; } },
     { id: "treat_cut", name: "Clean the cut", verbs: ["treat cut", "clean cut", "wash wound", "clean wound", "bandage"], minutes: 10,
       need: function (g, c) {
+        var bad = g.body.injuries.filter(function (i) { return i.kind === "INFECTED CUT"; })[0];
+        if (bad) return g.bowl && g.bowl.litres && c.G.fireBurning(g) && c.G.has(g, "stones", 2) ? null : "The cut is infected. You need hot water: a bowl of water, a fire and stones to heat it.";
         var cut = g.body.injuries.filter(function (i) { return i.kind === "CUT HAND" && !i.cleaned && !i.healed; })[0];
         if (!cut) return "You have no cut that needs cleaning.";
         return res(c, "water") || (g.bowl && g.bowl.litres) ? null : "You need water to wash it.";
       },
-      run: function (g) { g.body.injuries.forEach(function (i) { if (i.kind === "CUT HAND") i.cleaned = true; }); return "You wash the cut until it runs clean and press it closed."; } },
+      run: function (g) {
+        var bad = g.body.injuries.filter(function (i) { return i.kind === "INFECTED CUT"; })[0];
+        if (bad) {
+          bad.kind = "CUT HAND"; bad.cleaned = true; bad.healMin = g.min + 96 * 60; bad.deathAt = null; bad.spread = false;
+          g.body.illnesses.forEach(function (i) { if (i.kind === "FEVER") { i.active = false; i.endMin = g.min; } });
+          return "You soak the hand in water as hot as you can stand, again and again, and press the wound until it drains. The throbbing eases.";
+        }
+        g.body.injuries.forEach(function (i) { if (i.kind === "CUT HAND") i.cleaned = true; });
+        return "You wash the cut until it runs clean and press it closed.";
+      } },
 
     // ---- signals ----
     { id: "build_signal", name: "Build a signal fire", verbs: ["signal fire", "build signal fire", "build a signal fire", "smoke signal"], minutes: 60,
@@ -387,7 +415,13 @@
         return "You build a tall cone of dry wood with green boughs stacked ready beside it. Lit, it will throw thick white smoke."; } },
     { id: "light_signal", name: "Light the signal fire", verbs: ["light signal", "light signal fire", "signal", "make smoke"], minutes: 5, fixedTime: true,
       need: function (g, c) { if (g.signals.pile !== g.zone) return "There's no signal fire built here."; return c.G.fireAt(g, g.zone) !== "none" ? null : "You need flame or coals here to light it."; },
-      run: function (g) { g.signals.pile = null; g.signals.smoke.push(g.min); return "You push burning sticks into the signal fire. It roars up, and you smother it with green boughs. A thick white column climbs above the trees."; } },
+      run: function (g, c) {
+        g.signals.pile = null; g.signals.smoke.push(g.min);
+        var t = "You push burning sticks into the signal fire. It roars up, and you smother it with green boughs. A thick white column climbs above the trees.";
+        var planes = (g.flags.planes || []).filter(function (p) { return p <= g.min && g.min - p <= 30; });
+        if (planes.length && g.flags.spottedAt == null) { c.G.spot(g, c.sc, g.min); }
+        return t;
+      } },
     { id: "make_marker", name: "Mark the clearing", verbs: ["make marker", "mark clearing", "sos", "make sos", "ground signal", "make an x"], minutes: 90,
       need: function (g, c) { if (!c.zone.open) return "A marker needs open ground where it can be seen from the air."; return g.signals.marker ? "Your marker is already laid out." : null; },
       run: function (g) { g.signals.marker = g.zone; return "You drag deadfall and stones into a huge X in the open. From the air it would be hard to miss."; } }
@@ -408,7 +442,7 @@
   var byId = {};
   list.forEach(function (d) { byId[d.id] = d; });
 
-  var api = { list: list, byId: byId, fireChance: fireChance, lookText: lookText };
+  var api = { list: list, byId: byId, fireChance: fireChance, lookText: lookText, ILLS: ILLS };
   if (node) module.exports = api;
   else { root.SURVIVAL = root.SURVIVAL || {}; root.SURVIVAL.actions = api; }
 })(this);

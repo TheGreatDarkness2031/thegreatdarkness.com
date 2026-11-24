@@ -35,8 +35,48 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
 
   // ---- weather on open ground ----
-  function keyframes(sc, hour) {
-    var k = sc.weather, i = 0;
+  // The scenario scripts the first days (sc.weather); after that the seed writes
+  // the weather a day at a time (owner 2026-11-24: longer levels): fronts every
+  // few days, nights getting colder into November, snow when it is cold enough.
+  // Cached per seed.
+  var frameCache = {};
+  function frames(world) {
+    var sc = world.scenario, key = sc.id + "|" + world.seed;
+    if (frameCache[key]) return frameCache[key];
+    var k = sc.weather.slice(), gen = sc.generated, last = k[k.length - 1];
+    var base = last[0], day = 0, lastFront = -9, cool = 0;
+    while (base < gen.untilHours) {
+      var r = function (what) { return roll(world.seed, "wx", what, day); };
+      var trend = gen.highC - gen.coolPerDay * (base / 24);
+      var high = trend + (r("high") - 0.5) * gen.swingC;
+      var front = r("front") < gen.frontChance && day - lastFront >= 2;
+      var cloud = front ? 0.6 : r("cloud") * 0.5;
+      var low = high - (front ? 5 : 8 + r("low") * 4) - cool;
+      cool = 0;
+      k.push([base + 3, high, 6 + r("wind") * 10, 0, cloud]);
+      if (front) {
+        var len = 6 + Math.round(r("len") * 6), wind = 18 + r("fw") * 12, rain = 0.45 + r("rain") * 0.3;
+        k.push([base + 5, high - 2, wind * 0.7, 0, 0.9]);
+        k.push([base + 6, high - 3, wind * 0.8, 0.15, 1]);
+        k.push([base + 8, high - 4, wind, rain, 1]);
+        k.push([base + 6 + len, Math.max(low + 2, high - 7), wind * 0.8, rain * 0.7, 1]);
+        k.push([base + 6.5 + len, Math.max(low + 1, high - 8), wind * 0.6, 0, 0.6]);
+        lastFront = day; cool = 3;                     // the night after a front clears cold
+      } else {
+        k.push([base + 6, high - 4, 4 + r("ew") * 6, 0, cloud]);
+      }
+      var morning = Math.max(k[k.length - 1][0] + 1, base + 18);
+      k.push([morning, low, 2 + r("mw") * 5, 0, cloud * 0.5]);
+      base += 24;
+      k.push([base, trend - 1 + (r("noon") - 0.5) * 3, 6 + r("nw") * 8, 0, r("nc") * 0.5]);
+      day++;
+    }
+    frameCache[key] = k;
+    return k;
+  }
+
+  function keyframes(world, hour) {
+    var k = frames(world), i = 0;
     if (hour <= k[0][0]) return k[0].slice(1);
     if (hour >= k[k.length - 1][0]) return k[k.length - 1].slice(1);
     while (k[i + 1][0] < hour) i++;
@@ -52,7 +92,7 @@
   }
 
   function openWeather(world, gameMin) {
-    var hour = gameMin / 60, k = keyframes(world.scenario, hour);
+    var hour = gameMin / 60, k = keyframes(world, hour);
     return {
       airC: k[0] + wobble(world, hour, "air", 0.6),
       windKmh: Math.max(0, k[1] + wobble(world, hour, "wind", 3)),
@@ -65,13 +105,13 @@
   var creekCache = {};
   var CREEK_STEP_MIN = 15;
   function creekLevel(world, gameMin) {
-    var sc = world.scenario, key = sc.id;
+    var sc = world.scenario, key = sc.id + "|" + world.seed;
     var arr = creekCache[key];
     if (!arr) {
       arr = [0];
       var lvl = 0, dtH = CREEK_STEP_MIN / 60, decay = Math.exp(-dtH / sc.creek.drainHours);
-      for (var i = 1; i <= 160 * 60 / CREEK_STEP_MIN; i++) {
-        var r = keyframes(sc, (i - 0.5) * dtH)[2];
+      for (var i = 1; i <= (sc.generated.untilHours + 24) * 60 / CREEK_STEP_MIN; i++) {
+        var r = keyframes(world, (i - 0.5) * dtH)[2];
         lvl = lvl * decay + r * sc.creek.fill * dtH;
         arr.push(lvl);
       }
@@ -82,7 +122,8 @@
     return arr[i0] + (arr[i1] - arr[i0]) * (idx - i0);
   }
 
-  function skyWord(rain, cloud) {
+  function skyWord(rain, cloud, snow) {
+    if (snow && rain >= 0.05) return rain >= 0.4 ? "SNOW" : "LIGHT SNOW";
     if (rain >= 0.4) return "RAIN";
     if (rain >= 0.05) return "LIGHT RAIN";
     if (cloud >= 0.85) return "OVERCAST";
@@ -124,7 +165,9 @@
       flooded: flooded,
       open: z.open
     };
-    w.sky = skyWord(w.rain, w.cloud);
+    // Below about 1 C the rain comes down as snow: it soaks you more slowly.
+    w.snow = w.rain > 0 && o.airC <= 1;
+    w.sky = skyWord(w.rain, w.cloud, w.snow);
     w.windWord = windWord(w.windKmh);
     return w;
   }
@@ -215,9 +258,9 @@
     for (var t = t0; t < toMin; t += 5) {
       var w = conditions(world, zoneId, t);
       var openNow = openWeather(world, t).rain, openPrev = openWeather(world, Math.max(0, t - 5)).rain;
-      if (openNow > 0 && openPrev === 0) out.push({ atMin: t, id: "RAIN_STARTS", text: "It starts to rain." });
-      if (openNow >= 0.4 && openPrev < 0.4) out.push({ atMin: t, id: "RAIN_STEADY", text: "The rain settles in, steady and cold." });
-      if (openNow === 0 && openPrev > 0) out.push({ atMin: t, id: "RAIN_STOPS", text: "The rain stops. Water keeps dripping from the trees." });
+      if (openNow > 0 && openPrev === 0) out.push({ atMin: t, id: "RAIN_STARTS", text: w.snow ? "Snowflakes start drifting down through the trees." : "It starts to rain." });
+      if (openNow >= 0.4 && openPrev < 0.4) out.push({ atMin: t, id: "RAIN_STEADY", text: w.snow ? "The snow comes thick and steady." : "The rain settles in, steady and cold." });
+      if (openNow === 0 && openPrev > 0) out.push({ atMin: t, id: "RAIN_STOPS", text: prev.snow ? "The snow stops." : "The rain stops. Water keeps dripping from the trees." });
       if (w.windKmh >= 20 && prev.windKmh < 20) out.push({ atMin: t, id: "WIND_UP", text: "The wind picks up." });
       if (w.dusk && !prev.dusk && !prev.dark) out.push({ atMin: t, id: "DUSK", text: "The light is going." });
       if (w.dark && !prev.dark && t > 0) out.push({ atMin: t, id: "DARK", text: "It is dark now." });
@@ -274,7 +317,7 @@
   // An env function for body.step: the weather moving through a long action.
   function envAt(world, zoneId, extra) {
     return function (gameMin) {
-      var w = conditions(world, zoneId, gameMin), e = { airC: w.airC, windKmh: w.windKmh, rain: w.rain, groundC: w.groundC };
+      var w = conditions(world, zoneId, gameMin), e = { airC: w.airC, windKmh: w.windKmh, rain: w.snow ? w.rain * 0.4 : w.rain, groundC: w.groundC };
       if (extra) Object.keys(extra).forEach(function (k) { e[k] = extra[k]; });
       return e;
     };
