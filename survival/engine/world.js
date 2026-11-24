@@ -129,10 +129,14 @@
     return w;
   }
 
-  // "DAY 1 13:20 // CLEAR 11 C // WIND LIGHT // CLEARING"
+  // The engine works in Celsius (the physics); the screen shows Fahrenheit (owner, 2026-11-24).
+  function toF(c) { return c * 9 / 5 + 32; }
+  function tempF(c, decimals) { return toF(c).toFixed(decimals || 0) + "°F"; }
+
+  // "DAY 1 13:20 // CLEAR 53°F // WIND LIGHT // CLEARING"
   function topLine(world, zoneId, gameMin) {
     var w = conditions(world, zoneId, gameMin);
-    return clock.label(world.scenario, gameMin) + " // " + w.sky + " " + Math.round(w.airC) + " C // WIND " + w.windWord + " // " + w.zoneName;
+    return clock.label(world.scenario, gameMin) + " // " + w.sky + " " + tempF(w.airC) + " // WIND " + w.windWord + " // " + w.zoneName;
   }
 
   // ---- travel ----
@@ -276,7 +280,7 @@
     };
   }
 
-  var api = { roll: roll, newSeed: newSeed, newWorld: newWorld, openWeather: openWeather, creekLevel: creekLevel,
+  var api = { toF: toF, tempF: tempF, roll: roll, newSeed: newSeed, newWorld: newWorld, openWeather: openWeather, creekLevel: creekLevel,
               conditions: conditions, topLine: topLine, route: route, travel: travel, tripRoll: tripRoll,
               notices: notices, events: events, envAt: envAt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

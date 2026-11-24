@@ -11,6 +11,22 @@
     startHour: 12, startMinute: 0, year: 2026, month: 9, day: 24,
     sunrise: "07:30", sunset: "18:15",
     rescueHour: 72,
+
+    // The player at the start: where, what they know, what they carry.
+    start: {
+      zone: "clearing",
+      known: ["clearing", "hardwoods"],
+      body: { waterShortL: 0.6, kcalDeficit: 300 },   // last drink 6 h ago, ate breakfast
+      inv: { blanket: 1, drawstring: 1, shoelaces: 1 }
+    },
+    // T-shirt, hoodie, jeans, socks, sneakers: all cotton, most warmth lost when wet.
+    clothing: { clo: 0.75, wetKeep: 0.3 },
+    blanket: { clo: 1.2, wetKeep: 0.6 },              // wool keeps more of its warmth wet
+    shelters: {
+      debris:   { name: "DEBRIS HUT", clo: 2.0, wind: 0.95, rain: 0.9, bed: 0.8 },
+      leanto:   { name: "LEAN-TO",    clo: 0.3, wind: 0.6,  rain: 0.7, bed: 0.5, reflector: true },
+      overhang: { name: "ROCK OVERHANG", clo: 0.1, wind: 0.4, rain: 0.95, bed: 0 }
+    },
     searchStartsHour: 48,
 
     // Zones. micro = how the place changes the open-ground weather:
@@ -19,17 +35,23 @@
     //   ridges stay milder, a canopy holds heat). open: sky visible from the ground.
     zones: {
       clearing:   { name: "CLEARING",   open: true,  micro: { wind: 1.0,  rain: 1.0,  dayC: 0.5,  nightC: -1.0 },
-                    has: ["dry grass", "deadfall", "open sky"] },
+                    has: ["dry grass", "deadfall", "open sky"],
+                    res: { tinder: "dry grass", stalks: true, kindling: true, fuel: 6, leaves: true }, see: ["pine", "ridge"] },
       hardwoods:  { name: "HARDWOODS",  open: false, micro: { wind: 0.6,  rain: 0.85, dayC: 0,    nightC: 0 },
-                    has: ["dead branches", "leaf litter", "acorns", "deer sign"] },
+                    has: ["dead branches", "leaf litter", "acorns", "deer sign"],
+                    res: { tinder: "inner bark", kindling: true, fuel: 40, leaves: true, acorns: true, bark: true, ridgepole: true }, hear: "creek" },
       creek:      { name: "CREEK",      open: false, micro: { wind: 0.7,  rain: 0.9,  dayC: -1.0, nightC: -1.5 },
-                    has: ["water", "cobbles", "chert", "mud", "crayfish"] },
+                    has: ["water", "cobbles", "chert", "mud", "crayfish"],
+                    res: { water: true, stones: true, chert: true, crayfish: true, kindling: true, fuel: 8 }, see: ["bottomland"] },
       ridge:      { name: "RIDGE",      open: true,  micro: { wind: 1.7,  rain: 1.0,  dayC: -1.0, nightC: 1.0 },
-                    has: ["view", "rock overhang", "wind"] },
+                    has: ["view", "rock overhang", "wind"],
+                    res: { kindling: true, fuel: 5 }, overhang: { clo: 0.1, wind: 0.4, rain: 0.95 }, see: ["pine", "clearing"] },
       pine:       { name: "PINE STAND", open: false, micro: { wind: 0.35, rain: 0.55, dayC: -0.5, nightC: 0.5 },
-                    has: ["dry needles", "pine pitch", "standing dead wood"] },
+                    has: ["dry needles", "pine pitch", "standing dead wood"],
+                    res: { tinder: "dry needles", kindling: true, fuel: 20, leaves: true, boughs: true, pitch: true, softwood: true, ridgepole: true }, canopy: true },
       bottomland: { name: "BOTTOMLAND", open: true,  micro: { wind: 0.8,  rain: 1.0,  dayC: 0,    nightC: -2.5 },
-                    has: ["cattails", "wet ground"], floods: true }
+                    has: ["cattails", "wet ground"], floods: true,
+                    res: { tinder: "cattail fluff", cattail: true, water: true } }
     },
 
     // Paths and walking minutes in daylight. From the clearing the shortest
