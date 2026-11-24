@@ -2001,10 +2001,9 @@
   .pass-areas { list-style: none; margin: 0; padding: 0; }
   .pass-areas li { display: flex; flex-wrap: wrap; gap: 0 10px; padding: 2px 0; }
   .pass-areas li::before { content: ">"; color: #7fd18b; }
-  .pass-areas li > a { min-width: 120px; color: #7fd18b; font-weight: bold; text-decoration: none; white-space: nowrap; }
+  .pass-areas li > a { min-width: 140px; color: #7fd18b; font-weight: bold; text-decoration: none; white-space: nowrap; }
   .pass-areas li > a:hover, .pass-areas li > a:focus { text-decoration: underline; }
   .pass-areas span { color: #b8b8b8; }
-  .pass-areas span a { color: #b8b8b8; }
   @media (max-width: 520px) { .pass-areas span { flex-basis: 100%; padding-left: 18px; } }
   .orient-go { display: inline-block; margin-top: 4px; color: #7fd18b; text-decoration: none; white-space: nowrap; }
   .orient-go:hover, .orient-go:focus { text-decoration: underline; }
@@ -2374,7 +2373,8 @@
           <div class="pass-sub">PERMITTED AREAS</div>
           <ul class="pass-areas">
             <li><a href="/floor/">WATCH FLOOR</a><span>RADAR, MONITORS, EVENT FEED</span></li>
-            <li><a href="/watch/">RECORDS</a><span>WATCH AND <a href="/maintenance/?view=records">MAINTENANCE</a> LOGS</span></li>
+            <li><a href="/watch/">WATCH LOG</a><span>WATCH FLOOR RECORDS, 1998-2026</span></li>
+            <li><a href="/maintenance/?view=records">MAINTENANCE LOG</a><span>ENGINEERING RECORDS, 1996-2026</span></li>
             <li><a href="#publicLog" id="passLeave">PUBLIC LOG</a><span>SIGN IN BEFORE YOU LEAVE</span></li>
           </ul>
           <div class="pass-sub">SUGGESTED READING</div>
