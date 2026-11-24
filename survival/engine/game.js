@@ -42,6 +42,7 @@
     "cooked crayfish": { name: "cooked crayfish", weight: 0.05, kcal: 20 },
     cattail:        { name: "bundle of cattail roots", weight: 0.5, kcal: 200 }
   };
+  var BASE_ITEMS = copy(ITEMS);
   var CARRY_MAX = 12;
   var TINDER = ["cattail fluff", "dry grass", "inner bark", "dry needles"];
 
@@ -60,11 +61,22 @@
   function clamp(v, a, b) { return v < a ? a : v > b ? b : v; }
   function copy(o) { return JSON.parse(JSON.stringify(o)); }
 
+  // A scenario may bring its own items (foods, gear).
+  var current = null;
+  function registerScenario(scenario) {
+    current = scenario.id;
+    Object.keys(ITEMS).forEach(function (k) { if (!BASE_ITEMS[k]) delete ITEMS[k]; else ITEMS[k] = BASE_ITEMS[k]; });
+    Object.keys(scenario.items || {}).forEach(function (k) { ITEMS[k] = scenario.items[k]; });
+    var A = node ? require("./actions.js") : S.actions;
+    if (A && A.addScenario) A.addScenario(scenario);
+  }
+
   function newGame(scenario, seed, level) {
+    registerScenario(scenario);
     var st = scenario.start;
     level = level && scenario.levels[level] ? level : "standard";
     var g = {
-      v: 1, scenario: scenario.id, level: level, seed: seed != null ? seed : World.newSeed(),
+      v: 1, scenario: scenario.id, level: level, seed: seed != null ? seed : World.newSeed(), walkMult: st.walkMult || 1,
       order: "REST", actions: [],
       stats: { coldestC: 37, hypoMin: 0, severeAt: null, maxWaterShort: 0, thirstyAt: null, drinks: 0, kcalEaten: 0,
                wettest: 0, nightsWarm: 0, nightsCold: 0, rawCrayfish: false, untreatedDrinks: 0 },
@@ -77,11 +89,16 @@
       piles: {}, taken: {}, fires: {}, shelters: {}, beds: {},
       practice: { hand: 0, bow: 0 }, blisters: 0,
       bowl: null,                                 // { litres, safe }
+      bottle: st.bottle ? copy(st.bottle) : null,  // { litres, cap, safe }
+      lighter: st.lighter ? copy(st.lighter) : null, // { uses, wet }
+      friction: [],                               // real-world events, as world changes (frictions.js)
       pending: [],                                // illnesses not started yet
       signals: { marker: false, pile: null, smoke: [] },
       flags: {}, over: null, journal: []
     };
-    log(g, "You wake in leaf litter at the edge of a clearing. Your head aches and you are thirsty. You don't know where you are.");
+    (st.injuries || []).forEach(function (i) { g.body.injuries.push({ kind: i.kind, atMin: 0, cleaned: true, healMin: i.hours * 60 }); });
+    if (st.wetPct) g.body.wetPct = st.wetPct;
+    log(g, st.text || "You wake in leaf litter at the edge of a clearing. Your head aches and you are thirsty. You don't know where you are.");
     return g;
   }
 
@@ -94,10 +111,12 @@
   // that grows with how findable you are. At the rescue hour they reach you.
   function findability(g, scenario) {
     var z = scenario.zones[g.zone], f = 0.04, why = [];
+    if (g.flags.whistleAt != null && g.min - g.flags.whistleAt <= 60) { f += 0.12; why.push("whistle blasts"); }
     if (z.open) { f += 0.06; why.push("in the open"); }
     if (g.zone === scenario.start.zone) { f += 0.08; why.push("near where you went missing"); }
     if (g.signals.marker) { f += 0.06; why.push("a ground marker"); }
     if (fireAt(g, g.zone) === "burning") { f += 0.04; why.push("a fire going"); }
+    if (World.frictionAt(worldOf(g, scenario), g.min, "GPS")) f *= 0.7;
     return { chance: f, why: why };
   }
 
@@ -123,7 +142,7 @@
   function spot(g, scenario, atMin, text) {
     if (g.flags.spottedAt != null) return;
     g.flags.spottedAt = atMin;
-    log(g, text || "The plane banks hard, comes back low and rocks its wings over you. They've seen you.", atMin);
+    log(g, text || (scenario.say && scenario.say.spotted) || "The plane banks hard, comes back low and rocks its wings over you. They've seen you.", atMin);
   }
 
   // A search plane passing: smoke in the air, a ground marker, a fire in the open.
@@ -132,12 +151,14 @@
     var smoke = g.signals.smoke.some(function (s) { return s <= atMin && atMin - s <= 40; });
     var z = scenario.zones[g.zone];
     var r = World.roll(g.seed, "pass", atMin);
+    var haze = World.frictionAt(worldOf(g, scenario), atMin, "SMOKE");
+    if (smoke && haze && r < 0.5) return;
     if (smoke) return spot(g, scenario, atMin);
-    if (g.signals.marker && r < 0.3) return spot(g, scenario, atMin, "The plane circles twice over the clearing, low, and rocks its wings. They've seen your marker.");
+    if (g.signals.marker && r < 0.3) return spot(g, scenario, atMin, (scenario.say && scenario.say.spotted_marker) || "The plane circles twice over the clearing, low, and rocks its wings. They've seen your marker.");
     if (z.open && fireAt(g, g.zone) === "burning" && r < 0.15) return spot(g, scenario, atMin);
   }
 
-  function worldOf(g, scenario) { return World.newWorld(scenario, g.seed); }
+  function worldOf(g, scenario) { var w = World.newWorld(scenario, g.seed); w.friction = g.friction || []; return w; }
   function log(g, text, atMin) { g.journal.push({ min: atMin != null ? atMin : g.min, text: text }); }
   function has(g, item, n) { return (g.inv[item] || 0) >= (n || 1); }
   function add(g, item, n) { g.inv[item] = (g.inv[item] || 0) + (n == null ? 1 : n); if (g.inv[item] <= 0) delete g.inv[item]; }
@@ -157,9 +178,11 @@
   function room(g) { return CARRY_MAX - carried(g); }
 
   function gear(g, scenario) {
-    var layers = [scenario.clothing];
+    var layers = [].concat(scenario.clothing);
     if (g.wrapped && g.inv.blanket) layers.push(scenario.blanket);
-    return { layers: layers };
+    var gr = { layers: layers.filter(function (l) { return !l.item || has(g, l.item); }) };
+    gr.layers.forEach(function (l) { if (l.windBlock) gr.windBlock = Math.max(gr.windBlock || 0, l.windBlock); if (l.rainBlock) gr.rainBlock = Math.max(gr.rainBlock || 0, l.rainBlock); });
+    return gr;
   }
 
   function fireAt(g, zone) {
@@ -175,7 +198,7 @@
     var s = g.shelters[g.zone];
     if (s) return s;
     var z = scenario.zones[g.zone];
-    if (z.overhang) return { type: "overhang", clo: z.overhang.clo, wind: z.overhang.wind, rain: z.overhang.rain, bed: 0 };
+    if (z.overhang) return { type: "overhang", name: z.overhangName || "ROCK OVERHANG", clo: z.overhang.clo, wind: z.overhang.wind, rain: z.overhang.rain, bed: g.beds[g.zone] || 0 };
     return null;
   }
 
@@ -201,6 +224,7 @@
       if (i.kind === "CUT HAND" || i.kind === "INFECTED CUT") e.fumble = clamp(e.fumble + (i.kind === "INFECTED CUT" ? 0.2 : 0.1), 0, 0.8);
     });
     if (carried(g) > 8) walk *= 1.2;
+    walk *= g.walkMult || 1;
     e.walkMult = walk;
     return e;
   }
@@ -219,12 +243,15 @@
       startIllnesses(g, t);
       var sh = inShelter ? shelterHere(g, scenario) : null;
       var bed = (activity === "sleep" || activity === "rest") ? Math.max(g.beds[g.zone] || 0, sh ? sh.bed || 0 : 0) : 0;
-      var extra = { fireW: fireHeat(g, scenario, inShelter), bed: bed };
+      var extra = { fireW: fireHeat(g, scenario, inShelter), bed: bed, waterMult: scenario.waterMult || 1 };
       if (sh) extra.shelter = { clo: sh.clo, wind: sh.wind, rain: sh.rain };
       g.body = Body.step(g.body, World.envAt(world, g.zone, extra), gear(g, scenario), activity, dt, t);
       var w = World.conditions(world, g.zone, t);
       burnFires(g, scenario, world, t, dt);
       dampGear(g, w, sh, dt, extra.fireW > 0);
+      var zt = scenario.zones[g.zone];
+      if (zt.tidal && World.tide(world, t + dt) >= 0.85 && g.body.alive) { g.body.alive = false; g.body.cause = "DROWNING"; g.body.diedAtMin = t + dt; }
+      if (g.lighter) { if (g.body.wetPct > 85 && !g.lighter.dry) g.lighter.wet = true; else if (g.lighter.wet && (extra.fireW > 0 || g.body.wetPct < 20)) g.lighter.wet = false; }
       heal(g, t + dt);
       track(g, t, dt);
       g.min += dt;
@@ -326,6 +353,8 @@
       if (p.onsetMin > t) return true;
       g.body.illnesses.push({ kind: p.kind, active: true, waterLH: p.waterLH, kcalLH: p.kcalLH || 0, endMin: p.onsetMin + p.hours * 60 });
       log(g, p.text, p.onsetMin);
+      // Paralytic shellfish poisoning: no antidote; most recover, some stop breathing.
+      if (p.psp && World.roll(g.seed, "psp", p.onsetMin) < 0.15) { g.body.alive = false; g.body.cause = "SHELLFISH POISONING"; g.body.diedAtMin = p.onsetMin + 180; }
       return false;
     });
     g.body.illnesses.forEach(function (i) {
@@ -348,12 +377,13 @@
   function perform(g, scenario, id, arg) {
     var A = node ? require("./actions.js") : S.actions;
     if (g.over) return { ok: false, text: "The game is over." };
+    if (current !== scenario.id) registerScenario(scenario);
     var def = A.byId[id];
-    if (!def) return { ok: false, text: "There is no action " + id + "." };
+    if (!def || (def.scenarioOnly && def.scenarioOnly !== scenario.id)) return { ok: false, text: "There is no action " + id + "." };
     var world = worldOf(g, scenario);
     var c = ctx(g, scenario, world);
     var why = def.need ? def.need(g, c, arg) : null;
-    if (!why && def.fine && c.w.dark && fireAt(g, g.zone) === "none") why = "It is too dark to do that without a fire.";
+    if (!why && def.fine && c.w.dark && fireAt(g, g.zone) === "none" && !(id === "light_fire" && g.lighter && g.lighter.uses > 0)) why = "It is too dark to do that without a fire.";
     if (!why && def.fine && !c.e.canFineWork) why = "Your hands are too clumsy and your head too foggy for fine work.";
     if (why) return { ok: false, text: why, minutes: 0 };
     var before = g.min, logFrom = g.journal.length;
@@ -386,6 +416,8 @@
     return cause === "HYPOTHERMIA" ? "The cold has taken you. You stopped shivering a while ago, and you stopped caring soon after."
       : cause === "DEHYDRATION" ? "Without water your body has given out."
       : cause === "INFECTION" ? "The infection from the cut has gone into your blood. Your body could not fight it alone."
+      : cause === "SHELLFISH POISONING" ? "The numbness reached your chest. Without a machine to breathe for you, the poison from the shellfish was enough."
+      : cause === "DROWNING" ? "The tide came in faster than you could climb. The sea took you."
       : "You did not survive.";
   }
 
@@ -400,9 +432,11 @@
   // Actions that can be done now (for the suggested list).
   function available(g, scenario) {
     var A = node ? require("./actions.js") : S.actions;
+    if (current !== scenario.id) registerScenario(scenario);
     var world = worldOf(g, scenario), c = ctx(g, scenario, world);
     return A.list.filter(function (d) {
       if (d.hidden || d.travel) return false;
+      if (d.scenarioOnly && d.scenarioOnly !== scenario.id) return false;
       if (d.need && d.need(g, c)) return false;
       if (d.fine && c.w.dark && fireAt(g, g.zone) === "none") return false;
       return true;
@@ -424,7 +458,7 @@
 
   var api = {
     ITEMS: ITEMS, CARRY_MAX: CARRY_MAX, TINDER: TINDER, FIRE: FIRE,
-    newGame: newGame, perform: perform, advance: advance, levelOf: levelOf, findability: findability, spot: spot, deathText: deathText, available: available, status: status,
+    newGame: newGame, registerScenario: registerScenario, perform: perform, advance: advance, levelOf: levelOf, findability: findability, spot: spot, deathText: deathText, available: available, status: status,
     effects: effects, fireAt: fireAt, fireBurning: fireBurning, shelterHere: shelterHere, fireHeat: fireHeat,
     has: has, add: add, pile: pile, near: near, useNear: useNear, carried: carried, room: room,
     gatherDamp: gatherDamp, mixDamp: mixDamp, log: log, worldOf: worldOf,

@@ -72,8 +72,9 @@
     var sh = env.shelter || { clo: 0, wind: 0, rain: 0 };
     var wind = (env.windKmh || 0) * (1 - (sh.wind || 0));
     var clo = clothingClo(gear, body.wetPct) + (sh.clo || 0);
-    // Wind pushes through clothing: up to -45% insulation in a strong wind.
-    clo *= 1 - Math.min(0.45, wind / 90);
+    // Wind pushes through clothing: up to -45% insulation in a strong wind
+    // (a windproof shell blocks most of that).
+    clo *= 1 - Math.min(0.45, wind * (1 - (gear.windBlock || 0)) / 90);
     // Still air layer shrinks with wind.
     var rAir = 0.14 / (1 + wind / 10);
     var r = 0.155 * clo + rAir;
@@ -113,7 +114,12 @@
     if (f.net > 0 && b.coreC >= 37.0) {
       // Warm and regulating: up to VASO_W of extra heat leaves through warmer
       // skin; only the rest goes out as sweat.
-      sweatL = Math.max(0, f.net - C.VASO_W) * dtS / C.SWEAT_J_PER_L;
+      // Heat from a fire beyond that is not sweated out: a person that warm
+      // sits back from the fire (or opens the blanket) without being told.
+      var surplus = Math.max(0, f.net - C.VASO_W);
+      if (env.fireW > 0) surplus = Math.max(0, surplus - env.fireW);
+      if (activity === "rest" || activity === "sleep") surplus = 0;   // at rest you shed a layer instead
+      sweatL = surplus * dtS / C.SWEAT_J_PER_L;
       b.coreC = 37.0;
     } else {
       b.coreC += f.net * dtS / C.HEAT_CAP_J_PER_C;
@@ -121,7 +127,7 @@
     }
 
     // Water.
-    var water = (C.WATER_L_H[activity] || C.WATER_L_H.rest) * hrs + sweatL;
+    var water = (C.WATER_L_H[activity] || C.WATER_L_H.rest) * (env.waterMult || 1) * hrs + sweatL;
     b.illnesses.forEach(function (ill) { if (ill.active) water += (ill.waterLH || 0) * hrs; });
     b.waterShortL += water;
 
@@ -141,7 +147,7 @@
     // Wetness: rain the shelter lets through, then drying.
     var sh = env.shelter || {};
     var rainIn = (env.rain || 0) * (1 - (sh.rain || 0));
-    b.wetPct += rainIn * 45 * hrs;
+    b.wetPct += rainIn * 45 * (1 - (gear.rainBlock || 0)) * hrs;
     if (rainIn < 0.05) {
       var dry = 3 + (env.windKmh || 0) * (1 - (sh.wind || 0)) * 0.25 + (env.fireW || 0) / 10;
       if (env.airC < 0) dry *= 0.5;

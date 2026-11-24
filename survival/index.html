@@ -56,6 +56,9 @@
   ul.plain { margin: 0; padding-left: 18px; }
   .awaybox { border: 1px solid var(--amber); background: #120d00; }
   .awaybox h2 { color: var(--amber); }
+  .scen { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .scen button { background: #0b120b; color: var(--fg); border: 1px solid var(--line); padding: 6px 12px; letter-spacing: 2px; }
+  .scen button[aria-pressed="true"] { border-color: var(--green); color: var(--green); }
   .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; }
   .levels button { display: flex; flex-direction: column; justify-content: flex-start; text-align: left; background: #0b120b; color: var(--fg); border: 1px solid var(--line); padding: 12px; }
   .levels button:hover, .levels button:focus-visible { border-color: var(--green); }
@@ -83,8 +86,9 @@
   <!-- New game / continue -->
   <section id="titleScreen" hidden>
     <div class="panel intro">
-      <h2>SCENARIO 1 // TREELINE</h2>
-      <p>You wake in leaf litter at the edge of a clearing in a hardwood forest, late October. A T-shirt, a hoodie, jeans, sneakers, a wool blanket. Nothing in your pockets. Someone will report you missing. Stay alive until they find you.</p>
+      <div class="scen" id="scenarios" role="group" aria-label="Scenario"></div>
+      <h2 id="scenTitle">SCENARIO 1 // TREELINE</h2>
+      <p id="scenIntro">You wake in leaf litter at the edge of a clearing in a hardwood forest, late October. A T-shirt, a hoodie, jeans, sneakers, a wool blanket. Nothing in your pockets. Someone will report you missing. Stay alive until they find you.</p>
       <p>Time moves only when you act. When you leave, the world keeps going at a quarter of real time (an 8-hour day away is 2 hours out there) and you follow your standing order. Death is permanent.</p>
       <p class="game-not-training">This is a game, not survival training. The rules follow real outdoor and search-and-rescue guidance as closely as a game can, but do not rely on it in the field.</p>
       <div id="continueBox" hidden><button class="big" id="continueBtn">CONTINUE</button><span id="continueInfo" class="tag"></span></div>
@@ -169,10 +173,13 @@
 <script src="/survival/engine/clock.js"></script>
 <script src="/survival/engine/world.js"></script>
 <script src="/survival/engine/treeline.js"></script>
+<script src="/survival/engine/highbasin.js"></script>
+<script src="/survival/engine/wrackline.js"></script>
 <script src="/survival/engine/game.js"></script>
 <script src="/survival/engine/actions.js"></script>
 <script src="/survival/engine/session.js"></script>
 <script src="/survival/engine/parser.js"></script>
+<script src="/survival/engine/frictions.js"></script>
 <script src="/survival/app.js"></script>
 <script src="/assets/notice.js" defer></script>
 </body>

@@ -88,7 +88,7 @@
     if (d.temp === "SEVERE HYPOTHERMIA") urgent.push("You have stopped shivering. Your thoughts are slow and thick. You are dying of cold.");
     else if (d.temp === "HYPOTHERMIC") urgent.push("You are shaking hard and your fingers won't work properly. You need to get warm now.");
     else if (d.temp === "SHIVERING") urgent.push("You are shivering.");
-    if (d.wet === "SOAKED" || d.wet === "WET") urgent.push("Your clothes are " + d.wet.toLowerCase() + "; cotton holds almost no warmth like this.");
+    if (d.wet === "SOAKED" || d.wet === "WET") urgent.push("Your clothes are " + d.wet.toLowerCase() + "; " + ((sc.say && sc.say.wet_clothes) || "cotton holds almost no warmth like this."));
     if (d.water === "SEVERELY DEHYDRATED") urgent.push("Your head pounds and your thinking is muddled. You need water badly.");
     else if (d.water === "DEHYDRATED") urgent.push("Your mouth is dry and your head aches. You need water.");
     else if (d.water === "THIRSTY") urgent.push("You are thirsty.");
@@ -187,7 +187,7 @@
     var hours = Math.round(g.over.atMin / 60);
     var when = K.label(sc, g.over.atMin) + " (" + K.dateLabel(sc, g.over.atMin) + ")";
     if (g.over.result === "RESCUED") {
-      lines.push("Found " + when + ", " + hours + " hours after you woke in the clearing, " + (g.over.how === "SPOTTED" ? "after a search plane saw your signal." : "by a ground search team."));
+      lines.push("Found " + when + ", " + hours + " hours " + (sc.startPhrase || "after you woke in the clearing") + ", " + (g.over.how === "SPOTTED" ? "after a search " + (sc.searchCraft || "plane") + " saw your signal." : "by a " + (sc.groundTeam || "ground search team") + "."));
       lines.push("Condition when found: body " + W.tempF(g.body.coreC, 1) + " (" + d.temp + "), water " + d.water + ", food " + d.food + ", " + d.wet + ", " + d.sleep + ".");
     } else {
       lines.push("You died of " + (g.over.cause || "").toLowerCase() + " on " + when + ", " + hours + " hours in.");
@@ -198,6 +198,8 @@
       }
       if (g.over.cause === "DEHYDRATION" && st.thirstyAt) lines.push("It was decided around " + K.label(sc, st.thirstyAt) + ", when you were 5 litres short and your thinking began to fail.");
       if (g.over.cause === "INFECTION") lines.push("The cut was never cleaned. Washing it out the day it happened, or hot soaks once it turned, would very likely have saved you.");
+      if (g.over.cause === "SHELLFISH POISONING") lines.push("Paralytic shellfish poison is made by algae and builds up in mussels and clams. It looks, smells and tastes of nothing, and cooking does not destroy it. Coastal areas close shellfish beds when it is found; out here there was no way to know.");
+      if (g.over.cause === "DROWNING") lines.push("The rocks you were on are cut off at high tide. Watch the tide line and the time; the sea comes back twice a day.");
     }
     if (g.flags.shelterAt != null) right.push("You had a shelter up by " + K.label(sc, g.flags.shelterAt) + ".");
     else wrong.push("You never built a shelter.");
@@ -217,7 +219,7 @@
         if (p.kind === "GIARDIA") after.push(days + " days after you were found, you came down with giardiasis from untreated water: weeks of cramps until a doctor treated it.");
         else after.push("The next day, a stomach bug from the " + (p.why || "water") + " caught up with you in hospital.");
       });
-      if (g.body.illnesses.some(function (i) { return i.kind === "GIARDIA"; })) after.push("The doctors treated the giardiasis you picked up from the creek.");
+      if (g.body.illnesses.some(function (i) { return i.kind === "GIARDIA"; })) after.push("The doctors treated the giardiasis you picked up from untreated water.");
       if (st.rawCrayfish) after.push("You ate crayfish raw. In parts of North America they carry a lung fluke (Paragonimus) whose symptoms take weeks to appear; cooking kills it.");
     }
     return {
@@ -233,6 +235,7 @@
     actions.forEach(function (a) {
       if (a[0] === "~away") runAway(g, sc, a[1], a[2]);
       else if (a[0] === "~order") setOrder(g, a[1]);
+      else if (a[0] === "~friction") { (node ? require("./frictions.js") : root.SURVIVAL.frictions).record(g, a[1], a[2], a[3]); g.actions.push(a); }
       else G.perform(g, sc, a[0], a[1]);
     });
     return g;

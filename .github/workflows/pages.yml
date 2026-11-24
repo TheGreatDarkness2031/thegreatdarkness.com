@@ -175,6 +175,11 @@ jobs:
           })();
           EOF
 
+      # SURVIVAL's world outside (survival/build/signals.js): a few numbers
+      # from the monitor snapshot. Never fails the publish.
+      - name: Build survival signals
+        run: node survival/build/signals.js data/monitors.json data/signals.json || true
+
       # Node 24 versions of the Pages actions (2026-11-21; the v3/v4/v5 set
       # ran on Node 20, which GitHub is retiring).
       - uses: actions/configure-pages@v6

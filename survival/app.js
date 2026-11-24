@@ -7,6 +7,22 @@
   var SAVE_KEY = "survival.save.v1", BEST_KEY = "survival.best.v1";
   var $ = function (id) { return document.getElementById(id); };
   var game = null, sc = null, suggestions = [], abandonArmed = false, playStartedAt = Date.now();
+  var SCEN_KEY = "survival.scenario.v1", ORDER = ["treeline", "highbasin", "wrackline"];
+  var picked = (function () { try { var v = localStorage.getItem(SCEN_KEY); return ORDER.indexOf(v) >= 0 ? v : "treeline"; } catch (e) { return "treeline"; } })();
+  var TREELINE_INTRO = "You wake in leaf litter at the edge of a clearing in a hardwood forest, late October. A T-shirt, a hoodie, jeans, sneakers, a wool blanket. Nothing in your pockets. Someone will report you missing. Stay alive until they find you.";
+
+  // The world outside: /data/signals.json (built by the Publish site workflow).
+  // Read now and then; folded into the game without a word about where it came from.
+  var signals = null;
+  function fetchSignals(then) {
+    if (!window.fetch || !S.frictions) { if (then) then(); return; }
+    fetch("/data/signals.json", { cache: "no-cache" }).then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { signals = j; if (then) then(); }, function () { if (then) then(); });
+  }
+  function useSignals() {
+    if (!game || game.over || !signals || !S.frictions) return;
+    if (S.frictions.apply(game, sc, signals, Date.now()).length) save();
+  }
 
   function scenarioOf(id) { return S.scenarios[id] || S.scenarios.treeline; }
   function esc(t) { return String(t).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
@@ -40,19 +56,31 @@
       var s2 = scenarioOf(saved.game.scenario);
       $("continueInfo").textContent = "  " + s2.name + " // " + s2.levels[saved.game.level].name + " // " + K.label(s2, saved.game.min);
     }
-    var sc1 = S.scenarios.treeline, box = $("levels");
+    var sbox = $("scenarios");
+    sbox.innerHTML = "";
+    ORDER.forEach(function (id) {
+      var s1 = S.scenarios[id]; if (!s1) return;
+      var b = document.createElement("button");
+      b.textContent = (s1.number || 1) + " // " + s1.name;
+      b.setAttribute("aria-pressed", id === picked ? "true" : "false");
+      b.addEventListener("click", function () { picked = id; try { localStorage.setItem(SCEN_KEY, id); } catch (e) { /* ignore */ } abandonArmed = false; titleScreen(); });
+      sbox.appendChild(b);
+    });
+    var sc1 = scenarioOf(picked), box = $("levels");
+    $("scenTitle").textContent = "SCENARIO " + (sc1.number || 1) + " // " + sc1.name;
+    $("scenIntro").textContent = (sc1.intro || TREELINE_INTRO) + (sc1.intro ? " Someone will report you missing. Stay alive until they find you." : "");
     box.innerHTML = "";
     Object.keys(sc1.levels).forEach(function (k) {
       var L = sc1.levels[k], b = document.createElement("button");
       b.innerHTML = "<b>" + esc(L.name) + "</b><span class='time'>" + (L.hidden ? "RESCUE: UNKNOWN" : "RESCUE BY HOUR " + L.rescueH) + "</span><br>" + esc(L.blurb);
-      b.addEventListener("click", function () { newGame("treeline", k, b); });
+      b.addEventListener("click", function () { newGame(picked, k, b); });
       box.appendChild(b);
     });
     var runs = bestRuns();
     $("bestPanel").hidden = !runs.length;
-    $("bestTable").innerHTML = "<tr><th>SCORE</th><th>RESULT</th><th>LEVEL</th><th>HOURS</th></tr>" + runs.slice(0, 8).map(function (r) {
+    $("bestTable").innerHTML = "<tr><th>SCORE</th><th>RESULT</th><th>SCENARIO</th><th>LEVEL</th><th>HOURS</th></tr>" + runs.slice(0, 8).map(function (r) {
       var s3 = scenarioOf(r.scenario);
-      return "<tr><td>" + r.score + "</td><td>" + esc(r.result) + "</td><td>" + esc(s3.levels[r.level] ? s3.levels[r.level].name : r.level) + "</td><td>" + r.hours + "</td></tr>";
+      return "<tr><td>" + r.score + "</td><td>" + esc(r.result) + "</td><td>" + esc(s3.name) + "</td><td>" + esc(s3.levels[r.level] ? s3.levels[r.level].name : r.level) + "</td><td>" + r.hours + "</td></tr>";
     }).join("");
   }
 
@@ -66,6 +94,8 @@
     abandonArmed = false;
     sc = scenarioOf(scenarioId);
     game = G.newGame(sc, W.newSeed(), level);
+    game.flags.signalsAt = Date.now() - S.frictions.MIN_REAL_GAP_MS + 30 * 60 * 1000;   // first look half an hour in
+    game.flags.signalsMin = 0;
     save();
     play();
   }
@@ -151,6 +181,7 @@
   function say(text, err) { var r = $("reply"); r.textContent = text || ""; r.className = "reply" + (err ? " err" : ""); }
 
   function doAction(id, arg) {
+    useSignals();
     var res = G.perform(game, sc, id, arg);
     save();
     if (!res.ok) { say(res.text, true); return; }
@@ -177,6 +208,7 @@
     if (!saved || saved.game.over) return null;
     game = saved.game; sc = scenarioOf(game.scenario);
     var r = SS.applyAway(game, sc, saved.savedAt, Date.now());
+    useSignals();
     save();
     return r;
   }
@@ -205,6 +237,8 @@
   });
 
   // Start: straight back into a game in progress, else the title screen.
+  fetchSignals(useSignals);
+  setInterval(function () { fetchSignals(useSignals); }, S.frictions ? S.frictions.MIN_REAL_GAP_MS / 3 : 3600000);
   var saved = load();
   if (saved && !saved.game.over) { var r = catchUp(); play(r); }
   else if (saved && saved.game.over) { game = saved.game; sc = scenarioOf(game.scenario); titleScreen(); }

@@ -51,7 +51,7 @@
       var high = trend + (r("high") - 0.5) * gen.swingC;
       var front = r("front") < gen.frontChance && day - lastFront >= 2;
       var cloud = front ? 0.6 : r("cloud") * 0.5;
-      var low = high - (front ? 5 : 8 + r("low") * 4) - cool;
+      var low = high - (front ? (gen.frontDrop != null ? gen.frontDrop : 5) : (gen.nightDrop != null ? gen.nightDrop : 8) + r("low") * (gen.nightDropVar != null ? gen.nightDropVar : 4)) - cool;
       cool = 0;
       k.push([base + 3, high, 6 + r("wind") * 10, 0, cloud]);
       if (front) {
@@ -122,6 +122,22 @@
     return arr[i0] + (arr[i1] - arr[i0]) * (idx - i0);
   }
 
+  // Tide 0 (low) .. 1 (high); sc.tide = { periodH, highAtH } (hours since start).
+  function tide(world, gameMin) {
+    var t = world.scenario.tide;
+    if (!t) return 0;
+    var h = gameMin / 60;
+    return 0.5 + 0.5 * Math.cos(2 * Math.PI * (h - t.highAtH) / t.periodH);
+  }
+
+  // Friction: real-world events folded into this world (frictions.js). Each
+  // { kind, fromMin, toMin, mag }. The world only changes; it never says why.
+  function frictionAt(world, gameMin, kind) {
+    var f = world.friction || [], out = null;
+    for (var i = 0; i < f.length; i++) if (f[i].kind === kind && gameMin >= f[i].fromMin && gameMin < f[i].toMin) out = f[i];
+    return out;
+  }
+
   function skyWord(rain, cloud, snow) {
     if (snow && rain >= 0.05) return rain >= 0.4 ? "SNOW" : "LIGHT SNOW";
     if (rain >= 0.4) return "RAIN";
@@ -140,6 +156,11 @@
     var sc = world.scenario, z = sc.zones[zoneId];
     if (!z) throw new Error("unknown zone " + zoneId);
     var o = openWeather(world, gameMin), m = z.micro;
+    var fc = frictionAt(world, gameMin, "COLD"), fw = frictionAt(world, gameMin, "WARM"), fwi = frictionAt(world, gameMin, "WIND"), fr = frictionAt(world, gameMin, "DOWNPOUR");
+    if (fc) o.airC -= fc.mag;
+    if (fw) o.airC += fw.mag;
+    if (fwi) o.windKmh += fwi.mag;
+    if (fr) { o.rain = Math.max(o.rain, fr.mag); o.cloud = 1; }
     var light = clock.light(sc, gameMin);
     // Clear, still nights let cold air pool in hollows; cloud or wind mixes it.
     var nightMix = (1 - light) * (1 - o.cloud) * (o.windKmh < 15 ? 1 : 0.5);
@@ -163,11 +184,14 @@
       creekLevel: level,
       creekHigh: level >= sc.creek.floodAt * 0.75,
       flooded: flooded,
-      open: z.open
+      open: z.open,
+      tide: tide(world, gameMin),
+      smoke: !!frictionAt(world, gameMin, "SMOKE")
     };
     // Below about 1 C the rain comes down as snow: it soaks you more slowly.
     w.snow = w.rain > 0 && o.airC <= 1;
     w.sky = skyWord(w.rain, w.cloud, w.snow);
+    if (w.smoke && w.rain === 0) w.sky = "HAZY";
     w.windWord = windWord(w.windKmh);
     return w;
   }
@@ -214,6 +238,8 @@
     return { path: path, baseMinutes: dist[to] };
   }
 
+  function linkOf(sc, a, b) { return sc.links.filter(function (l) { return (l[0] === a && l[1] === b) || (l[0] === b && l[1] === a); })[0]; }
+
   function legMinutes(sc, a, b) {
     var n = neighbours(sc, a).filter(function (x) { return x[0] === b; })[0];
     return n ? n[1] : null;
@@ -231,6 +257,8 @@
     for (var i = 1; i < r.path.length; i++) {
       var a = r.path[i - 1], b = r.path[i];
       var here = conditions(world, a, t);
+      var lk = linkOf(sc, a, b);
+      if (lk && lk[3] && lk[3].tidal && here.tide >= 0.45) return { blocked: "tide", from: from, to: to, path: r.path };
       var m = legMinutes(sc, a, b) * (1 + (1 - here.light)) * mult;
       if (here.creekLevel > 0.5 || here.rain > 0.1) m *= 1.15;
       var flooded = (sc.zones[b].floods || sc.zones[a].floods) && here.creekLevel >= sc.creek.floodAt;
@@ -266,6 +294,8 @@
       if (w.dark && !prev.dark && t > 0) out.push({ atMin: t, id: "DARK", text: "It is dark now." });
       if (!w.dark && prev.dark) out.push({ atMin: t, id: "DAWN", text: "Grey light in the east." });
       if (w.frost && !prev.frost) out.push({ atMin: t, id: "FROST", text: "Frost is forming on the grass." });
+      if (sc.tide && sc.zones[zoneId].tidal && w.tide >= 0.6 && prev.tide < 0.6) out.push({ atMin: t, id: "TIDE_RISING", text: "The sea is coming back in around the rocks. The way back to shore will be under water soon." });
+      if (sc.tide && w.tide < 0.45 && prev.tide >= 0.45 && sc.links.some(function (l) { return l[3] && l[3].tidal && (l[0] === zoneId || l[1] === zoneId); })) out.push({ atMin: t, id: "TIDE_LOW", text: "The tide is going out. Rocks and weed are showing at the point." });
       if (w.creekLevel >= sc.creek.floodAt && prev.creekLevel < sc.creek.floodAt)
         out.push({ atMin: t, id: "FLOOD", text: zoneId === "bottomland" || zoneId === "creek"
           ? "The creek is over its banks. Water is spreading across the bottomland."
@@ -307,9 +337,13 @@
       for (var s = s0; s <= s1; s++) {
         var at = fires(world, ev, s, ctx);
         if (at === null || at < fromMin || at >= toMin) continue;
+        if ((ev.id === "SEARCH_AIRCRAFT" || ev.id === "AIRCRAFT") && frictionAt(world, at, "GROUNDED")) continue;
         if (ev.onePerDay && firedEarlierToday(world, ev, s, at, ctx)) continue;
         out.push({ atMin: at, id: ev.id, text: ev.text, data: ev.data || {} });
       }
+    });
+    (world.friction || []).forEach(function (f) {
+      if (f.text && f.fromMin >= fromMin && f.fromMin < toMin && (!f.night || conditions(world, ctx.zone, f.fromMin).dark)) out.push({ atMin: f.fromMin, id: "F_" + f.kind, text: f.text, data: f.data || {} });
     });
     return out.concat(notices(world, ctx.zone, fromMin, toMin)).sort(function (a, b) { return a.atMin - b.atMin || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0); });
   }
@@ -323,7 +357,7 @@
     };
   }
 
-  var api = { toF: toF, tempF: tempF, roll: roll, newSeed: newSeed, newWorld: newWorld, openWeather: openWeather, creekLevel: creekLevel,
+  var api = { tide: tide, frictionAt: frictionAt, linkOf: linkOf, toF: toF, tempF: tempF, roll: roll, newSeed: newSeed, newWorld: newWorld, openWeather: openWeather, creekLevel: creekLevel,
               conditions: conditions, topLine: topLine, route: route, travel: travel, tripRoll: tripRoll,
               notices: notices, events: events, envAt: envAt };
   if (typeof module !== "undefined" && module.exports) module.exports = api;

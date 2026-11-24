@@ -36,21 +36,32 @@
     return String(text || "").toLowerCase().replace(/[^a-z0-9?.\s-]/g, " ").replace(/\s+/g, " ").trim();
   }
 
+  // Place words: the scenario's own list (sc.zoneWords), else Treeline's; plus each
+  // place's id, its name and the last word of its name.
+  function zoneWords(sc) {
+    var base = sc.zoneWords || ZONE_WORDS, out = {};
+    Object.keys(sc.zones).forEach(function (z) {
+      var nm = sc.zones[z].name.toLowerCase(), last = nm.split(" ").pop();
+      out[z] = (base[z] || []).concat([z, nm, last]);
+    });
+    return out;
+  }
+
   function zoneIn(t, g, sc) {
-    var best = null;
-    Object.keys(ZONE_WORDS).forEach(function (z) {
-      if (!sc.zones[z]) return;
-      ZONE_WORDS[z].concat([sc.zones[z].name.toLowerCase()]).forEach(function (w) {
+    var best = null, ZW = zoneWords(sc);
+    Object.keys(ZW).forEach(function (z) {
+      ZW[z].forEach(function (w) {
         if (new RegExp("\\b" + w + "\\b").test(t) && (!best || w.length > best.len)) best = { zone: z, len: w.length };
       });
     });
     return best && best.zone;
   }
 
-  function itemIn(t) {
-    var best = null;
-    Object.keys(ITEM_WORDS).forEach(function (k) {
-      ITEM_WORDS[k].forEach(function (w) { if (new RegExp("\\b" + w + "\\b").test(t) && (!best || w.length > best.len)) best = { item: k, len: w.length }; });
+  function itemIn(t, sc) {
+    var best = null, IW = ITEM_WORDS;
+    if (sc && sc.itemWords) { IW = {}; Object.keys(ITEM_WORDS).forEach(function (k) { IW[k] = ITEM_WORDS[k]; }); Object.keys(sc.itemWords).forEach(function (k) { IW[k] = sc.itemWords[k]; }); }
+    Object.keys(IW).forEach(function (k) {
+      IW[k].forEach(function (w) { if (new RegExp("\\b" + w + "\\b").test(t) && (!best || w.length > best.len)) best = { item: k, len: w.length }; });
     });
     return best && best.item;
   }
@@ -65,9 +76,10 @@
   }
 
   // Score each action by its verb phrases: every word of a phrase found in order.
-  function matchAction(t) {
+  function matchAction(t, sc) {
     var tw = t.split(" "), best = null;
     A.list.forEach(function (d) {
+      if (d.scenarioOnly && sc && d.scenarioOnly !== sc.id) return;
       (d.verbs || []).forEach(function (v) {
         var vw = v.split(" "), i = 0, j = 0;
         while (i < tw.length && j < vw.length) { if (tw[i] === vw[j]) j++; i++; }
@@ -85,14 +97,14 @@
     if (/^\d+$/.test(t)) return { pick: +t };
     for (var c in CMDS) if (CMDS[c].indexOf(t) >= 0) return { cmd: c };
 
-    var zone = zoneIn(t, g, sc), item = itemIn(t), mins = duration(t);
+    var zone = zoneIn(t, g, sc), item = itemIn(t, sc), mins = duration(t);
     var first = t.split(" ")[0];
     // Movement: a move verb, or a bare place name.
     var core = t.split(" ").filter(function (w) { return FILLER.indexOf(w) < 0 && MOVE.indexOf(w) < 0; }).join(" ");
-    if (zone && (MOVE.indexOf(first) >= 0 || ZONE_WORDS[zone].indexOf(core) >= 0 || core === sc.zones[zone].name.toLowerCase()))
+    if (zone && (MOVE.indexOf(first) >= 0 || zoneWords(sc)[zone].indexOf(core) >= 0 || core === sc.zones[zone].name.toLowerCase()))
       return { id: "go", arg: zone };
 
-    var m = matchAction(t);
+    var m = matchAction(t, sc);
     // Single-word helpers with context.
     if (!m || m.score < 10) {
       if (/\bfire\b/.test(t)) m = { id: G.fireAt(g, g.zone) === "none" ? "light_fire" : "feed_fire" };
@@ -122,7 +134,7 @@
     "WATER AND FOOD: drink, fill the bowl, boil water, eat, cook",
     "SHELTER: make a bed of leaves, build a debris hut, build a lean-to, thicken the shelter",
     "BODY: wrap up in the blanket, rest <time>, sleep <hours>, dry off by the fire, clean the cut",
-    "SIGNALS: build a signal fire, light the signal fire, mark the clearing",
+    "SIGNALS: build a signal fire, light the signal fire, make a ground marker, flash a mirror, blow a whistle",
     "SCREENS: inventory, map, journal, status, help"
   ];
 
