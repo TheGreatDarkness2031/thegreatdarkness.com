@@ -4153,6 +4153,27 @@
       }
     }
 
+    // Hit counter (2026-11-23): this visit's own count (?hit=1) and the
+    // relayed total (?homebody=1, up to 20 s old) both arrive; the higher
+    // number is shown.
+    let homeHitShown = 0;
+    function showHitCount(n) {
+      n = Number(n);
+      if (!(n > homeHitShown)) return;
+      homeHitShown = n;
+      if (typeof oerOdometer === "function") {
+        oerOdometer(document.getElementById("visitorCount"), n);
+      } else {
+        document.getElementById("visitorCount").textContent = String(n).padStart(7, "0");
+      }
+    }
+
+    window.handleHitResponse = function(data) {
+      const s = document.getElementById("hitScript");
+      if (s) s.remove();
+      if (data && typeof data.hitCount !== "undefined") showHitCount(data.hitCount);
+    };
+
     window.handleDatabaseResponse =
       function(data) {
         if (window.oerReady) window.oerReady("database");
@@ -4161,11 +4182,7 @@
           typeof data.hitCount !==
           "undefined"
         ) {
-          if (typeof oerOdometer === "function") {
-            oerOdometer(document.getElementById("visitorCount"), data.hitCount);
-          } else {
-            document.getElementById("visitorCount").textContent = String(data.hitCount).padStart(7, "0");
-          }
+          showHitCount(data.hitCount);
         }
 
         if (
@@ -4233,8 +4250,12 @@
     // never runs. Ask again after 1-3 s, up to twice, before giving up.
     const HOME_BUSY_RETRIES = 2;
 
-    function homeJsonp(id, query, cbName, attempt) {
+    // base: TGD_API_URL (default) or the relay Worker (tgdDataBase()). A relay
+    // answer that fails or never calls back switches this browser to Apps
+    // Script for 10 minutes (tgdCacheFailed) and asks there at once.
+    function homeJsonp(id, query, cbName, attempt, base) {
       attempt = attempt || 0;
+      base = base || API_URL;
       if (!window[cbName].homeWrapped) {
         const inner = window[cbName];
         const wrapped = function() {
@@ -4250,12 +4271,16 @@
       if (old) old.remove();
       const script = document.createElement("script");
       script.id = id;
-      script.src = API_URL + query + "&_ts=" + Date.now();
+      script.src = base + query + "&_ts=" + Date.now();
       const retryIfUnanswered = function() {
         if (window[cbName].homeCalls !== before) return;
+        if (base !== API_URL && typeof tgdCacheFailed === "function" && tgdCacheFailed(script.src)) {
+          homeJsonp(id, query, cbName, attempt, API_URL);
+          return;
+        }
         if (attempt >= HOME_BUSY_RETRIES) return;
         setTimeout(function() {
-          homeJsonp(id, query, cbName, attempt + 1);
+          homeJsonp(id, query, cbName, attempt + 1, base);
         }, 1000 + Math.random() * 2000);
       };
       script.onload = retryIfUnanswered;
@@ -4280,8 +4305,15 @@
       }
     });
 
+    // Homepage start (2026-11-23): the visit is counted straight at Apps
+    // Script (?hit=1, never cached); the guestbook, ticker and counter total
+    // come through the OER DATA RELAY (?homebody=1), so a crowd costs one
+    // Apps Script run every 20 s and a browser signed in to several Google
+    // accounts still gets the data.
     function loadDatabaseData() {
-      homeJsonp("jsonpScript", "?callback=handleDatabaseResponse", "handleDatabaseResponse");
+      homeJsonp("hitScript", "?hit=1&callback=handleHitResponse", "handleHitResponse");
+      const base = typeof tgdDataBase === "function" ? tgdDataBase() : API_URL;
+      homeJsonp("jsonpScript", "?homebody=1&callback=handleDatabaseResponse", "handleDatabaseResponse", 0, base);
     }
 
         /* =======================================================
@@ -5523,7 +5555,7 @@
                   );
                 });
                 if (!arrived) {
-                  loadDatabaseData();
+                  loadPostsOnly();   // straight from Apps Script; not a visit
                 }
               }, ms);
             });

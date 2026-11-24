@@ -888,6 +888,8 @@
 
           <div
             id="recordList"
+            data-xref
+            data-xref-skip="watch"
             class="watch-log-stream"
           >
             <div class="empty-message">
@@ -905,6 +907,8 @@
 
           <div
             id="selectedDetailsBody"
+            data-xref
+            data-xref-skip="watch"
             class="selected-details-body"
           >
             <div class="selected-none">
@@ -1082,6 +1086,23 @@
         if (/^\d{4}-\d{2}-\d{2}$/.test(startParams.get("date") || "")) {
           watchLogState.date = startParams.get("date");
         }
+      }
+
+      // Cross-links (2026-11-23): ?rec=<record id> opens that record (its
+      // year, found by number, with its details shown).
+      var startRec = startParams.get("rec") || "";
+      if (/^(199[89]|20[0-2]\d)\d{5}$/.test(startRec)) {
+        watchLogState.year = startRec.slice(0, 4);
+        watchLogState.date = "";
+        watchLogState.search = startRec;
+        watchLogElements.searchInput.value = startRec;
+        var renderFirst = renderWatchLogData_;
+        renderWatchLogData_ = function(data) {
+          renderWatchLogData_ = renderFirst;
+          renderFirst(data);
+          var hit = ((data && data.records) || []).filter(function(r) { return String(r.recordId) === startRec; })[0];
+          if (hit) selectWatchLogRecord_(hit);
+        };
       }
 
       bindWatchLogControls_();
@@ -2494,6 +2515,7 @@
 
   </script>
 
+<script src="/assets/xref.js" defer></script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>

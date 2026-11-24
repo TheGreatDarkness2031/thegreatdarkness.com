@@ -266,7 +266,7 @@ tr[data-id] img[data-full] { cursor: pointer; }
     <a href="?view=forms" data-view="forms">[ FORMS ]</a>
     <a href="?view=handbook" data-view="handbook">[ HANDBOOK ]</a>
   </nav>
-  <div class="desk"><div class="pane" id="pane"></div></div>
+  <div class="desk"><div class="pane" id="pane" data-xref data-xref-ignore="table.dir, .org, .tree"></div></div>
 </div>
 
 <script src="/hr/data.js"></script>
@@ -735,6 +735,7 @@ tr[data-id] img[data-full] { cursor: pointer; }
   render();
 })();
 </script>
+<script src="/assets/xref.js" defer></script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>

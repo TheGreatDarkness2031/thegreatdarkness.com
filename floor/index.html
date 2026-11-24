@@ -5061,8 +5061,25 @@
       );
     }
 
+    // Monitoring Grid timing (2026-11-23): the monitors run at :x0 and :x5
+    // (every 5 minutes) and their tiles change only then. The grid is asked
+    // for 75 s and 165 s after each run (run time + the relay's 60 s copy),
+    // instead of every 60 s at random points: fresher tiles, fewer requests.
+    const FLOOR_RUN_EVERY_MS = 300000;
+    const FLOOR_STATUS_AFTER_RUN_MS = [75000, 165000];
+
+    function nextFloorStatusDue_(now) {
+      const run = Math.floor(now / FLOOR_RUN_EVERY_MS) * FLOOR_RUN_EVERY_MS;
+      const times = FLOOR_STATUS_AFTER_RUN_MS.map(function(ms) { return run + ms; })
+        .concat([run + FLOOR_RUN_EVERY_MS + FLOOR_STATUS_AFTER_RUN_MS[0]]);
+      for (let i = 0; i !== times.length; i++) {
+        if (times[i] > now) return times[i];
+      }
+      return now + FLOOR_RUN_EVERY_MS;
+    }
+
     // Watch Floor piggyback state (see loadRadarData).
-    let floorStatusDueAt = Date.now() + 60000;
+    let floorStatusDueAt = Math.max(Date.now() + 20000, nextFloorStatusDue_(Date.now()));
     let floorEventsDueAt = Date.now() + 30000;
     let floorPendingWith = [];
 
@@ -5281,14 +5298,15 @@
           );
       };
 
-      // Status (every 60 s) and the event feed (every 30 s) ride along on
-      // a Radar poll when they are due (RadarLoad.js, 2026-11-13).
+      // Status (75 s and 165 s after each 5-minute monitor run) and the
+      // event feed (every 30 s) ride along on a Radar poll when they are due
+      // (RadarLoad.js, 2026-11-13).
       const withParts = [];
       if (Date.now() >= floorStatusDueAt) withParts.push("status");
       if (Date.now() >= floorEventsDueAt) withParts.push("events");
       floorPendingWith = withParts;
       if (withParts.length) {
-        if (withParts.indexOf("status") !== -1) floorStatusDueAt = Date.now() + 60000;
+        if (withParts.indexOf("status") !== -1) floorStatusDueAt = nextFloorStatusDue_(Date.now());
         if (withParts.indexOf("events") !== -1) floorEventsDueAt = Date.now() + 30000;
       }
 

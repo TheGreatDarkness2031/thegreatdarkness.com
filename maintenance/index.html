@@ -637,7 +637,7 @@
 
     <div class="window-content desk">
 
-      <div id="recordsPane" class="view-pane">
+      <div id="recordsPane" class="view-pane" data-xref data-xref-skip="ml">
 
       <div class="filter-panel bevel-outset">
 
@@ -793,7 +793,7 @@
 
       </div>
 
-      <div id="registerPane" class="view-pane" hidden>
+      <div id="registerPane" class="view-pane" data-xref data-xref-skip="doc" hidden>
 
         <div class="filter-panel bevel-outset">
           <div class="filter-title">
@@ -841,7 +841,7 @@
 
       </div>
 
-      <div id="syslogPane" class="view-pane" hidden>
+      <div id="syslogPane" class="view-pane" data-xref hidden>
 
         <div class="filter-panel bevel-outset">
           <div class="filter-title">
@@ -870,7 +870,7 @@
 
       </div>
 
-      <div id="projectsPane" class="view-pane" hidden>
+      <div id="projectsPane" class="view-pane" data-xref data-xref-skip="eng ml" hidden>
 
         <div id="prjStatus" class="status-line bevel-inset">
           RETRIEVING PROJECT STATUS...
@@ -1041,6 +1041,34 @@
     function initializeMaintenanceLogView() {
 
       bindMaintenanceLogEvents_();
+
+      // Cross-links (2026-11-23): ?rec=<entry number> opens that entry. The
+      // year comes from the index; ids run in order within a year, so the
+      // page is known when the list is sorted by record number.
+      var rec = (/[?&]rec=(\d{1,6})(&|$)/.exec(location.search) || [])[1];
+      if (rec) {
+        var n = Number(rec);
+        fetch("/data/maintenance/index.json", { cache: "no-cache" })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .catch(function() { return null; })
+          .then(function(index) {
+            var y = index && (index.years || []).filter(function(e) {
+              return n >= Number(e.firstId) && Number(e.lastId) >= n;
+            })[0];
+            if (y) {
+              maintenanceState.year = String(y.year);
+              maintenanceState.sortBy = "id";
+              maintenanceState.sortDirection = "asc";
+              maintenanceState.page = Math.floor((n - Number(y.firstId)) / maintenanceState.pageSize) + 1;
+              maintenanceElements.sortSelect.value = "id";
+              maintenanceElements.directionSelect.value = "asc";
+              selectedMaintenanceRecordId = String(n);
+            }
+            loadMaintenanceLogData_();
+          });
+        return;
+      }
+
       loadMaintenanceLogData_();
     }
 
@@ -2302,6 +2330,9 @@ function exitMaintenanceLog() {
         .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
         .then(function (data) {
           docs = data.documents || [];
+          var want = (/[?&]doc=([A-Z]+(-[A-Z]+)?-\d{2,3})(&|$)/.exec(location.search) || [])[1];
+          var startDoc = want && docs.filter(function (d) { return d.no === want; })[0];
+          if (startDoc) openKey = startDoc.no + "|" + startDoc.revs[startDoc.revs.length - 1][0];
           var seen = {};
           docs.forEach(function (d) {
             if (!seen[d.series]) {
@@ -2312,6 +2343,10 @@ function exitMaintenanceLog() {
             }
           });
           render();
+          if (startDoc) {
+            var row = el.list.querySelector('tr[data-key="' + openKey.replace(/"/g, '\\"') + '"]');
+            if (row) row.scrollIntoView({ block: "start" });
+          }
         })
         .catch(function () {
           loading = false;
@@ -2514,7 +2549,8 @@ function exitMaintenanceLog() {
   // sys, its text matches text, or its text names one of the documents; an
   // entry matching several goes to the project with the shortest window.
   (function () {
-    var loaded = false, projects = [], selected = "";
+    var loaded = false, projects = [], selected = (/[?&]p=(ENG-\d\d-\d\d)(&|$)/.exec(location.search) || [])[1] || "";
+    var scrollToSelected = !!selected;
     var els = {
       status: document.getElementById("prjStatus"),
       list: document.getElementById("prjList")
@@ -2579,7 +2615,9 @@ function exitMaintenanceLog() {
         '<tr><td class="record-view-label">ENGINEER:</td><td>' + esc(p.lead) + '</td></tr>' +
         '<tr><td class="record-view-label">OPENED:</td><td>' + p.opened + '</td></tr>' +
         '<tr><td class="record-view-label">' + (p.outcome === "ONGOING" ? "LATEST:" : "CLOSED:") + '</td><td>' + p.last + '</td></tr>' +
-        (p.docs.length ? '<tr><td class="record-view-label">DOCUMENTS:</td><td><a href="/maintenance/?view=register">' + esc(p.docs.join(", ")) + '</a></td></tr>' : '') +
+        (p.docs.length ? '<tr><td class="record-view-label">DOCUMENTS:</td><td>' + p.docs.map(function (d) {
+          return '<a href="/maintenance/?view=register&amp;doc=' + encodeURIComponent(String(d).split(" ")[0]) + '">' + esc(d) + '</a>';
+        }).join(", ") + '</td></tr>' : '') +
         '<tr><td class="record-view-label">FILE:</td><td>' + p.rows.length + ' ENTRIES BY ' + Object.keys(people).length + ' PERSON(S)</td></tr>' +
         '</table><div class="record-entry-divider"></div>' +
         '<div class="record-view-label" style="margin-bottom:6px">PROJECT FILE (OLDEST FIRST)</div>' +
@@ -2630,6 +2668,11 @@ function exitMaintenanceLog() {
           if (!res[0] || !res[0].projects || !res[1] || res[1].ok !== true || !res[1].records) throw new Error("bad file");
           build(res[0].projects, res[1].records);
           render();
+          if (scrollToSelected) {
+            scrollToSelected = false;
+            var row = els.list.querySelector('tr[data-code="' + selected + '"]');
+            if (row) row.scrollIntoView({ block: "start" });
+          }
         })
         .catch(fail);
     };
@@ -2721,6 +2764,7 @@ function exitMaintenanceLog() {
     if (new URLSearchParams(location.search).get("view") === "syslog") load();
   })();
 </script>
+<script src="/assets/xref.js" defer></script>
 <script src="/assets/notice.js" defer></script>
 </body>
 </html>
