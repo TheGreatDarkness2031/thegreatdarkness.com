@@ -100,7 +100,7 @@ table.dir tr.row:hover td { background: #000060; color: #fff; }
 .thumb { width: 34px; height: 34px; object-fit: cover; display: block; border: 1px solid #555; background: #222; }
 .nophoto {
   display: flex; align-items: center; justify-content: center; text-align: center;
-  background: #1f1f1f; border: 1px solid #444; color: #555; font-size: 0.5rem; letter-spacing: 0.5px; line-height: 1.2;
+  background: #1f1f1f; border: 1px solid #444; color: #8a8a8a; font-size: 0.5rem; letter-spacing: 0.5px; line-height: 1.2;
 }
 .thumb.nophoto { font-size: 0.42rem; }
 .status-active { color: var(--green); }
@@ -350,6 +350,7 @@ tr[data-id] img[data-full] { cursor: pointer; }
   }
   function yearSelect(current, onChange, min) {
     var s = el("select");
+    s.setAttribute("aria-label", "Year");
     years().slice().sort(function (a, b) { return b - a; }).forEach(function (y) {
       if (min && y < min) return;
       var o = el("option", null, String(y));
@@ -406,6 +407,7 @@ tr[data-id] img[data-full] { cursor: pointer; }
     function sel(label, key, options) {
       c.appendChild(el("label", null, label));
       var s = el("select");
+      s.setAttribute("aria-label", label);
       options.forEach(function (o) {
         var opt = el("option", null, o[1]);
         opt.value = o[0];

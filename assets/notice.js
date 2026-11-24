@@ -63,15 +63,37 @@
     "background:#000;color:#c8c8c8;border:1px solid #555;font:12px/1.55 'Courier New',Courier,monospace;" +
     "letter-spacing:1px;text-align:center;box-sizing:border-box}" +
     ".oer-site-notice-links{margin-top:6px}" +
-    ".oer-site-notice a,.oer-site-notice-short a{color:#00cc00;text-decoration:none}" +
+    ".oer-site-notice a,.oer-site-notice-short a{color:#00cc00;text-decoration:underline}" +
     ".oer-site-notice a:hover,.oer-site-notice a:focus,.oer-site-notice-short a:hover{color:#00ff00;text-decoration:underline}" +
-    ".oer-site-notice-links a{margin:0 6px}";
+    ".oer-site-notice-links a{margin:0 6px}" +
+    // Accessibility (2026-11-23): keyboard focus is always visible, and a
+    // device that asks for less motion gets it (blinks and sweeps stop).
+    ":focus-visible{outline:2px solid #ffd24a!important;outline-offset:2px}" +
+    "@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;" +
+    "animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}";
   (document.head || document.documentElement).appendChild(css);
+
+  // Scrolling ticker (homepage <marquee>): pauses under the pointer or on
+  // keyboard focus; with reduced motion it slides in once and stays.
+  function calmMarquees() {
+    var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+    Array.prototype.forEach.call(document.getElementsByTagName("marquee"), function (m) {
+      if (reduce) m.setAttribute("behavior", "slide");
+      m.setAttribute("tabindex", "0");
+      var stop = function () { if (m.stop) m.stop(); };
+      var go = function () { if (m.start) m.start(); };
+      m.addEventListener("mouseenter", stop);
+      m.addEventListener("mouseleave", go);
+      m.addEventListener("focus", stop);
+      m.addEventListener("blur", go);
+    });
+  }
 
   // console.js builds the frame on DOMContentLoaded; run just after it.
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () { setTimeout(run, 0); });
+    document.addEventListener("DOMContentLoaded", function () { setTimeout(run, 0); calmMarquees(); });
   } else {
     setTimeout(run, 0);
+    calmMarquees();
   }
 })();

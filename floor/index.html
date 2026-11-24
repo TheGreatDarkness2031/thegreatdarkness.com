@@ -1164,7 +1164,7 @@
 
     .event-preview-id {
       margin-top: 4px;
-      color: #666666;
+      color: #8a8a8a;
       font-size: 0.54rem;
       letter-spacing: 0.4px;
       overflow-wrap: anywhere;
@@ -1262,7 +1262,7 @@
 
     .oer-monitor-id {
       margin-bottom: 5px;
-      color: #666666;
+      color: #8a8a8a;
       font-size: 0.58rem;
       font-weight: bold;
       letter-spacing: 1px;
@@ -1968,7 +1968,7 @@
   .xml-button {
     display: inline-block;
     padding: 1px 5px;
-    background: #ff6600;
+    background: #c45200;
     color: #ffffff !important;
     font: bold 10px Verdana, Arial, sans-serif;
     letter-spacing: 0;
@@ -2123,6 +2123,7 @@
 
             <input
               id="radarVolume"
+              aria-label="Sound volume"
               class="console-slider"
               type="range"
               min="0"
@@ -2137,6 +2138,7 @@
 
             <input
               id="radarBrightness"
+              aria-label="Radar brightness"
               class="console-slider"
               type="range"
               min="30"
@@ -2149,6 +2151,7 @@
 
             <input
               id="radarSweepSpeed"
+              aria-label="Sweep speed"
               class="console-slider"
               type="range"
               min="5"
@@ -4453,6 +4456,7 @@
       holder.style.zIndex = String(10 + Math.round(Number(anchor.radarSeverity) || 1));
       /* Hover (mouse) or tap (homepage, touch) shows the details
          card; the plain browser tooltip is only a fallback label. */
+      holder.setAttribute("role", "img");
       holder.setAttribute("aria-label", radarStackTitle_(members));
       attachRadarHover_(holder, members);
 

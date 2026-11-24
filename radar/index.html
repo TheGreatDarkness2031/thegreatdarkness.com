@@ -823,7 +823,7 @@
       display: flex;
       justify-content: space-between;
       margin-top: -4px;
-      color: #888888;
+      color: #b0b0b0;
       font-size: 0.6rem;
       letter-spacing: 1px;
     }
@@ -1208,6 +1208,7 @@
 
             <input
               id="radarVolume"
+              aria-label="Sound volume"
               class="console-slider"
               type="range"
               min="0"
@@ -1222,6 +1223,7 @@
 
             <input
               id="radarBrightness"
+              aria-label="Radar brightness"
               class="console-slider"
               type="range"
               min="30"
@@ -1236,6 +1238,7 @@
 
             <input
               id="radarSweepSpeed"
+              aria-label="Sweep speed"
               class="console-slider"
               type="range"
               min="5"
@@ -1327,6 +1330,7 @@
 
                 <input
                   id="radarTimeline"
+                  aria-label="Playback position"
                   class="console-slider"
                   type="range"
                   min="0"
@@ -1370,6 +1374,7 @@
 
               <select
                 id="radarDaySelect"
+                aria-label="Playback day"
                 class="timeline-select"
                 onchange="radarTimelineDayChanged_()"
               >
@@ -2013,6 +2018,7 @@
       holder.style.zIndex = String(10 + Math.round(Number(anchor.radarSeverity) || 1));
       /* Hover (mouse) or tap (homepage, touch) shows the details
          card; the plain browser tooltip is only a fallback label. */
+      holder.setAttribute("role", "img");
       holder.setAttribute("aria-label", radarStackTitle_(members));
       attachRadarHover_(holder, members);
 

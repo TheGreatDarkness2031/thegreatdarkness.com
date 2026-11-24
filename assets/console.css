@@ -146,7 +146,7 @@ body.oerc #docReturnBottom { display: none !important; }
 .oerc-group[open] .oerc-sign::after { content: "-"; }
 .oerc-sub { margin: 0 0 6px 10px; }
 .oerc-subitem { padding: 4px 7px; margin-bottom: 3px; font-size: 10px; background: #151515; }
-.oerc-rail-foot { margin-top: 12px; color: #555; font-size: 9px; letter-spacing: 2px; text-align: center; }
+.oerc-rail-foot { margin-top: 12px; color: #858585; font-size: 9px; letter-spacing: 2px; text-align: center; }
 
 /* ---- narrower screens: rail becomes a MENU drop-down ---- */
 @media (max-width: 1000px) {
@@ -226,7 +226,7 @@ html.oer-connecting body { visibility: hidden; }
   margin: 26px auto 6px;
   text-align: center;
   font: 10px/1.4 "Courier New", Courier, monospace;
-  color: #666;
+  color: #8a8a8a;
   letter-spacing: 1px;
 }
 .oer-badges { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 8px; }
@@ -262,7 +262,7 @@ html.oer-connecting body { visibility: hidden; }
 .oer-badge88.pad .t { background: #ffffff; }
 .oer-badge88.net .k { background: #005500; color: #00ff00; font-family: "Courier New", monospace; }
 .oer-badge88.net .t { background: #002200; color: #00ff00; }
-.oer-badge88.xml .k { background: #ff6600; }
+.oer-badge88.xml .k { background: #c45200; }
 .oer-badge88.xml .t { background: #ffe0c0; }
 a.oer-badge88:hover { outline-color: #fff; }
 

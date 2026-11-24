@@ -324,7 +324,7 @@
 
     .original-system-record {
       margin: -10px auto 20px;
-      color: #555555;
+      color: #808080;
       font-size: 0.62rem;
       letter-spacing: 1px;
       cursor: pointer;
@@ -1176,7 +1176,7 @@
 
     .event-preview-id {
       margin-top: 4px;
-      color: #666666;
+      color: #8a8a8a;
       font-size: 0.54rem;
       letter-spacing: 0.4px;
       overflow-wrap: anywhere;
@@ -1274,7 +1274,7 @@
 
     .oer-monitor-id {
       margin-bottom: 5px;
-      color: #666666;
+      color: #8a8a8a;
       font-size: 0.58rem;
       font-weight: bold;
       letter-spacing: 1px;
@@ -1657,7 +1657,7 @@
     }
 
     .system-record-link {
-      color: #666666;
+      color: #8a8a8a;
       font-family: "Courier New", Courier, monospace;
       font-size: 0.62rem;
       letter-spacing: 0.7px;
@@ -1671,8 +1671,8 @@
       text-decoration: underline;
     }
 
-    .bbs-public-note { margin: 4px 0 8px; color: #666666; font-size: 0.62rem; letter-spacing: 1px; text-align: center; }
-    .bbs-public-note a { color: #888888; text-decoration: none; white-space: nowrap; }
+    .bbs-public-note { margin: 4px 0 8px; color: #8a8a8a; font-size: 0.62rem; letter-spacing: 1px; text-align: center; }
+    .bbs-public-note a { color: #aaaaaa; text-decoration: underline; white-space: nowrap; }
     .bbs-public-note a:hover, .bbs-public-note a:focus { color: #cccccc; text-decoration: underline; }
 
     .system-record-terminal { color: #00cc00; }
@@ -1702,7 +1702,7 @@
 
     .counter-since {
       margin-top: 5px;
-      color: #555555;
+      color: #808080;
       font-size: 0.65rem;
       letter-spacing: 1px;
     }
@@ -1743,7 +1743,7 @@
 
     .webring-node {
       margin-top: 8px;
-      color: #555555;
+      color: #808080;
     }
 
     /* =========================================================
@@ -1970,7 +1970,7 @@
   .xml-button {
     display: inline-block;
     padding: 1px 5px;
-    background: #ff6600;
+    background: #c45200;
     color: #ffffff !important;
     font: bold 10px Verdana, Arial, sans-serif;
     letter-spacing: 0;
@@ -2514,6 +2514,8 @@
 
       <div
         class="bbs-feed"
+        tabindex="0"
+        aria-label="Public log"
         id="bbsFeed"
       >
         LOADING ROSTER LOGS...
@@ -4703,6 +4705,7 @@
       holder.style.zIndex = String(10 + Math.round(Number(anchor.radarSeverity) || 1));
       /* Hover (mouse) or tap (homepage, touch) shows the details
          card; the plain browser tooltip is only a fallback label. */
+      holder.setAttribute("role", "img");
       holder.setAttribute("aria-label", radarStackTitle_(members));
       attachRadarHover_(holder, members);
 

@@ -88,7 +88,7 @@
     home.href = HOME;
     home.className = "tgd-home-link";
     home.textContent = "◄ HOME";
-    home.setAttribute("aria-label", "Back to the homepage");
+    home.setAttribute("title", "Back to the homepage");
     var style = document.createElement("style");
     style.textContent =
       ".tgd-home-link{position:fixed;left:8px;bottom:8px;z-index:99999;" +
