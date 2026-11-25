@@ -138,11 +138,31 @@ body { padding: 10px 12px 12px; }
 .rep .bar { display: inline-block; height: 8px; background: #4f8a58; vertical-align: middle; }
 .scroll-x { overflow-x: auto; }
 
+/* new ticket (guest tickets, 2026-11-24) */
+.newt .fields select, .newt .fields input, .newt .fields textarea {
+  background: #000; color: #e8e8e8; border: 1px solid #666; padding: 3px 6px; font: inherit; font-size: 0.78rem; width: 100%; max-width: 60ch;
+}
+.newt .fields textarea { min-height: 8.5em; resize: vertical; font-family: Arial, Helvetica, sans-serif; line-height: 1.45; }
+.newt .fields select { width: auto; }
+.newt .count { color: var(--muted); font-size: 0.66rem; letter-spacing: 1px; }
+.newt .rules { padding: 8px 12px; font-size: 0.68rem; color: #a8a8a8; letter-spacing: 1px; line-height: 1.6; border-bottom: 1px dashed #444; }
+.newt .rules a { color: var(--green); text-decoration: none; }
+.newt .send { padding: 10px 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.newt .send button { background: #222; color: var(--green); border: 2px outset #888; font: inherit; font-size: 0.78rem; letter-spacing: 1px; padding: 3px 12px; cursor: pointer; }
+.newt .send button:active { border-style: inset; }
+.newt .send button:disabled { color: #8a8a8a; cursor: default; }
+.newt .msg { font-size: 0.74rem; letter-spacing: 1px; color: var(--amber); }
+.newt .done { padding: 12px; font-size: 0.8rem; letter-spacing: 1px; color: #e2e2e2; line-height: 1.8; }
+.newt .done a { color: var(--green); text-decoration: none; }
+.desc.onfile { color: var(--muted); font-family: inherit; font-size: 0.72rem; letter-spacing: 1px; padding-top: 4px; }
+
 @media (max-width: 700px) {
   .list .hide-narrow { display: none; }
   .pane { padding: 10px 8px 14px; }
   .fields { grid-template-columns: 11ch 1fr; }
   .fields .wide { grid-column: 2; }
+  .newt .fields { grid-template-columns: 1fr; gap: 2px 0; }
+  .newt .fields .wide { grid-column: 1; margin-bottom: 6px; }
   .work .w { width: auto; }
   .work td { display: block; border: 0; padding: 2px 12px; }
   .work tr { display: block; border-bottom: 1px solid #222; padding: 4px 0; }
@@ -163,6 +183,7 @@ body { padding: 10px 12px 12px; }
   <nav class="office-nav" id="tabs">
     <a href="?" data-view="queue">[ TICKET QUEUE ]</a>
     <a href="?view=open" data-view="open">[ OPEN TICKETS ]</a>
+    <a href="?view=new" data-view="new">[ NEW TICKET ]</a>
     <a href="?view=reports" data-view="reports">[ REPORTS ]</a>
     <a href="/wiki/">[ OPS WIKI ]</a>
   </nav>
@@ -178,6 +199,12 @@ body { padding: 10px 12px 12px; }
   var STATUS = ["OPEN", "CLOSED", "CLOSED - NO FAULT", "CLOSED - DUPLICATE", "CLOSED - REFERRED"];
   var PAGE = 60;
   var shown = PAGE;
+  // Guest tickets (GuestTickets.js in Apps Script): opened here by visitors
+  // on their VISITOR PASS badge, numbered after the archive, never assigned.
+  var GUEST_CATS = ["CONSOLE", "FEED", "DATA", "NETWORK", "SOFTWARE", "BADGE", "SYSTEM"];
+  var GUEST_FROM = 2026;
+  var MINE_KEY = "oerGuestTickets", PASS_KEY = "oerVisitorPass";
+  var GUESTS = null;
 
   function el(tag, cls, text) {
     var e = document.createElement(tag);
@@ -207,6 +234,69 @@ body { padding: 10px 12px 12px; }
   }
   function person(name, id) { return id ? link("/hr/?id=" + encodeURIComponent(id), name.toUpperCase()) : el("span", null, (name || "UNASSIGNED").toUpperCase()); }
 
+  // ---------------- guest tickets ----------------
+  function readMine() {
+    var m = null;
+    try { m = JSON.parse(localStorage.getItem(MINE_KEY) || "null"); } catch (e) { m = null; }
+    return Array.isArray(m) ? m : [];
+  }
+  function saveMine(list) { try { localStorage.setItem(MINE_KEY, JSON.stringify(list.slice(-50))); } catch (e) {} }
+  // The homepage VISITOR PASS badge (assets/start-here.js); made here the
+  // same way when this browser has none yet.
+  function badge() {
+    var pass = null;
+    try { pass = JSON.parse(localStorage.getItem(PASS_KEY) || "null"); } catch (e) { pass = null; }
+    if (!pass || !(pass.no >= 1 && pass.no <= 10) || !(pass.at > 0)) {
+      pass = { no: 1 + Math.floor(Math.random() * 10), at: Date.now() };
+      try { localStorage.setItem(PASS_KEY, JSON.stringify(pass)); } catch (e) {}
+    }
+    return "GN-" + (pass.no < 10 ? "0" : "") + pass.no;
+  }
+  function guestTicket(g) {
+    return { id: g.id, o: g.o, by: "GUEST // " + g.b, byId: "", loc: "PUBLIC ACCESS NODE", cat: g.c, p: "P4",
+      t: g.h ? "(SUBJECT WITHHELD)" : g.s, d: "", to: "", st: "OPEN", log: [[g.o, g.b, "Ticket opened."]], guest: true };
+  }
+  function idOrder(a, b) { return a.id < b.id ? -1 : a.id > b.id ? 1 : 0; }
+  // The public list (rpc getGuestTickets, JSONP), plus this browser's own
+  // tickets the list does not show yet. Never fails: no answer = only those.
+  function guests() {
+    if (GUESTS) return GUESTS;
+    GUESTS = new Promise(function (resolve) {
+      var done = false, cb = "oerGuestTix" + Date.now().toString(36), tag = document.createElement("script");
+      function finish(list) {
+        if (done) return;
+        done = true;
+        window[cb] = function () {};
+        if (tag.parentNode) tag.parentNode.removeChild(tag);
+        var seen = {};
+        list.forEach(function (g) { seen[g.id] = true; });
+        readMine().forEach(function (m) { if (m.id && !seen[m.id]) list.push({ id: m.id, o: m.o, b: m.b, c: m.c, s: m.s, h: 0 }); });
+        resolve(list.filter(function (g) { return /^TT-\d{4}-\d{4}$/.test(g.id); }).map(guestTicket).sort(idOrder));
+      }
+      window[cb] = function (a) { finish(a && a.ok && a.result && Array.isArray(a.result.tickets) ? a.result.tickets : []); };
+      tag.onerror = function () { finish([]); };
+      setTimeout(function () { finish([]); }, 8000);
+      if (typeof TGD_API_URL === "undefined") { finish([]); return; }
+      tag.src = TGD_API_URL + "?rpc=getGuestTickets&args=%5B%5D&callback=" + cb;
+      document.head.appendChild(tag);
+    });
+    return GUESTS;
+  }
+  // A year's archive tickets followed by its guest tickets (number order).
+  function yearAll(y) {
+    y = String(y);
+    var archive = INDEX.years.some(function (x) { return String(x.year) === y; }) ? year(y) : Promise.resolve([]);
+    if (Number(y) < GUEST_FROM) return archive;
+    return Promise.all([archive, guests()]).then(function (r) {
+      return r[0].concat(r[1].filter(function (t) { return t.id.slice(3, 7) === y; }));
+    });
+  }
+  function years() {
+    var list = INDEX.years.map(function (y) { return y.year; });
+    for (var y = new Date().getFullYear(); y > list[0]; y--) list.unshift(y);
+    return list;
+  }
+
   function year(y) {
     y = String(y);
     if (YEARS[y]) return Promise.resolve(YEARS[y]);
@@ -218,7 +308,9 @@ body { padding: 10px 12px 12px; }
     }
     return LOADING[y];
   }
-  function allYears() { return Promise.all(INDEX.years.map(function (y) { return year(y.year); })).then(function (lists) { return [].concat.apply([], lists); }); }
+  function allYears() {
+    return Promise.all(INDEX.years.map(function (y) { return year(y.year); }).concat([guests()])).then(function (lists) { return [].concat.apply([], lists); });
+  }
   function fail() {
     pane.textContent = "";
     pane.appendChild(el("h2", null, "TICKET SYSTEM UNAVAILABLE"));
@@ -240,8 +332,8 @@ body { padding: 10px 12px 12px; }
   }
   function controls(q) {
     var f = el("form", "controls");
-    var yrs = [["ALL", "ALL YEARS"]].concat(INDEX.years.map(function (y) { return [y.year, String(y.year)]; }));
-    f.appendChild(select("fy", "YEAR", yrs, q.y || INDEX.years[0].year));
+    var yrs = [["ALL", "ALL YEARS"]].concat(years().map(function (y) { return [y, String(y)]; }));
+    f.appendChild(select("fy", "YEAR", yrs, q.y || years()[0]));
     f.appendChild(select("fc", "CATEGORY", [["", "ALL"]].concat(CATS.map(function (c) { return [c, c]; })), q.cat || ""));
     f.appendChild(select("fs", "STATUS", [["", "ALL"]].concat(STATUS.map(function (c) { return [c, c]; })), q.st || ""));
     var w = el("span");
@@ -306,12 +398,12 @@ body { padding: 10px 12px 12px; }
     return b;
   }
   function queueView(q) {
-    var y = q.y || String(INDEX.years[0].year);
+    var y = q.y || String(years()[0]);
     pane.appendChild(el("h2", null, "TICKET QUEUE // " + (y === "ALL" ? "ALL YEARS" : y)));
     pane.appendChild(controls(q));
     var spot = el("div"); pane.appendChild(spot);
     spot.appendChild(el("p", "note", "LOADING..."));
-    (y === "ALL" ? allYears() : year(y)).then(function (all) {
+    (y === "ALL" ? allYears() : yearAll(y)).then(function (all) {
       var list = all.filter(function (t) { return matches(t, q); }).sort(function (a, b) { return a.o < b.o ? 1 : a.o > b.o ? -1 : 0; });
       function draw() {
         spot.textContent = "";
@@ -328,7 +420,7 @@ body { padding: 10px 12px 12px; }
     pane.appendChild(el("h2", null, "OPEN TICKETS"));
     var spot = el("div"); pane.appendChild(spot);
     var yrs = INDEX.years.filter(function (y) { return y.open > 0; });
-    Promise.all(yrs.map(function (y) { return year(y.year); })).then(function (lists) {
+    Promise.all(yrs.map(function (y) { return year(y.year); }).concat([guests()])).then(function (lists) {
       var list = [].concat.apply([], lists).filter(function (t) { return t.st === "OPEN"; }).sort(function (a, b) { return a.o < b.o ? 1 : -1; });
       spot.appendChild(el("p", "note", list.length + " OPEN. NEWEST FIRST."));
       if (list.length) spot.appendChild(table(list, true));
@@ -338,9 +430,12 @@ body { padding: 10px 12px 12px; }
   // ---------------- one ticket ----------------
   function ticketView(id, q) {
     var y = (/^TT-(\d{4})-\d{4}$/.exec(id) || [])[1];
-    var known = y && INDEX.years.some(function (x) { return String(x.year) === y; });
+    var known = y && (INDEX.years.some(function (x) { return String(x.year) === y; }) || Number(y) >= GUEST_FROM);
     if (!known) { pane.appendChild(el("h2", null, "NO SUCH TICKET")); pane.appendChild(el("p", "nopage", id.toUpperCase() + " IS NOT ON FILE.")); return; }
-    year(y).then(function (list) {
+    var wait = el("p", "note", "LOADING...");
+    pane.appendChild(wait);
+    yearAll(y).then(function (list) {
+      if (wait.parentNode) wait.parentNode.removeChild(wait);
       var i = -1;
       list.forEach(function (t, n) { if (t.id === id) i = n; });
       if (i < 0) { pane.appendChild(el("h2", null, "NO SUCH TICKET")); pane.appendChild(el("p", "nopage", id + " IS NOT ON FILE.")); return; }
@@ -387,7 +482,12 @@ body { padding: 10px 12px 12px; }
       if (t.dup) { field("DUPLICATE OF", link("?t=" + t.dup, t.dup), true); }
       s.appendChild(f);
       s.appendChild(el("div", "ttl", t.t));
-      s.appendChild(el("div", "desc", t.d));
+      if (!t.guest) s.appendChild(el("div", "desc", t.d));
+      else {
+        var mine = readMine().filter(function (m) { return m.id === t.id; })[0];
+        if (mine && mine.d) s.appendChild(el("div", "desc", mine.d));
+        else s.appendChild(el("div", "desc onfile", "DESCRIPTION ON FILE WITH SUPPORT STAFF."));
+      }
       s.appendChild(el("div", "sec", "WORK LOG"));
       if (!t.log.length) s.appendChild(el("div", "empty", "NO ENTRIES."));
       else {
@@ -404,6 +504,99 @@ body { padding: 10px 12px 12px; }
       s.appendChild(el("div", "foot", "TIMES ARE FACILITY TIME (CENTRAL). TICKET " + (i + 1) + " OF " + list.length + " FOR " + y + "."));
       pane.appendChild(s);
     }).catch(fail);
+  }
+
+  // ---------------- new ticket ----------------
+  function newView() {
+    pane.appendChild(el("h2", null, "NEW TICKET"));
+    var b = badge();
+    var form = el("form", "sheet newt");
+    var h = el("div", "sheet-head");
+    h.appendChild(el("span", "tid", "TT-____-____"));
+    h.appendChild(el("span", "st OPEN", "STATUS: NEW"));
+    form.appendChild(h);
+    var f = el("div", "fields");
+    function field(k, v, forId) {
+      var key = el(forId ? "label" : "span", "k", k);
+      if (forId) key.htmlFor = forId;
+      f.appendChild(key);
+      var d = el("span", "v wide");
+      if (typeof v === "string") d.textContent = v; else d.appendChild(v);
+      f.appendChild(d);
+    }
+    field("REQUESTER", "GUEST // " + b + " // NOT CLEARED");
+    field("LOCATION", "PUBLIC ACCESS NODE");
+    field("PRIORITY", "P4");
+    var cat = el("select"); cat.id = "ncat";
+    GUEST_CATS.forEach(function (c) { var o = el("option", null, c); o.value = c; cat.appendChild(o); });
+    field("CATEGORY", cat, "ncat");
+    var subjWrap = el("span");
+    var subj = el("input"); subj.id = "nsubj"; subj.type = "text"; subj.maxLength = 60; subj.autocomplete = "off";
+    var sc = el("span", "count", "0 / 60");
+    subj.addEventListener("input", function () { sc.textContent = subj.value.length + " / 60"; });
+    subjWrap.appendChild(subj); subjWrap.appendChild(el("br")); subjWrap.appendChild(sc);
+    field("SUBJECT", subjWrap, "nsubj");
+    var descWrap = el("span");
+    var desc = el("textarea"); desc.id = "ndesc"; desc.maxLength = 600;
+    var dc = el("span", "count", "0 / 600");
+    desc.addEventListener("input", function () { dc.textContent = desc.value.length + " / 600"; });
+    descWrap.appendChild(desc); descWrap.appendChild(el("br")); descWrap.appendChild(dc);
+    field("DESCRIPTION", descWrap, "ndesc");
+    form.appendChild(f);
+    var rules = el("div", "rules");
+    rules.appendChild(el("div", null, "THE SUBJECT LINE IS LISTED IN THE TICKET QUEUE. THE DESCRIPTION GOES TO SUPPORT STAFF ONLY."));
+    rules.appendChild(el("div", null, "DO NOT ENTER NAMES, EMAIL ADDRESSES OR PHONE NUMBERS."));
+    var priv = el("div"); priv.appendChild(document.createTextNode("SEE THE ")); priv.appendChild(link("/privacy/", "DATA HANDLING NOTICE")); priv.appendChild(document.createTextNode("."));
+    rules.appendChild(priv);
+    form.appendChild(rules);
+    var send = el("div", "send");
+    var go1 = el("button", null, "[ SUBMIT TICKET ]"); go1.type = "submit";
+    var msg = el("span", "msg"); msg.setAttribute("role", "status");
+    send.appendChild(go1); send.appendChild(msg);
+    form.appendChild(send);
+    pane.appendChild(form);
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var s = subj.value.replace(/\s+/g, " ").trim(), d = desc.value.trim();
+      if (!s) { msg.textContent = "SUBJECT CANNOT BE BLANK."; subj.focus(); return; }
+      var dayAgo = Date.now() - 86400000;
+      if (readMine().filter(function (m) { return m.at > dayAgo; }).length >= 3) { msg.textContent = "TICKET LIMIT REACHED FOR THIS BADGE. TRY AGAIN TOMORROW."; return; }
+      go1.disabled = true;
+      msg.textContent = "TRANSMITTING...";
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", TGD_API_URL, true);
+      xhr.setRequestHeader("Content-Type", "text/plain");
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+        var a = null;
+        try { a = JSON.parse(xhr.responseText); } catch (err) { a = null; }
+        if (a && a.status === "SUCCESS" && /^TT-\d{4}-\d{4}$/.test(a.id || "")) {
+          var mine = readMine().filter(function (m) { return m.id !== a.id; });
+          mine.push({ id: a.id, o: a.o, b: b, c: cat.value, s: s, d: d, at: Date.now() });
+          saveMine(mine);
+          GUESTS = null;
+          form.textContent = "";
+          var hd = el("div", "sheet-head");
+          hd.appendChild(el("span", "tid", a.id));
+          hd.appendChild(el("span", "st OPEN", "STATUS: OPEN"));
+          form.appendChild(hd);
+          var done = el("div", "done");
+          done.appendChild(el("div", null, "TICKET " + a.id + " OPENED " + a.o + "."));
+          done.appendChild(el("div", null, "PRIORITY P4 // ASSIGNED TO: --"));
+          var v = el("div"); v.appendChild(link("?t=" + a.id, "[ VIEW TICKET ]")); v.appendChild(document.createTextNode(" ")); v.appendChild(link("?view=open", "[ OPEN TICKETS ]"));
+          done.appendChild(v);
+          form.appendChild(done);
+          return;
+        }
+        go1.disabled = false;
+        if (a && a.reason === "BUSY") msg.textContent = "TICKET HOST BUSY. TRY AGAIN LATER.";
+        else if (a && a.reason === "CLOSED") msg.textContent = "TICKET INTAKE CLOSED.";
+        else if (a && a.status === "REJECTED") msg.textContent = "TICKET NOT ACCEPTED.";
+        else msg.textContent = "NO ANSWER FROM THE TICKET HOST. TRY AGAIN.";
+      };
+      xhr.send(JSON.stringify({ kind: "ticket", badge: b, cat: cat.value, subject: s, description: d }));
+    });
   }
 
   // ---------------- reports ----------------
@@ -450,7 +643,7 @@ body { padding: 10px 12px 12px; }
   function render() {
     if (!INDEX) return;
     var q = params();
-    var view = q.t ? "" : q.view === "open" ? "open" : q.view === "reports" ? "reports" : "queue";
+    var view = q.t ? "" : q.view === "open" ? "open" : q.view === "reports" ? "reports" : q.view === "new" ? "new" : "queue";
     pane.textContent = "";
     Array.prototype.forEach.call(document.querySelectorAll("#tabs a[data-view]"), function (a) {
       a.classList.toggle("on", a.getAttribute("data-view") === view);
@@ -459,6 +652,7 @@ body { padding: 10px 12px 12px; }
     if (q.t) ticketView(q.t.toUpperCase(), q);
     else if (view === "open") openView();
     else if (view === "reports") reportsView();
+    else if (view === "new") newView();
     else queueView(q);
   }
 
