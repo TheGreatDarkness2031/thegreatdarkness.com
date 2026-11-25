@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="/assets/config.js"></script>
+<script src="/assets/source-register.js"></script>
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
@@ -1741,6 +1742,12 @@
       } else {
         screen.removeAttribute("title");
       }
+    }
+
+    /* SOURCES at once from the fixed copy (assets/source-register.js); the
+       first Radar answer puts in the live lights. */
+    if (window.OER_SOURCE_REGISTER) {
+      renderSourceRegister_(window.OER_SOURCE_REGISTER);
     }
 
     function renderSourceRegister_(sources) {

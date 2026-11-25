@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <script src="/assets/config.js"></script>
+<script src="/assets/source-register.js"></script>
 <script>
   // Connecting screen waits for these (console.js), up to 12 s.
   window.OER_CONNECT_WAIT = [["system", "MONITORING GRID"], ["radar", "RADAR"], ["events", "EVENT FEED"]];</script>
@@ -4177,6 +4178,12 @@
       } else {
         screen.removeAttribute("title");
       }
+    }
+
+    /* SOURCES at once from the fixed copy (assets/source-register.js); the
+       first Radar answer puts in the live lights. */
+    if (window.OER_SOURCE_REGISTER) {
+      renderSourceRegister_(window.OER_SOURCE_REGISTER);
     }
 
     function renderSourceRegister_(sources) {
