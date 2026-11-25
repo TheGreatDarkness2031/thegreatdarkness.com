@@ -98,6 +98,7 @@
       background: #000;
       border: 2px solid #333;
       touch-action: none;
+      -webkit-touch-callout: none;   /* iPhone: no save-image menu on a long press (flag) */
     }
 
     .controls {
@@ -2347,9 +2348,15 @@
       return -1;
     }
 
-    canvas.addEventListener("contextmenu", function(e) {
-      e.preventDefault();
-    });
+    // No browser menu anywhere on the game screen while playing: a right-click
+    // that lands on the board's edge or moves off the board while pressed
+    // would otherwise open it (owner, 2026-11-25).
+    document.addEventListener("contextmenu", function(e) {
+      const playing = document.getElementById("gameScreen");
+      if (e.target === canvas || (playing && playing.style.display !== "none" && playing.contains(e.target))) {
+        e.preventDefault();
+      }
+    }, true);
 
     canvas.addEventListener("pointerdown", function(e) {
       e.preventDefault();

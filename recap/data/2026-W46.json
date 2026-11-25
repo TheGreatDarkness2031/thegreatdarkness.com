@@ -1,0 +1,808 @@
+{
+ "summary": {
+  "week": "2026-W46",
+  "from": "2026-11-09T06:00:00.000Z",
+  "to": "2026-11-16T06:00:00.000Z",
+  "timeZone": "America/Chicago",
+  "built": "2026-11-17T06:52:17.729Z",
+  "partial": false,
+  "complete": false,
+  "monitors": [
+   {
+    "id": "NWS",
+    "prefix": "severewx",
+    "name": "SEVERE WEATHER",
+    "color": "#168BFF",
+    "order": 4,
+    "intervalMinutes": 15,
+    "peak": "CRITICAL",
+    "peakAt": 1794227446883,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 2020,
+     "WATCH": 6175,
+     "ELEVATED": 585,
+     "CRITICAL": 1280
+    },
+    "degradedMinutes": 20,
+    "missingMinutes": 0,
+    "historyStart": 1793960146000,
+    "covered": true,
+    "checks": 653,
+    "contacts": 61,
+    "contactsRaised": 61,
+    "top": [
+     {
+      "t": 1794227446883,
+      "status": "CRITICAL",
+      "label": "BLIZZARD WARNING",
+      "rows": [
+       [
+        "WARNING",
+        "BLIZZARD WARNING"
+       ],
+       [
+        "AREA",
+        "THOMPSON PASS"
+       ],
+       [
+        "UNTIL",
+        "2026-11-10 15:00:00"
+       ],
+       [
+        "ISSUED BY",
+        "ANCHORAGE AK"
+       ]
+      ]
+     },
+     {
+      "t": 1794258048214,
+      "status": "CRITICAL",
+      "label": "BLIZZARD WARNING",
+      "rows": [
+       [
+        "WARNING",
+        "BLIZZARD WARNING"
+       ],
+       [
+        "AREA",
+        "CENTRAL BEAUFORT SEA COAST; EASTERN BEAUFORT SEA COAST"
+       ],
+       [
+        "UNTIL",
+        "2026-11-11 09:00:00"
+       ],
+       [
+        "ISSUED BY",
+        "FAIRBANKS AK"
+       ]
+      ]
+     },
+     {
+      "t": 1794436248534,
+      "status": "CRITICAL",
+      "label": "TORNADO WARNING",
+      "rows": [
+       [
+        "WARNING",
+        "TORNADO WARNING"
+       ],
+       [
+        "AREA",
+        "CLAY, IN; VIGO, IN"
+       ],
+       [
+        "UNTIL",
+        "2026-11-11 17:00:00"
+       ],
+       [
+        "ISSUED BY",
+        "INDIANAPOLIS IN"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 8,
+    "measure": {
+     "value": 42,
+     "what": "most active land warnings at one time",
+     "unit": "",
+     "summary": "42 LAND WARNINGS // 0 CRITICAL TYPE // 1 ELEVATED TYPE"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "AIINC",
+    "prefix": "aiinc",
+    "name": "AI INCIDENTS",
+    "color": "#A3E635",
+    "order": 11,
+    "intervalMinutes": 15,
+    "peak": "CRITICAL",
+    "peakAt": 1794438056450,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 4316,
+     "WATCH": 4879,
+     "ELEVATED": 310,
+     "CRITICAL": 575
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 0,
+    "historyStart": 1793960152000,
+    "covered": true,
+    "checks": 651,
+    "contacts": 3,
+    "contactsRaised": 3,
+    "top": [
+     {
+      "t": 1794438056450,
+      "status": "CRITICAL",
+      "label": "OPENAI CRITICAL",
+      "rows": [
+       [
+        "PROVIDER",
+        "OPENAI"
+       ],
+       [
+        "INDICATOR",
+        "CRITICAL"
+       ],
+       [
+        "PROVIDER STATUS",
+        "MAJOR SYSTEM OUTAGE"
+       ],
+       [
+        "INCIDENT",
+        "UNABLE TO START NEW WORKSPACE AGENT RUNS (INVESTIGATING): WE ARE INVESTIGATING AN ISSUE PREVENTING USERS FROM STARTING N"
+       ]
+      ]
+     },
+     {
+      "t": 1794399341083,
+      "status": "ELEVATED",
+      "label": "MISTRAL MAJOR",
+      "rows": [
+       [
+        "PROVIDER",
+        "MISTRAL"
+       ],
+       [
+        "INDICATOR",
+        "MAJOR"
+       ],
+       [
+        "PROVIDER STATUS",
+        "MAJOR SERVICE OUTAGE"
+       ],
+       [
+        "INCIDENT",
+        "VIBE WORK IS EXPERIENCING ERRORS WITH GLM 5.3 (IDENTIFIED): WE HAVE IDENTIFIED THE ISSUE AND ARE WORKING ON A FIX."
+       ],
+       [
+        "AFFECTED",
+        "VIBE (DEGRADED PERFORMANCE)"
+       ]
+      ]
+     },
+     {
+      "t": 1794564344812,
+      "status": "ELEVATED",
+      "label": "ANTHROPIC MAJOR",
+      "rows": [
+       [
+        "PROVIDER",
+        "ANTHROPIC"
+       ],
+       [
+        "HEADQUARTERS",
+        "SAN FRANCISCO, CA"
+       ],
+       [
+        "INDICATOR",
+        "MAJOR"
+       ],
+       [
+        "PROVIDER STATUS",
+        "PARTIAL SYSTEM OUTAGE"
+       ],
+       [
+        "INCIDENT",
+        "ELEVATED ERRORS ON CLAUDE.AI, CLAUDE CODE, AND PLATFORM.CLAUDE.COM (INVESTIGATING): WE ARE INVESTIGATING AN ISSUE WITH U"
+       ],
+       [
+        "INCIDENT",
+        "ELEVATED ERRORS AFFECTING THE MICROSOFT 365 CONNECTOR (IDENTIFIED): THIS ISSUE IS CAUSED BY A MICROSOFT 365 SERVICE INCI"
+       ],
+       [
+        "AFFECTED",
+        "CLAUDE.AI (MAJOR OUTAGE), CLAUDE CONSOLE (PLATFORM.CLAUDE.COM) (PARTIAL OUTAGE), CLAUDE CODE (PARTIAL OUTAGE), CLAUDE CO"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 3,
+    "measure": null,
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "EIA",
+    "prefix": "powergrid_real",
+    "name": "POWER GRID",
+    "color": "#FF3030",
+    "order": 3,
+    "intervalMinutes": 60,
+    "peak": "ELEVATED",
+    "peakAt": 1794493490625,
+    "startStatus": null,
+    "statusMinutes": {
+     "NOMINAL": 1933,
+     "WATCH": 1035,
+     "ELEVATED": 2287,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 4825,
+    "historyStart": 1794493490625,
+    "covered": false,
+    "checks": 84,
+    "contacts": 2,
+    "contactsRaised": 2,
+    "top": [
+     {
+      "t": 1794790823455,
+      "status": "CRITICAL",
+      "label": "SOUTHWEST // GRID STRESS +9.5% VS FORECAST",
+      "rows": [
+       [
+        "SECTOR",
+        "5 // SOUTHWEST"
+       ],
+       [
+        "EIA HOUR",
+        "2026-11-15T23"
+       ],
+       [
+        "ACTUAL DEMAND",
+        "13,010 MW"
+       ],
+       [
+        "FORECAST",
+        "11,886 MW"
+       ],
+       [
+        "DEVIATION",
+        "+9.5%"
+       ],
+       [
+        "TYPICAL FOR HOUR",
+        "-5.0%"
+       ],
+       [
+        "HOURLY RAMP",
+        "+2.3%"
+       ],
+       [
+        "GRID HEALTH",
+        "35%"
+       ]
+      ]
+     },
+     {
+      "t": 1794794421705,
+      "status": "WATCH",
+      "label": "CALIFORNIA // DEMAND SHORTFALL +0.3% VS FORECAST",
+      "rows": [
+       [
+        "SECTOR",
+        "6 // CALIFORNIA"
+       ],
+       [
+        "EIA HOUR",
+        "2026-11-16T00"
+       ],
+       [
+        "ACTUAL DEMAND",
+        "26,023 MW"
+       ],
+       [
+        "FORECAST",
+        "25,937 MW"
+       ],
+       [
+        "DEVIATION",
+        "+0.3%"
+       ],
+       [
+        "TYPICAL FOR HOUR",
+        "+3.4%"
+       ],
+       [
+        "HOURLY RAMP",
+        "-10.7%"
+       ],
+       [
+        "GRID HEALTH",
+        "80%"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 85,
+    "measure": {
+     "value": 84.4,
+     "what": "lowest weighted grid health",
+     "unit": "percent",
+     "summary": "REPORTING SECTORS: 7 OF 8 // AVG DEMAND DEVIATION: +8.7%"
+    },
+    "complete": false,
+    "problems": [
+     "HISTORY BEGINS 2026-11-12T14:24:50.625Z",
+     "MISSING 4825 MIN"
+    ]
+   },
+   {
+    "id": "USGS",
+    "prefix": "quake",
+    "name": "EARTHQUAKE ACTIVITY",
+    "color": "#00C853",
+    "order": 1,
+    "intervalMinutes": 10,
+    "peak": "WATCH",
+    "peakAt": 1794789024649,
+    "startStatus": null,
+    "statusMinutes": {
+     "NOMINAL": 0,
+     "WATCH": 330,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 9750,
+    "historyStart": 1794789024649,
+    "covered": false,
+    "checks": 65,
+    "contacts": 26,
+    "contactsRaised": 0,
+    "top": [],
+    "statusChanges": 374,
+    "measure": null,
+    "quakes": {
+     "count": 426,
+     "m25": 58,
+     "m4": 1,
+     "largest": {
+      "t": 1794612378613,
+      "mag": 4.1,
+      "depthKm": 21.9,
+      "place": "99 km ENE of Ouzinkie, Alaska",
+      "status": "WATCH"
+     },
+     "covered": false
+    },
+    "complete": false,
+    "problems": [
+     "HISTORY BEGINS 2026-11-16T00:30:24.649Z",
+     "MISSING 9750 MIN",
+     "QUAKE CATALOG BEGINS 2026-11-12T18:12:27.183Z"
+    ]
+   },
+   {
+    "id": "VOLCANO",
+    "prefix": "volcano",
+    "name": "VOLCANIC ACTIVITY",
+    "color": "#00D5E8",
+    "order": 6,
+    "intervalMinutes": 30,
+    "peak": "WATCH",
+    "peakAt": 1794204000000,
+    "startStatus": "WATCH",
+    "statusMinutes": {
+     "NOMINAL": 0,
+     "WATCH": 10050,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 30,
+    "missingMinutes": 0,
+    "historyStart": 1793964646000,
+    "covered": true,
+    "checks": 332,
+    "contacts": 0,
+    "contactsRaised": 0,
+    "top": [],
+    "statusChanges": 0,
+    "measure": {
+     "value": 3,
+     "what": "most volcanoes above normal at one time",
+     "unit": "",
+     "summary": "3 ABOVE NORMAL // 0 WARNING // 1 WATCH"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "IODA",
+    "prefix": "netout",
+    "name": "NETWORK / INTERNET",
+    "color": "#8A5CFF",
+    "order": 8,
+    "intervalMinutes": 15,
+    "peak": "WATCH",
+    "peakAt": 1794255350914,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 2381,
+     "WATCH": 7699,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 0,
+    "historyStart": 1793960148000,
+    "covered": true,
+    "checks": 653,
+    "contacts": 5,
+    "contactsRaised": 5,
+    "top": [
+     {
+      "t": 1794255350914,
+      "status": "WATCH",
+      "label": "DISTRICT OF COLUMBIA OUTAGE",
+      "rows": [
+       [
+        "REGION",
+        "DISTRICT OF COLUMBIA"
+       ],
+       [
+        "SINCE",
+        "2026-11-09 13:20:00"
+       ],
+       [
+        "SIGNALS",
+        "BGP ROUTING"
+       ]
+      ]
+     },
+     {
+      "t": 1794310850661,
+      "status": "WATCH",
+      "label": "MONTANA OUTAGE",
+      "rows": [
+       [
+        "REGION",
+        "MONTANA"
+       ],
+       [
+        "SINCE",
+        "2026-11-10 04:50:00"
+       ],
+       [
+        "SIGNALS",
+        "BGP ROUTING"
+       ]
+      ]
+     },
+     {
+      "t": 1794357050279,
+      "status": "WATCH",
+      "label": "INDIANA OUTAGE",
+      "rows": [
+       [
+        "REGION",
+        "INDIANA"
+       ],
+       [
+        "SINCE",
+        "2026-11-10 17:30:00"
+       ],
+       [
+        "SIGNALS",
+        "BGP ROUTING"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 0,
+    "measure": {
+     "value": 2,
+     "what": "most active outage alerts at one time",
+     "unit": "",
+     "summary": "2 ACTIVE OUTAGE ALERTS // INDIANA, ILLINOIS"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "GPS",
+    "prefix": "gps",
+    "name": "GPS / NAVIGATION DISRUPTIONS",
+    "color": "#00A896",
+    "order": 10,
+    "intervalMinutes": 180,
+    "peak": "WATCH",
+    "peakAt": 1794381038714,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 8460,
+     "WATCH": 1440,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 180,
+    "missingMinutes": 0,
+    "historyStart": 1793980846712,
+    "covered": true,
+    "checks": 56,
+    "contacts": 1,
+    "contactsRaised": 1,
+    "top": [
+     {
+      "t": 1794381038714,
+      "status": "WATCH",
+      "label": "PRN 12 UNHEALTHY",
+      "rows": [
+       [
+        "SATELLITE",
+        "PRN 12"
+       ],
+       [
+        "HEALTH CODE",
+        "63"
+       ],
+       [
+        "ALMANAC",
+        "2026-11-13 13:56:48"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 1,
+    "measure": {
+     "value": 31,
+     "what": "fewest healthy satellites",
+     "unit": "",
+     "summary": "31 OF 32 SATELLITES HEALTHY // UNHEALTHY: PRN 12"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "NEO",
+    "prefix": "neo",
+    "name": "NEAR-EARTH OBJECTS",
+    "color": "#FF8A50",
+    "order": 12,
+    "intervalMinutes": 120,
+    "peak": "WATCH",
+    "peakAt": 1794454539483,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 8640,
+     "WATCH": 1320,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 120,
+    "missingMinutes": 0,
+    "historyStart": 1794173740010,
+    "covered": true,
+    "checks": 83,
+    "contacts": 0,
+    "contactsRaised": 0,
+    "top": [],
+    "statusChanges": 1,
+    "measure": {
+     "value": 0.082,
+     "what": "closest approach",
+     "unit": "lunar distances",
+     "summary": "5 APPROACHES // 3 WITHIN 1 LD // 2026 VQ11 0.082 LD 11/11 15:14 UTC"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "NIFC",
+    "prefix": "wildfire",
+    "name": "WILDFIRE",
+    "color": "#FFBF00",
+    "order": 2,
+    "intervalMinutes": 30,
+    "peak": "NOMINAL",
+    "peakAt": 1794204000000,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 10080,
+     "WATCH": 0,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 0,
+    "historyStart": 1793962867000,
+    "covered": true,
+    "checks": 332,
+    "contacts": 2,
+    "contactsRaised": 2,
+    "top": [
+     {
+      "t": 1794630025818,
+      "status": "WATCH",
+      "label": "RANGE 47",
+      "rows": [
+       [
+        "FIRE",
+        "RANGE 47"
+       ],
+       [
+        "STATE",
+        "MS"
+       ],
+       [
+        "SIZE",
+        "2,378 AC"
+       ],
+       [
+        "CONTAINED",
+        "60%"
+       ],
+       [
+        "UNCONTAINED",
+        "380 AC"
+       ],
+       [
+        "BEHAVIOR",
+        "ACTIVE"
+       ],
+       [
+        "DISCOVERED",
+        "2026-11-13"
+       ]
+      ]
+     },
+     {
+      "t": 1794715242992,
+      "status": "WATCH",
+      "label": "201W",
+      "rows": [
+       [
+        "FIRE",
+        "201W"
+       ],
+       [
+        "STATE",
+        "MS"
+       ],
+       [
+        "SIZE",
+        "2,700 AC"
+       ],
+       [
+        "CONTAINED",
+        "60%"
+       ],
+       [
+        "UNCONTAINED",
+        "432 AC"
+       ],
+       [
+        "BEHAVIOR",
+        "ACTIVE"
+       ],
+       [
+        "DISCOVERED",
+        "2026-11-13"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 0,
+    "measure": {
+     "value": 15,
+     "what": "most large active fires at one time",
+     "unit": "",
+     "summary": "15 LARGE ACTIVE FIRES // 0 OF CONCERN // JONES (UT)"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "SWPC",
+    "prefix": "spacewx",
+    "name": "SOLAR / SPACE WEATHER",
+    "color": "#F2F2F2",
+    "order": 5,
+    "intervalMinutes": 15,
+    "peak": "NOMINAL",
+    "peakAt": 1794204000000,
+    "startStatus": "NOMINAL",
+    "statusMinutes": {
+     "NOMINAL": 10080,
+     "WATCH": 0,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 0,
+    "historyStart": 1793960143000,
+    "covered": true,
+    "checks": 653,
+    "contacts": 0,
+    "contactsRaised": 0,
+    "top": [],
+    "statusChanges": 0,
+    "measure": {
+     "value": 3.33,
+     "what": "highest planetary K index",
+     "unit": "",
+     "summary": "G0 / S0 / R0 // KP 3.33"
+    },
+    "complete": true,
+    "problems": []
+   },
+   {
+    "id": "TEMP",
+    "prefix": "temp",
+    "name": "TEMPERATURE DEVIATION",
+    "color": "#FF35B8",
+    "order": 9,
+    "intervalMinutes": 20,
+    "peak": "NOMINAL",
+    "peakAt": 1794789924313,
+    "startStatus": null,
+    "statusMinutes": {
+     "NOMINAL": 315,
+     "WATCH": 0,
+     "ELEVATED": 0,
+     "CRITICAL": 0
+    },
+    "degradedMinutes": 0,
+    "missingMinutes": 9765,
+    "historyStart": 1794789924313,
+    "covered": false,
+    "checks": 21,
+    "contacts": 1,
+    "contactsRaised": 1,
+    "top": [
+     {
+      "t": 1794789924313,
+      "status": "ELEVATED",
+      "label": "Dallas, TX // -15.6 F",
+      "rows": [
+       [
+        "LOCATION",
+        "Dallas, TX"
+       ],
+       [
+        "TEMPERATURE",
+        "48.0 F"
+       ],
+       [
+        "USUAL",
+        "63.6 F"
+       ],
+       [
+        "DEVIATION",
+        "-15.6 F"
+       ]
+      ]
+     }
+    ],
+    "statusChanges": 68,
+    "measure": null,
+    "complete": false,
+    "problems": [
+     "HISTORY BEGINS 2026-11-16T00:45:24.313Z",
+     "MISSING 9765 MIN"
+    ]
+   }
+  ]
+ },
+ "narration": {
+  "text": "Operational Event Register. Weekly monitor summary. Period ending 15 November 2026.\n\nSevere Weather. 61 warnings logged. Most active land warnings at one time: 42. Highest contacts: Blizzard warning, Thompson Pass, CRITICAL. Blizzard warning, Central Beaufort Sea Coast; Eastern Beaufort Sea Coast, CRITICAL. Tornado warning, Clay, Indiana; Vigo, Indiana, CRITICAL. Overall status reached: CRITICAL, Monday 9 November at 06:30.\n\nAI Incidents. 3 provider incidents logged. Highest contacts: OpenAI, Major system outage, CRITICAL. Mistral, Major service outage, ELEVATED. Anthropic, Partial system outage, ELEVATED. Overall status reached: CRITICAL, Wednesday 11 November at 17:00.\n\nPower Grid. 2 grid sector contacts logged. Lowest weighted grid health: 84.4 percent. Highest contacts: Southwest sector, demand above forecast, CRITICAL. California sector, demand below forecast, WATCH. Overall status reached: ELEVATED, Thursday 12 November at 08:24. No data for 80 hours.\n\nEarthquake Activity. 426 earthquakes recorded. 58 at magnitude 2.5 or above. Largest: magnitude 4.1, 99 kilometers east-northeast of Ouzinkie, Alaska, Friday 13 November. Overall status reached: WATCH, Sunday 15 November at 18:30. No data for 163 hours.\n\nVolcanic Activity. Most volcanoes above normal at one time: 3. Overall status reached: WATCH, carried over from the previous period. Source degraded for 1 hour.\n\nNetwork / Internet. 5 outage alerts logged. Most active outage alerts at one time: 2. Highest contacts: District of Columbia outage, WATCH. Montana outage, WATCH. Indiana outage, WATCH. Overall status reached: WATCH, Monday 9 November at 14:15.\n\nGPS / Navigation Disruptions. 1 satellite logged. Fewest healthy satellites: 31. Highest contact: PRN 12 unhealthy, WATCH. Overall status reached: WATCH, Wednesday 11 November at 01:10. Source degraded for 3 hours.\n\nNear-Earth Objects. Closest approach: 0.08 lunar distances, object 2026 VQ11. Overall status reached: WATCH, Wednesday 11 November at 21:35. Source degraded for 2 hours.\n\nWildfire. 2 fires logged. Most large active fires at one time: 15. Highest contacts: Range 47 fire, Mississippi, WATCH. 201W fire, Mississippi, WATCH. Overall status remained NOMINAL.\n\nSolar / Space Weather. No significant activity recorded. NOMINAL throughout.\n\nTemperature Deviation. 1 city logged outside its usual range. Highest contact: Dallas, Texas, 15.6 degrees below usual, ELEVATED. Overall status remained NOMINAL. No data for 163 hours.\n\nSummary ends. Monitoring continues at thegreatdarkness.com.",
+  "words": 355,
+  "estSeconds": 148
+ }
+}

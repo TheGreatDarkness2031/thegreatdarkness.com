@@ -1,0 +1,25 @@
+Operational Event Register. Weekly monitor summary. Period ending 15 November 2026.
+
+Severe Weather. 61 warnings logged. Most active land warnings at one time: 42. Highest contacts: Blizzard warning, Thompson Pass, CRITICAL. Blizzard warning, Central Beaufort Sea Coast; Eastern Beaufort Sea Coast, CRITICAL. Tornado warning, Clay, Indiana; Vigo, Indiana, CRITICAL. Overall status reached: CRITICAL, Monday 9 November at 06:30.
+
+AI Incidents. 3 provider incidents logged. Highest contacts: OpenAI, Major system outage, CRITICAL. Mistral, Major service outage, ELEVATED. Anthropic, Partial system outage, ELEVATED. Overall status reached: CRITICAL, Wednesday 11 November at 17:00.
+
+Power Grid. 2 grid sector contacts logged. Lowest weighted grid health: 84.4 percent. Highest contacts: Southwest sector, demand above forecast, CRITICAL. California sector, demand below forecast, WATCH. Overall status reached: ELEVATED, Thursday 12 November at 08:24. No data for 80 hours.
+
+Earthquake Activity. 426 earthquakes recorded. 58 at magnitude 2.5 or above. Largest: magnitude 4.1, 99 kilometers east-northeast of Ouzinkie, Alaska, Friday 13 November. Overall status reached: WATCH, Sunday 15 November at 18:30. No data for 163 hours.
+
+Volcanic Activity. Most volcanoes above normal at one time: 3. Overall status reached: WATCH, carried over from the previous period. Source degraded for 1 hour.
+
+Network / Internet. 5 outage alerts logged. Most active outage alerts at one time: 2. Highest contacts: District of Columbia outage, WATCH. Montana outage, WATCH. Indiana outage, WATCH. Overall status reached: WATCH, Monday 9 November at 14:15.
+
+GPS / Navigation Disruptions. 1 satellite logged. Fewest healthy satellites: 31. Highest contact: PRN 12 unhealthy, WATCH. Overall status reached: WATCH, Wednesday 11 November at 01:10. Source degraded for 3 hours.
+
+Near-Earth Objects. Closest approach: 0.08 lunar distances, object 2026 VQ11. Overall status reached: WATCH, Wednesday 11 November at 21:35. Source degraded for 2 hours.
+
+Wildfire. 2 fires logged. Most large active fires at one time: 15. Highest contacts: Range 47 fire, Mississippi, WATCH. 201W fire, Mississippi, WATCH. Overall status remained NOMINAL.
+
+Solar / Space Weather. No significant activity recorded. NOMINAL throughout.
+
+Temperature Deviation. 1 city logged outside its usual range. Highest contact: Dallas, Texas, 15.6 degrees below usual, ELEVATED. Overall status remained NOMINAL. No data for 163 hours.
+
+Summary ends. Monitoring continues at thegreatdarkness.com.
