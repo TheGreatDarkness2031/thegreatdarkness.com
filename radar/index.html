@@ -3,6 +3,7 @@
 <head>
 <script src="/assets/config.js"></script>
 <script src="/assets/source-register.js"></script>
+<script src="/assets/radar-merge.js"></script>
 <link rel="stylesheet" href="/assets/console.css">
 <script src="/assets/console.js"></script>
 <script src="/assets/nav.js"></script>
@@ -2793,6 +2794,10 @@
 
     window.handleRadarResponse =
       function(data) {
+        // Contacts from monitors checked on Supabase (assets/radar-merge.js).
+        if (typeof window.oerRadarMerge === "function") {
+          data = window.oerRadarMerge(data);
+        }
         noteRadarAnswerForPolling_(data);
         radarErrorCount = 0;
         radarRetryAt = 0;
