@@ -7,11 +7,19 @@
    source + ck), so while Apps Script still writes the rows nothing changes.
    Switch-over: ON = true here, then Config powergrid_real_radar_rows NO.
    Preview before that: add ?sbradar=1 to /radar/ or /floor/.
+   WHOLE RADAR FROM SUPABASE (2026-11-25, shadow): ?sbradar=2 replaces the
+   answer's contacts, outline (ring) and Source Register lights with
+   radar_answer() (built on Supabase after every monitor check; relay ?sb=radar,
+   a 30 s copy). The answer's own status / events / bulletin version stay.
+   Switch-over later: WHOLE = true.
    Needs /assets/config.js (TGD_CACHE_URL) first. */
 (function() {
   "use strict";
 
   var ON = false;
+  var WHOLE = false;
+  var WHOLE_READ = { sb: "radar", rpc: "radar_answer" };
+  var WHOLE_EVERY_MS = 30000;
   var READS = [
     // sb read, Radar source id, event type, most contacts shown (Config *_Radar_max_contacts_per_run)
     { sb: "grid", rpc: "grid_radar", source: "EIA", eventType: "POWER_GRID", max: 3 }
@@ -21,7 +29,9 @@
   var EVERY_MS = 60000;
   var LIT_SECONDS = 20 * 60;   // grid_radar lists contacts seen in the last 20 minutes
 
-  var on = ON || /[?&]sbradar=1(&|$)/.test(String(window.location && window.location.search || ""));
+  var search = String(window.location && window.location.search || "");
+  var whole = WHOLE || /[?&]sbradar=2(&|$)/.test(search);
+  var on = !whole && (ON || /[?&]sbradar=1(&|$)/.test(search));
   var got = {};        // sb -> { at, contacts }
   var counter = 0;
 
@@ -95,11 +105,25 @@
     return out;
   }
 
+  // Pure (tests/test_radar_supabase.mjs): the Apps Script answer with the
+  // Supabase Radar's contacts, ring and lights in place of its own.
+  function replace(data, sb) {
+    if (!data || !sb || !Array.isArray(sb.contacts)) return data;
+    var out = {};
+    Object.keys(data).forEach(function(k) { out[k] = data[k]; });
+    ["contacts", "ring", "sources", "limit", "stackRadius", "from"].forEach(function(k) { if (k in sb) out[k] = sb[k]; });
+    return out;
+  }
+
+  function keep(read, v) {
+    if (v && Array.isArray(v.contacts)) got[read.sb] = { at: Date.now(), contacts: v.contacts, answer: v };
+  }
+
   function loadDirect(read) {
     if (typeof fetch !== "function") return;
     fetch(SB_URL + read.rpc, { headers: { apikey: SB_KEY, accept: "application/json" } })
       .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(v) { if (v && Array.isArray(v.contacts)) got[read.sb] = { at: Date.now(), contacts: v.contacts }; })
+      .then(function(v) { keep(read, v); })
       .catch(function() { /* next round tries again */ });
   }
 
@@ -117,7 +141,7 @@
       if (!ok) loadDirect(read);
     };
     window[name] = function(v) {
-      if (v && Array.isArray(v.contacts)) got[read.sb] = { at: Date.now(), contacts: v.contacts };
+      keep(read, v);
       finish(true);
     };
     script.onerror = function() { finish(false); };
@@ -131,10 +155,23 @@
     READS.forEach(load);
   }
 
+  // A Supabase Radar copy older than 3 minutes is not used (Apps Script's answer stays).
+  function wholeAnswer() {
+    var r = got[WHOLE_READ.sb];
+    return r && Date.now() - r.at < 180000 ? r.answer : null;
+  }
+
   window.oerRadarMerge = function(data) {
+    if (whole) return replace(data, wholeAnswer());
     return on ? merge(data, got, Date.now()) : data;
   };
-  window.oerRadarMergeTest = { merge: merge, toRadar: toRadar, READS: READS };
+  window.oerRadarMergeTest = { merge: merge, toRadar: toRadar, replace: replace, READS: READS };
+
+  if (whole) {
+    load(WHOLE_READ);
+    setInterval(function() { if (!document.hidden) load(WHOLE_READ); }, WHOLE_EVERY_MS);
+    document.addEventListener("visibilitychange", function() { if (!document.hidden) load(WHOLE_READ); });
+  }
 
   if (on) {
     round();
