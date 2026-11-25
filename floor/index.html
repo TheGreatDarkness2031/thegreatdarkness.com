@@ -21,6 +21,7 @@
 <meta property="og:title" content="OER // Watch Floor">
 <meta property="og:description" content="OER Watch Floor: live radar, event feed and monitoring grid for earthquakes, severe weather, power grid, wildfires, volcanoes, space weather and more.">
 <meta property="og:url" content="https://thegreatdarkness.com/floor/">
+<link rel="canonical" href="https://thegreatdarkness.com/floor/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -5087,8 +5088,10 @@
     }
 
     // Watch Floor piggyback state (see loadRadarData).
-    let floorStatusDueAt = Math.max(Date.now() + 20000, nextFloorStatusDue_(Date.now()));
-    let floorEventsDueAt = Date.now() + 30000;
+    // The first Radar request brings the tiles and the event feed too (one
+    // relay answer from Supabase, 2026-11-25: was two direct Apps Script calls).
+    let floorStatusDueAt = 0;
+    let floorEventsDueAt = 0;
     let floorPendingWith = [];
 
     window.handleRadarResponse =
@@ -5299,6 +5302,11 @@
       script.onload = finished;
       script.onerror = function() {
         finished();
+        // The ride-along parts this poll was to bring: ask for them on their own.
+        const missed = floorPendingWith;
+        floorPendingWith = [];
+        if (missed.indexOf("status") !== -1) loadSystemStatusData();
+        if (missed.indexOf("events") !== -1) loadEventFeedPreview();
         // The caching Worker failed: the next poll goes to Apps Script (config.js).
         if (tgdCacheFailed(script.src)) return;
         radarErrorCount++;
@@ -5471,8 +5479,6 @@
 
     // Own requests, not ?homestart=1: that one also counts a homepage visit.
     loadNetworkStatusData();
-    loadSystemStatusData();
-    loadEventFeedPreview();
 
     // Radar: 30 s while visible, nothing while the tab is hidden,
     // backs off after errors (RadarCommonJs). The first Radar request

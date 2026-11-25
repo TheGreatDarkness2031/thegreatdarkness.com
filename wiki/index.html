@@ -425,6 +425,17 @@ body { padding: 10px 12px 12px; }
     else if (view === "recent") recent();
     else mainPage();
     document.title = title;
+    // Search engines (2026-11-25): each article is its own address, with
+    // its own canonical link and description (the sitemap lists them).
+    var art = q.a && q.a !== "main" && BY[q.a] ? BY[q.a] : null;
+    var canon = document.querySelector('link[rel="canonical"]');
+    if (!canon) { canon = document.createElement("link"); canon.rel = "canonical"; document.head.appendChild(canon); }
+    canon.href = "https://thegreatdarkness.com/wiki/" + (art ? "?a=" + encodeURIComponent(q.a) : "");
+    var desc = document.querySelector('meta[name="description"]');
+    if (desc) {
+      if (!desc.getAttribute("data-site")) desc.setAttribute("data-site", desc.getAttribute("content") || "");
+      desc.setAttribute("content", art && art.summary ? "OER Operations Wiki: " + art.title + ". " + art.summary : desc.getAttribute("data-site"));
+    }
   }
 
   // Links inside the wiki stay on the page; everything else navigates.

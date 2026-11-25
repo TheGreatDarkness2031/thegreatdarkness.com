@@ -69,6 +69,8 @@
     // Accessibility (2026-11-23): keyboard focus is always visible, and a
     // device that asks for less motion gets it (blinks and sweeps stop).
     ":focus-visible{outline:2px solid #ffd24a!important;outline-offset:2px}" +
+    // A part that shows focus its own way opts out (the NEXUS terminal glows green).
+    ".oer-own-focus:focus-visible{outline:none!important}" +
     "@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.01ms!important;" +
     "animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}";
   (document.head || document.documentElement).appendChild(css);

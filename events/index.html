@@ -12,6 +12,7 @@
 <meta property="og:title" content="OER // Event Reporting Console">
 <meta property="og:description" content="OER Event Log: every earthquake, severe weather warning, power grid, wildfire and other event logged by 11 live monitors, newest first.">
 <meta property="og:url" content="https://thegreatdarkness.com/events/">
+<link rel="canonical" href="https://thegreatdarkness.com/events/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -756,6 +757,22 @@
           </button>
 
           <button
+            id="newerPageButton"
+            type="button"
+            aria-label="Newer page"
+          >
+            &laquo; NEWER
+          </button>
+
+          <button
+            id="olderPageButton"
+            type="button"
+            aria-label="Older page"
+          >
+            OLDER &raquo;
+          </button>
+
+          <button
             id="refreshButton"
             type="button"
           >
@@ -1035,6 +1052,16 @@
           "archiveViewButton"
         ),
 
+      newerPageButton:
+        document.getElementById(
+          "newerPageButton"
+        ),
+
+      olderPageButton:
+        document.getElementById(
+          "olderPageButton"
+        ),
+
       refreshButton:
         document.getElementById(
           "refreshButton"
@@ -1162,6 +1189,21 @@
           loadEventFeedData_();
         }
       );
+
+      // Page arrows (owner, 2026-11-25): CURRENT is page 0, archive 1 the
+      // next older page, and so on.
+      function stepEventFeedPage_(by) {
+        var page = eventFeedState.view === "archive" ? eventFeedState.archive : 0;
+        var next = page + by;
+        var oldest = eventFeedLastBuckets_.length ? Math.max.apply(null, eventFeedLastBuckets_) : 0;
+        if (next < 0 || next > oldest || eventFeedState.view === "all") return;
+        eventFeedState.view = next === 0 ? "current" : "archive";
+        eventFeedState.archive = next;
+        loadEventFeedData_();
+      }
+
+      eventFeedElements.newerPageButton.addEventListener("click", function() { stepEventFeedPage_(-1); });
+      eventFeedElements.olderPageButton.addEventListener("click", function() { stepEventFeedPage_(1); });
 
       eventFeedElements.refreshButton.addEventListener(
         "click",
@@ -1398,10 +1440,12 @@
       eventFeedElements.archiveSelect.innerHTML =
         '<option value="">SELECT</option>';
 
-      // Newest first, labeled by dates once the server sends
+      // Newest first (archive 1 = the page just older than CURRENT;
+      // owner 2026-11-25), labeled by dates once the server sends
       // archiveRanges (2026-11-12); else the bucket number.
       var ranges = archiveRanges || {};
-      archiveBuckets.slice().sort(function(x, y) { return y - x; }).forEach(
+      eventFeedLastBuckets_ = archiveBuckets.slice();
+      archiveBuckets.slice().sort(function(x, y) { return x - y; }).forEach(
         function(archive) {
 
           var option =
@@ -1426,7 +1470,18 @@
     }
 
 
+    var eventFeedLastBuckets_ = [];
+
+    function updateEventFeedPageArrows_() {
+      var page = eventFeedState.view === "archive" ? eventFeedState.archive : 0;
+      var oldest = eventFeedLastBuckets_.length ? Math.max.apply(null, eventFeedLastBuckets_) : 0;
+      eventFeedElements.newerPageButton.disabled = eventFeedState.view === "all" || page <= 0;
+      eventFeedElements.olderPageButton.disabled = eventFeedState.view === "all" || page >= oldest;
+    }
+
     function updateEventFeedViewButtons_() {
+
+      updateEventFeedPageArrows_();
 
       eventFeedElements.currentViewButton.className =
         eventFeedState.view ===
@@ -2439,6 +2494,13 @@
 
       eventFeedElements.archiveViewButton.disabled =
         loading;
+
+      if (loading) {
+        eventFeedElements.newerPageButton.disabled = true;
+        eventFeedElements.olderPageButton.disabled = true;
+      } else {
+        updateEventFeedPageArrows_();
+      }
 
       eventFeedElements.refreshButton.disabled =
         loading;
