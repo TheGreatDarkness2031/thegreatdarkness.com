@@ -11,13 +11,15 @@
    answer's contacts, outline (ring) and Source Register lights with
    radar_answer() (built on Supabase after every monitor check; relay ?sb=radar,
    a 30 s copy). The answer's own status / events / bulletin version stay.
-   Switch-over later: WHOLE = true.
+   LIVE 2026-11-25 (owner: "move the source to supabase but keep app scripts
+   running to do the comparison"): WHOLE = true. ?sbradar=0 shows the Apps
+   Script answer unchanged (comparison); Apps Script still answers ?radar=1.
    Needs /assets/config.js (TGD_CACHE_URL) first. */
 (function() {
   "use strict";
 
   var ON = false;
-  var WHOLE = false;
+  var WHOLE = true;
   var WHOLE_READ = { sb: "radar", rpc: "radar_answer" };
   var WHOLE_EVERY_MS = 30000;
   var READS = [
@@ -30,7 +32,7 @@
   var LIT_SECONDS = 20 * 60;   // grid_radar lists contacts seen in the last 20 minutes
 
   var search = String(window.location && window.location.search || "");
-  var whole = WHOLE || /[?&]sbradar=2(&|$)/.test(search);
+  var whole = (WHOLE && !/[?&]sbradar=[01](&|$)/.test(search)) || /[?&]sbradar=2(&|$)/.test(search);
   var on = !whole && (ON || /[?&]sbradar=1(&|$)/.test(search));
   var got = {};        // sb -> { at, contacts }
   var counter = 0;
@@ -115,8 +117,17 @@
     return out;
   }
 
+  var lastRaw = null;      // the last Apps Script answer the page drew
+  var redrawn = false;
+
   function keep(read, v) {
-    if (v && Array.isArray(v.contacts)) got[read.sb] = { at: Date.now(), contacts: v.contacts, answer: v };
+    if (!(v && Array.isArray(v.contacts))) return;
+    got[read.sb] = { at: Date.now(), contacts: v.contacts, answer: v };
+    // First Supabase copy after the page already drew an Apps Script answer: draw again once.
+    if (whole && read === WHOLE_READ && !redrawn && lastRaw && typeof window.handleRadarResponse === "function") {
+      redrawn = true;
+      try { window.handleRadarResponse(lastRaw); } catch (e) { /* next poll draws it */ }
+    }
   }
 
   function loadDirect(read) {
@@ -162,7 +173,12 @@
   }
 
   window.oerRadarMerge = function(data) {
-    if (whole) return replace(data, wholeAnswer());
+    if (whole) {
+      lastRaw = data;
+      var sb = wholeAnswer();
+      if (sb) redrawn = true;
+      return replace(data, sb);
+    }
     return on ? merge(data, got, Date.now()) : data;
   };
   window.oerRadarMergeTest = { merge: merge, toRadar: toRadar, replace: replace, READS: READS };
