@@ -390,8 +390,28 @@
           ].join("\n"), { owner: "mvoss", date: "1999-01-28" }),
           ".plan": file("Out 31 JAN 1999. Forwarding: none.", { owner: "mvoss", date: "1999-01-29" })
         }, { owner: "mvoss", private: true, date: "1996-04-16" }),        mkeene: staffHome("mkeene"),
-        nbell: staffHome("nbell"),
-        ychen: staffHome("ychen"),
+        // Trail branch (2026-11-26): wpike's checklist says nbell's password is
+        // "the count" of the July 1997 sequence (ML #292: 17 records).
+        nbell: dir({
+          "july_capture.txt": file((function () {
+            var recs = [];
+            for (var i = 1; i !== 18; i++) {
+              recs.push("  " + ("00" + i).slice(-3) + "  STN-" + (4400 + i * 7) + "  OBS  " + (12 + (i * 37) % 19) + "." + (i % 10) + "  WIND  GUST  " + (i * 13) % 40);
+            }
+            return ["EXTRACT N2   RECEIVED 1997-07-23 14:06:12Z"].concat(recs, ["", "EXTRACT N6   RECEIVED 1997-07-23 14:07:46Z"], recs).join("\n");
+          })(), { owner: "nbell", date: "1997-07-24" }),
+          "notes.txt": file([
+            "Same 17 records, same double space",
+            "in WIND  GUST. Priya found it.",
+            "",
+            "N6's spool stamp is 94 s before N2's",
+            "source generated them. N6 clock drift",
+            "measured: 3 s.",
+            "",
+            "Logs rotated before I got there.",
+            "I can't make this go away."
+          ].join("\n"), { owner: "nbell", date: "1997-10-22" })
+        }, { owner: "nbell", private: true, date: "1996-04-16" }),        ychen: staffHome("ychen"),
         etrent: staffHome("etrent"),
         crusk: staffHome("crusk"),
         slaurent: staffHome("slaurent"),
@@ -407,6 +427,8 @@
             "[x] release package frozen",
             "[x] build scripts to OER ops share",
             "[x] crusk, nbell - disable 31 OCT (queued)",
+            "    Nate wants his July capture kept.",
+            "    Locked it with the count.",
             "[ ] wpike - close after access review",
             "    (Voss says wait)",
             "[ ] vhale - his call, not mine"
@@ -639,7 +661,25 @@
             "1996-05-29 08:31Z  login  mvoss     tty1",
             "1996-05-29 09:15Z  login  guest     public",
             "1996-05-29 09:16Z  logout guest     public"
-          ].join("\n"), { date: "1996-05-29" })
+          ].join("\n"), { date: "1996-05-29" }),
+          // Trail extra (2026-11-26): mvoss keeps logging in after she left
+          // (31 JAN 1999), always from the row A console. Never explained.
+          "auth.log.0": file([
+            "1999-01-29 17:41Z  logout mvoss     tty1",
+            "1999-03-02 03:12Z  login  mvoss     ttyA01",
+            "1999-03-02 03:15Z  logout mvoss     ttyA01",
+            "2003-06-17 02:48Z  login  mvoss     ttyA01",
+            "2003-06-17 02:52Z  logout mvoss     ttyA01",
+            "2008-11-14 04:05Z  login  mvoss     ttyA01",
+            "2008-11-14 04:06Z  logout mvoss     ttyA01",
+            "2014-04-09 03:30Z  login  mvoss     ttyA01",
+            "2014-04-09 03:34Z  logout mvoss     ttyA01",
+            "2019-07-01 02:59Z  login  mvoss     ttyA01",
+            "2019-07-01 03:01Z  logout mvoss     ttyA01",
+            "2026-07-07 04:22Z  login  mvoss     ttyA01",
+            "2026-07-07 04:40Z  logout mvoss     ttyA01",
+            "2026-09-26 11:20Z  login  mvoss     ttyA01"
+          ].join("\n"), { date: "2026-09-26" })
         })
       }),
 
@@ -773,10 +813,10 @@
     var ACCOUNTS = {
       guest: { home: "/home/guest", open: true },
       root: {},
-      mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
+      mkeene: {}, ychen: {}, etrent: {}, crusk: {},
       slaurent: {}, pnanduri: {}, hsato: {}, cbrooks: {},
       wpike: { password: oerTermHash("tidyup1998") }, vhale: { password: oerTermHash("retained") },
-      mvoss: { password: oerTermHash("NX-1001") }
+      mvoss: { password: oerTermHash("NX-1001") }, nbell: { password: oerTermHash("17") }
     };
 
     var HOST = "nexus";
