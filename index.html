@@ -2187,6 +2187,7 @@
         entry.classList.add("closing");
         behind(false);
         document.documentElement.classList.remove("oer-entry-open");
+        if (typeof window.oerTickerAfterEntry === "function") window.oerTickerAfterEntry();
         setTimeout(function () {
           if (entry.parentNode) entry.parentNode.removeChild(entry);
         }, 260);
@@ -4213,10 +4214,27 @@
         // Setting the text restarts the ticker: only when it changed.
         if (text !== homeTickerShown) {
           homeTickerShown = text;
-          document.getElementById("alertTicker").textContent = text;
+          setTickerText(text);
         }
       }
     }
+
+    // A <marquee> given new text while it is hidden (the entry notice is
+    // still open) never starts scrolling once shown: hold the text until the
+    // notice closes (the entry script calls window.oerTickerAfterEntry).
+    let tickerHeld = null;
+    function setTickerText(text) {
+      if (document.documentElement.classList.contains("oer-entry-open")) { tickerHeld = text; return; }
+      document.getElementById("alertTicker").textContent = text;
+    }
+    window.oerTickerAfterEntry = function() {
+      const box = document.getElementById("alertTicker");
+      if (!box) return;
+      // Set again even when nothing is held: restarts it at its real width.
+      box.textContent = tickerHeld !== null ? tickerHeld : box.textContent;
+      tickerHeld = null;
+      if (box.stop && box.start) { box.stop(); box.start(); }
+    };
 
     function saveHomeBody(data) {
       try {
