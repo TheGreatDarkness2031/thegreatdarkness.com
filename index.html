@@ -1997,6 +1997,7 @@
   .pass-head { padding: 0 2px 8px; border-bottom: 1px dashed #444444; }
   .pass-badge { color: #ffffff; font-weight: bold; font-size: 14px; letter-spacing: 2px; }
   .pass-escort { color: #e0b050; }
+  .pass-first { color: #ffffff; }
   .pass-line { overflow-wrap: anywhere; }
   .pass-sub { margin: 9px 0 3px; color: #9a9a9a; font-size: 11px; letter-spacing: 3px; }
   .pass-areas { list-style: none; margin: 0; padding: 0; }
@@ -2371,6 +2372,7 @@
             <div class="pass-badge" id="passBadge">BADGE GN-<span id="passNo">--</span> // NOT CLEARED</div>
             <div class="pass-line" id="passIssued">ISSUED --</div>
             <div class="pass-line pass-escort">ESCORT: NONE AVAILABLE. PROCEED UNESCORTED.</div>
+            <div class="pass-line pass-first">FIRST VISIT: COMPLETE ORIENTATION BEFORE ENTERING THE FACILITY.</div>
           </div>
           <div class="pass-sub">PERMITTED AREAS</div>
           <ul class="pass-areas">
@@ -2379,8 +2381,8 @@
             <li><a href="/maintenance/?view=records">MAINTENANCE LOG</a><span>ENGINEERING RECORDS, 1996-2026</span></li>
             <li><a href="#publicLog" id="passLeave">PUBLIC LOG</a><span>SIGN IN BEFORE YOU LEAVE</span></li>
           </ul>
-          <div class="pass-sub">SUGGESTED READING</div>
-          <div class="pass-line">FIRST RECORDS, 1996-1998 <button type="button" class="orient-btn" id="orientBegin">[ BEGIN ]</button></div>
+          <div class="pass-sub">ORIENTATION</div>
+          <div class="pass-line">FIRST RECORDS, 1996-1998 <button type="button" class="orient-btn" id="orientBegin">[ BEGIN ORIENTATION ]</button></div>
           <div class="orient-reader" id="orientReader" aria-live="polite" hidden></div>
         </div>
       </div>
