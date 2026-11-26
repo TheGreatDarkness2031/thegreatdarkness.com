@@ -374,10 +374,60 @@
         crusk: staffHome("crusk"),
         slaurent: staffHome("slaurent"),
         pnanduri: staffHome("pnanduri"),
-        wpike: staffHome("wpike"),
-        hsato: staffHome("hsato"),
-        vhale: staffHome("vhale"),
-        // Calvin Brooks, Data Archive (2026 story, owner 2026-11-13): open to
+        // Puzzle trail (owner, 2026-11-26): wpike's password is in his
+        // maintenance entry ML #710 (15 Oct 1998); his notes point to vhale,
+        // whose password is the Document Register's word for rack row A
+        // (RCK-01: "A01-A03 retained, powered"). private = owner only.
+        wpike: dir({
+          "handover.txt": file([
+            "HANDOVER CHECKLIST - DEV HOST",
+            "",
+            "[x] release package frozen",
+            "[x] build scripts to OER ops share",
+            "[x] crusk, nbell - disable 31 OCT (queued)",
+            "[ ] wpike - close after access review",
+            "    (Voss says wait)",
+            "[ ] vhale - his call, not mine"
+          ].join("\n"), { owner: "wpike", date: "1998-10-29" }),
+          "note_to_self.txt": file([
+            "Victor asked me to keep his A-row notes",
+            "somewhere OER won't tidy up. Told him to",
+            "use his own folder.",
+            "",
+            "He changed his password to the word the",
+            "register uses for that row. Thinks it's",
+            "funny."
+          ].join("\n"), { owner: "wpike", date: "1998-10-30" }),
+          ".history": file([
+            "ls /home",
+            "su vhale",
+            "su vhale",
+            "mail vhale",
+            "logout"
+          ].join("\n"), { owner: "wpike", date: "1998-10-30" })
+        }, { owner: "wpike", private: true, date: "1996-04-16" }),        hsato: staffHome("hsato"),
+        vhale: dir({
+          "arow_power.log": file([
+            "1998-07-06  A01-A03  1.21 kW  no uplink traffic",
+            "1998-08-03  A01-A03  1.22 kW  no uplink traffic",
+            "1998-09-07  A01-A03  1.21 kW  no uplink traffic",
+            "1998-10-05  A01-A03  1.24 kW  no uplink traffic",
+            "1998-11-02  A01-A03  1.21 kW  no uplink traffic",
+            "1998-12-07  A01-A03  1.22 kW  no uplink traffic",
+            "1999-01-04  A01-A03  1.21 kW  no uplink traffic"
+          ].join("\n"), { owner: "vhale", date: "1999-01-04" }),
+          "facilities_draft.txt": file([
+            "TO: OER FACILITIES",
+            "RE: ROW A, RACKS A01-A03",
+            "",
+            "Do not decommission. Do not reassign as",
+            "spare. Do not remove from the UPS schedule.",
+            "If asked, they are retained per design.",
+            "",
+            "- V. Hale, 29 JAN 1999"
+          ].join("\n"), { owner: "vhale", date: "1999-01-29" }),
+          ".plan": file("Last day Friday. Mara has the keys.", { owner: "vhale", date: "1999-01-29" })
+        }, { owner: "vhale", private: true, date: "1996-04-16" }),        // Calvin Brooks, Data Archive (2026 story, owner 2026-11-13): open to
         // anyone, nothing locked. Copied here on his last day.
         cbrooks: dir({
           "README.txt": file([
@@ -697,7 +747,8 @@
       guest: { home: "/home/guest", open: true },
       root: {},
       mvoss: {}, mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
-      slaurent: {}, pnanduri: {}, wpike: {}, hsato: {}, vhale: {}, cbrooks: {}
+      slaurent: {}, pnanduri: {}, hsato: {}, cbrooks: {},
+      wpike: { password: oerTermHash("tidyup1998") }, vhale: { password: oerTermHash("retained") }
     };
 
     var HOST = "nexus";
@@ -874,7 +925,7 @@
       if (node.unlock && node.unlock > Date.now()) {
         return "Permission denied (sealed until " + utcStamp(node.unlock) + ")";
       }
-      if (node.restricted) {
+      if (node.restricted || (node.private && user !== node.owner)) {
         return "Permission denied";
       }
       if (node.password && !unlocked[pathString(parts)]) {
