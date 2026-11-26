@@ -2227,7 +2227,7 @@
       scrollamount="4"
       id="alertTicker"
     >
-      ...................................
+      ESTABLISHING LINK TO PUBLIC ACCESS NODE ... RETRIEVING BULLETIN TRAFFIC ... STAND BY ...
     </marquee>
   </div>
 
@@ -2519,7 +2519,7 @@
         aria-label="Public log"
         id="bbsFeed"
       >
-        LOADING ROSTER LOGS...
+        <div class="bbs-wait">RETRIEVING PUBLIC LOG FROM DATABASE<span class="bbs-wait-dots"></span><span class="bbs-wait-cursor">_</span></div>
       </div>
 
       <button
@@ -4162,6 +4162,7 @@
       n = Number(n);
       if (!(n > homeHitShown)) return;
       homeHitShown = n;
+      if (window.oerCounterRoll) { clearInterval(window.oerCounterRoll); window.oerCounterRoll = null; }
       if (typeof oerOdometer === "function") {
         oerOdometer(document.getElementById("visitorCount"), n);
       } else {
@@ -4175,55 +4176,75 @@
       if (data && typeof data.hitCount !== "undefined") showHitCount(data.hitCount);
     };
 
+    // Homepage data (guestbook, ticker, counter total). Since 2026-11-25 the
+    // last answer is also kept in this browser (localStorage oerHomeBody), so
+    // a returning visitor sees the bulletin and ticker at once; the fresh
+    // answer replaces it (nothing is redrawn when it is the same).
+    const HOME_SAVED_KEY = "oerHomeBody";
+    const HOME_SAVED_MAX_DAYS = 14;
+    let homePostsShownKey = null;
+    let homeTickerShown = null;
+
+    function applyHomeBody(data) {
+      if (!data) return;
+      if (typeof data.hitCount !== "undefined") showHitCount(data.hitCount);
+
+      if (data.posts) {
+        const key = JSON.stringify(data.posts);
+        allLogPosts = data.posts || [];
+        postsLoadedAt = Date.now();
+        if (key !== homePostsShownKey) {
+          homePostsShownKey = key;
+          buildLogArchiveMenu();
+          if (currentLogView !== "current" && currentLogView !== "all" &&
+              !allLogPosts.some(function(p) { return String(p.archive) === String(currentLogView); })) {
+            currentLogView = "current";
+          }
+          renderLogView(currentLogView);
+        }
+      }
+
+      const phrases =
+        data.allPrompts && data.allPrompts.length > 0
+          ? data.allPrompts
+          : (data.tickerMessage ? [data.tickerMessage] : []);
+      if (phrases.length > 0) {
+        const text = phrases.join("  ***  ") + "  ***  ";
+        // Setting the text restarts the ticker: only when it changed.
+        if (text !== homeTickerShown) {
+          homeTickerShown = text;
+          document.getElementById("alertTicker").textContent = text;
+        }
+      }
+    }
+
+    function saveHomeBody(data) {
+      try {
+        localStorage.setItem(HOME_SAVED_KEY, JSON.stringify({ at: Date.now(), data: data }));
+      } catch (e) {
+        // storage full or switched off: the page just waits next time
+      }
+    }
+
+    function showSavedHomeBody() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(HOME_SAVED_KEY) || "null");
+        if (!saved || !saved.data || !(Date.now() - saved.at < HOME_SAVED_MAX_DAYS * 86400000)) return;
+        applyHomeBody(saved.data);
+      } catch (e) {
+        // unreadable copy: ignore it
+      }
+    }
+
     window.handleDatabaseResponse =
       function(data) {
         if (window.oerReady) window.oerReady("database");
-        if (
-          data &&
-          typeof data.hitCount !==
-          "undefined"
-        ) {
-          showHitCount(data.hitCount);
-        }
-
-        if (
-          data &&
-          data.posts
-        ) {
-          allLogPosts = data.posts || [];
-          postsLoadedAt = Date.now();
-          buildLogArchiveMenu();
-          renderLogView(currentLogView);
-        }
-
         if (data) {
-          const phrases =
-            data.allPrompts &&
-            data.allPrompts.length > 0
-              ? data.allPrompts
-              : (
-                  data.tickerMessage
-                    ? [data.tickerMessage]
-                    : []
-                );
-
-          if (phrases.length > 0) {
-            document.getElementById(
-              "alertTicker"
-            ).textContent =
-              phrases.join("  ***  ") +
-              "  ***  ";
-          }
+          applyHomeBody(data);
+          if (data.posts) saveHomeBody(data);
         }
-
-        const oldScript =
-          document.getElementById(
-            "jsonpScript"
-          );
-
-        if (oldScript) {
-          oldScript.remove();
-        }
+        const oldScript = document.getElementById("jsonpScript");
+        if (oldScript) oldScript.remove();
       };
 
     // Bulletin refresh without counting a visit (?posts=1): when a post
@@ -4236,14 +4257,11 @@
       const s = document.getElementById("postsScript");
       if (s) s.remove();
       if (!data || !data.posts) return;
-      allLogPosts = data.posts;
-      postsLoadedAt = Date.now();
-      buildLogArchiveMenu();
-      if (currentLogView !== "current" && currentLogView !== "all" &&
-          !allLogPosts.some(function(p) { return String(p.archive) === String(currentLogView); })) {
-        currentLogView = "current";
-      }
-      renderLogView(currentLogView);
+      applyHomeBody({ posts: data.posts });
+      try {
+        const saved = JSON.parse(localStorage.getItem(HOME_SAVED_KEY) || "null");
+        if (saved && saved.data) { saved.data.posts = data.posts; saveHomeBody(saved.data); }
+      } catch (e) {}
     };
 
     // Quiet retry (2026-11-13): when the account is busy Google answers
@@ -4312,6 +4330,7 @@
     // Apps Script run every 20 s and a browser signed in to several Google
     // accounts still gets the data.
     function loadDatabaseData() {
+      showSavedHomeBody();
       homeJsonp("hitScript", "?hit=1&callback=handleHitResponse", "handleHitResponse");
       const base = typeof tgdDataBase === "function" ? tgdDataBase() : API_URL;
       homeJsonp("jsonpScript", "?homebody=1&callback=handleDatabaseResponse", "handleDatabaseResponse", 0, base);
@@ -5617,6 +5636,12 @@
       color: #fff;
       text-align: center;
     }
+    /* Public log while it loads (2026-11-25). */
+    .bbs-wait { color: #00cc00; padding: 6px 2px; letter-spacing: 1px; }
+    .bbs-wait-dots::after { content: ""; animation: bbsWaitDots 1.6s steps(4, end) infinite; }
+    .bbs-wait-cursor { animation: bbsWaitBlink 1s steps(1, end) infinite; }
+    @keyframes bbsWaitDots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+    @keyframes bbsWaitBlink { 50% { visibility: hidden; } }
     .music-toggle {
       margin-left: 6px;
       padding: 1px 6px;
@@ -5643,7 +5668,25 @@
       });
       box.setAttribute("aria-label", digits);
     }
-    oerOdometer(document.getElementById("visitorCount"), 0);
+    // The saved copy (oerHomeBody) may already have set the count before this
+    // script ran: keep it.
+    oerOdometer(document.getElementById("visitorCount"), homeHitShown || 0);
+
+    // While the count is on its way the digits roll (2026-11-25), so the
+    // counter never sits at 0000000 looking stuck. The first real number
+    // stops it (showHitCount). No rolling when the visitor asks for less motion.
+    (function () {
+      var box = document.getElementById("visitorCount");
+      if (!box || homeHitShown > 0 || (window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches)) return;
+      box.setAttribute("aria-label", "COUNT LOADING");
+      var turns = 0;
+      window.oerCounterRoll = setInterval(function () {
+        if (homeHitShown > 0) { clearInterval(window.oerCounterRoll); return; }
+        if (++turns > 300) { clearInterval(window.oerCounterRoll); oerOdometer(box, 0); return; }
+        var spans = box.querySelectorAll(".odo");
+        for (var i = 0; i < spans.length; i++) spans[i].textContent = String(Math.floor(Math.random() * 10));
+      }, 90);
+    })();
 
     // Background music: a quiet synth drone made in the browser (no
     // audio file). Off on every visit; only the button turns it on.
