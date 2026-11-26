@@ -366,8 +366,30 @@
             "Do not leave sessions open on shared workstations."
           ].join("\n"), { owner: "guest" })
         }, { owner: "guest" }),
-        mvoss: staffHome("mvoss"),
-        mkeene: staffHome("mkeene"),
+        // Trail step 3 (2026-11-26): vhale's .plan -> her badge number on /hr/ (NX-1001).
+        mvoss: dir({
+          "keys.txt": file([
+            "ROW A - KEYS",
+            "",
+            "A01   1 of 1   M. Voss",
+            "A02   1 of 1   M. Voss",
+            "A03   1 of 1   M. Voss",
+            "",
+            "Spares: none. On purpose."
+          ].join("\n"), { owner: "mvoss", date: "1999-01-27" }),
+          "rowA.txt": file([
+            "Row A stays with the building.",
+            "",
+            "Not part of the handover. Not on the OER",
+            "asset list. Power and cooling only.",
+            "Nobody needs to log in to it.",
+            "",
+            "Victor keeps the readings. If the draw",
+            "changes, that is the only thing that",
+            "matters."
+          ].join("\n"), { owner: "mvoss", date: "1999-01-28" }),
+          ".plan": file("Out 31 JAN 1999. Forwarding: none.", { owner: "mvoss", date: "1999-01-29" })
+        }, { owner: "mvoss", private: true, date: "1996-04-16" }),        mkeene: staffHome("mkeene"),
         nbell: staffHome("nbell"),
         ychen: staffHome("ychen"),
         etrent: staffHome("etrent"),
@@ -426,7 +448,12 @@
             "",
             "- V. Hale, 29 JAN 1999"
           ].join("\n"), { owner: "vhale", date: "1999-01-29" }),
-          ".plan": file("Last day Friday. Mara has the keys.", { owner: "vhale", date: "1999-01-29" })
+          ".plan": file([
+            "Last day Friday. Mara has the keys.",
+            "",
+            "Her login is still her badge number.",
+            "Someone should tell her."
+          ].join("\n"), { owner: "vhale", date: "1999-01-29" })
         }, { owner: "vhale", private: true, date: "1996-04-16" }),        // Calvin Brooks, Data Archive (2026 story, owner 2026-11-13): open to
         // anyone, nothing locked. Copied here on his last day.
         cbrooks: dir({
@@ -746,9 +773,10 @@
     var ACCOUNTS = {
       guest: { home: "/home/guest", open: true },
       root: {},
-      mvoss: {}, mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
+      mkeene: {}, nbell: {}, ychen: {}, etrent: {}, crusk: {},
       slaurent: {}, pnanduri: {}, hsato: {}, cbrooks: {},
-      wpike: { password: oerTermHash("tidyup1998") }, vhale: { password: oerTermHash("retained") }
+      wpike: { password: oerTermHash("tidyup1998") }, vhale: { password: oerTermHash("retained") },
+      mvoss: { password: oerTermHash("NX-1001") }
     };
 
     var HOST = "nexus";
