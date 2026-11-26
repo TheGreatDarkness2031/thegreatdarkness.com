@@ -4307,8 +4307,52 @@
       document.body.appendChild(script);
     }
 
-    function loadPostsOnly() {
+    // Homepage on Supabase (2026-11-25): the bulletin, ticker and counter
+    // come from Supabase directly (home_visit counts the visit and answers in
+    // one call; home_read answers without counting). Apps Script sends
+    // Supabase its copy within a minute of any change (HomeSync.js). For 3
+    // minutes after this visitor posts, the bulletin is read straight from
+    // Apps Script, so the new line never seems to vanish. Supabase failing =
+    // the old way (?hit=1 straight, ?homebody=1 through the relay).
+    const SB_HOME_URL = "https://lshgovxyhbaznshylzhq.supabase.co/rest/v1/rpc/";
+    const SB_HOME_KEY = "sb_publishable_gy85z3j_jLrWu1xPluTOrg_n8AJ_fb-";   // public by design
+    const SB_HOME_TIMEOUT_MS = 6000;
+    let homeOwnPostAt = 0;
+
+    function sbHome(fn, method) {
+      const ctl = typeof AbortController === "function" ? new AbortController() : null;
+      const timer = ctl ? setTimeout(function() { ctl.abort(); }, SB_HOME_TIMEOUT_MS) : null;
+      return fetch(SB_HOME_URL + fn, {
+        method: method,
+        headers: { apikey: SB_HOME_KEY, "content-type": "application/json" },
+        body: method === "POST" ? "{}" : undefined,
+        signal: ctl ? ctl.signal : undefined
+      }).then(function(r) {
+        if (timer) clearTimeout(timer);
+        if (!r.ok) throw new Error("HTTP " + r.status);
+        return r.json();
+      }, function(e) {
+        if (timer) clearTimeout(timer);
+        throw e;
+      });
+    }
+
+    function sbHomeHasPosts(d) {
+      return !!(d && Array.isArray(d.posts) && d.posts.length > 0);
+    }
+
+    function loadPostsOnlyFromAppsScript() {
       homeJsonp("postsScript", "?posts=1&callback=handlePostsResponse", "handlePostsResponse");
+    }
+
+    function loadPostsOnly() {
+      if (Date.now() - homeOwnPostAt < 180000 || typeof fetch !== "function") {
+        loadPostsOnlyFromAppsScript();
+        return;
+      }
+      sbHome("home_read", "GET").then(function(d) {
+        if (sbHomeHasPosts(d)) window.handlePostsResponse(d); else loadPostsOnlyFromAppsScript();
+      }, loadPostsOnlyFromAppsScript);
     }
 
     function noteBulletinVersion(v) {
@@ -4331,7 +4375,20 @@
     // accounts still gets the data.
     function loadDatabaseData() {
       showSavedHomeBody();
-      homeJsonp("hitScript", "?hit=1&callback=handleHitResponse", "handleHitResponse");
+      if (typeof fetch !== "function") { loadDatabaseDataFromAppsScript(true); return; }
+      sbHome("home_visit", "POST").then(function(d) {
+        if (d && Number(d.hitCount) > 0) showHitCount(d.hitCount);
+        if (sbHomeHasPosts(d)) {
+          window.handleDatabaseResponse(d);
+        } else {
+          // Counted, but no copy yet: the rest the old way, without counting again.
+          loadDatabaseDataFromAppsScript(!(d && Number(d.hitCount) > 0));
+        }
+      }, function() { loadDatabaseDataFromAppsScript(true); });
+    }
+
+    function loadDatabaseDataFromAppsScript(count) {
+      if (count) homeJsonp("hitScript", "?hit=1&callback=handleHitResponse", "handleHitResponse");
       const base = typeof tgdDataBase === "function" ? tgdDataBase() : API_URL;
       homeJsonp("jsonpScript", "?homebody=1&callback=handleDatabaseResponse", "handleDatabaseResponse", 0, base);
     }
@@ -5564,6 +5621,7 @@
             msgField.value = "";
             msgField.placeholder =
               "LINE ENTRY TRANSMITTED.";
+            homeOwnPostAt = Date.now();
             // Saving can take a few seconds: check again until the
             // entry is in the log (gives up after ~15 s).
             [1500, 4000, 8000, 15000].forEach(function(ms) {
@@ -5575,7 +5633,7 @@
                   );
                 });
                 if (!arrived) {
-                  loadPostsOnly();   // straight from Apps Script; not a visit
+                  loadPostsOnlyFromAppsScript();   // straight from Apps Script; not a visit
                 }
               }, ms);
             });
