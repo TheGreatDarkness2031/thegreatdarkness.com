@@ -44,6 +44,7 @@
       ["WATCH LOG", "/watch/"],
       ["MAINTENANCE LOG", "/maintenance/?view=records"],
       ["SYSTEM LOG", "/maintenance/?view=syslog"],
+      ["WEEKLY SUMMARY", "/recap/"],
       ["RSS CHANNEL", "/feed/"]
     ]],
     ["RESOURCES", [

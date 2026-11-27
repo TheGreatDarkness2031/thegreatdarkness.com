@@ -1,0 +1,185 @@
+# OER WEEKLY SUMMARY (2026-11-27): every Monday, the past week's recap
+# video from what the monitors recorded. Runs on its own: reads the
+# week once from Apps Script (?logexport=recap, read only), then voices
+# it (Kokoro), draws the cards (/recap/render/ in Chromium), encodes the
+# videos (ffmpeg) and files everything as the GitHub Release
+# recap-<week>. The Publish site workflow builds /recap/ and its RSS from
+# those releases. Nothing here touches the live site or the monitors.
+#
+# Incomplete or unreadable week = the run fails and nothing is published;
+# GitHub emails the account that the scheduled run failed.
+#
+# Manual runs (Actions > Weekly summary > Run workflow):
+#   publish       build and file a week (empty week = the last finished one)
+#   dry-run       build only, files as a workflow artifact (any week, even unfinished)
+#   rerender      build again from the saved summary, replace the release files
+#   link-youtube  note the YouTube ids of a week uploaded by hand
+# Automatic YouTube upload: repository variable YT_UPLOAD = yes and the
+# secrets YT_CLIENT_ID / YT_CLIENT_SECRET / YT_REFRESH_TOKEN.
+name: Weekly summary
+
+on:
+  schedule:
+    - cron: "20 9 * * 1"     # Monday 09:20 UTC = 03:20 / 04:20 Central
+  workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [publish, dry-run, rerender, link-youtube]
+        default: publish
+      week:
+        description: "Week, e.g. 2026-W47 (empty = last finished week)"
+        default: ""
+      youtube_id:
+        description: "link-youtube: the video's id or link"
+        default: ""
+      youtube_short_id:
+        description: "link-youtube: the vertical cut's id or link"
+        default: ""
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: recap
+  cancel-in-progress: false
+
+jobs:
+  recap:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      MODE: ${{ github.event.inputs.mode || 'publish' }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Pick the week
+        run: |
+          WEEK="${{ github.event.inputs.week }}"
+          if [ -z "$WEEK" ]; then
+            # The ISO week of the Central-time date 7 days ago = the last finished week.
+            WEEK=$(node -e '
+              const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago", year: "numeric", month: "2-digit", day: "2-digit" })
+                .formatToParts(new Date()).map((x) => [x.type, x.value]));
+              const d = Date.UTC(+p.year, +p.month - 1, +p.day) - 7 * 86400000;
+              const dow = (new Date(d).getUTCDay() + 6) % 7, th = d + (3 - dow) * 86400000, y = new Date(th).getUTCFullYear();
+              const j4 = Date.UTC(y, 0, 4), w1 = j4 - ((new Date(j4).getUTCDay() + 6) % 7) * 86400000;
+              const w = Math.floor((th - w1) / 604800000) + 1;
+              console.log(y + "-W" + String(w).padStart(2, "0"));')
+          fi
+          WEEK=$(echo "$WEEK" | tr a-z A-Z)
+          echo "$WEEK" | grep -Eq '^[0-9]{4}-W[0-9]{2}$' || { echo "::error::bad week $WEEK"; exit 1; }
+          echo "WEEK=$WEEK" >> "$GITHUB_ENV"
+          echo "TAG=recap-$WEEK" >> "$GITHUB_ENV"
+          echo "BASE=OER-WEEKLY-SUMMARY-$WEEK" >> "$GITHUB_ENV"
+          echo "Week $WEEK, mode $MODE"
+
+      - name: Link YouTube ids to the week
+        if: env.MODE == 'link-youtube'
+        env:
+          YT_ID: ${{ github.event.inputs.youtube_id }}
+          YT_SHORT_ID: ${{ github.event.inputs.youtube_short_id }}
+        run: |
+          mkdir -p recap/data
+          gh release download "$TAG" -p "$WEEK.json" -D recap/data --clobber
+          node -e '
+            const fs = require("fs"), f = "recap/data/" + process.env.WEEK + ".json", d = JSON.parse(fs.readFileSync(f, "utf8"));
+            const id = (s) => { s = String(s || "").trim(); const m = /(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/.exec(s); return m ? m[1] : (/^[\w-]{11}$/.test(s) ? s : ""); };
+            const a = id(process.argv[1]), b = id(process.argv[2]);
+            if (!a && !b) { console.error("no YouTube id given"); process.exit(1); }
+            if (a) d.youtube = a; if (b) d.youtubeShort = b;
+            fs.writeFileSync(f, JSON.stringify(d, null, 1) + "\n");
+            console.log("youtube " + (d.youtube || "-") + ", short " + (d.youtubeShort || "-"));' "$YT_ID" "$YT_SHORT_ID"
+          gh release upload "$TAG" "recap/data/$WEEK.json" --clobber
+          gh workflow run pages.yml
+
+      - name: Stop if this week is already filed
+        if: env.MODE == 'publish'
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "$TAG already filed; use rerender to replace it."
+            echo "ALREADY=1" >> "$GITHUB_ENV"
+          fi
+
+      - name: Install build tools
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        working-directory: recap
+        run: |
+          npm ci --no-audit --no-fund
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          npx playwright install --with-deps chromium > /dev/null
+
+      - name: Voice model cache
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        uses: actions/cache@v4
+        with:
+          path: recap/node_modules/@huggingface/transformers/.cache
+          key: kokoro-82m-v1.0-q8
+
+      - name: Week data and narration
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        run: |
+          if [ "$MODE" = "rerender" ]; then
+            mkdir -p recap/data
+            gh release download "$TAG" -p "$WEEK.json" -D recap/data --clobber
+            node recap/build/week.js "$WEEK" --renarrate
+          elif [ "$MODE" = "dry-run" ]; then
+            node recap/build/week.js "$WEEK" --partial --dry
+          else
+            node recap/build/week.js "$WEEK"
+          fi
+
+      - name: Voice
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        run: |
+          node recap/build/voice.mjs "$WEEK"
+          node recap/build/voice.mjs "$WEEK" --short
+
+      - name: Video
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        env:
+          FFMPEG: ffmpeg
+        run: node recap/build/video.mjs "$WEEK"
+
+      - name: Keep the files (dry run)
+        if: env.MODE == 'dry-run'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-summary-${{ env.WEEK }}-dry-run
+          path: |
+            recap/out/OER-WEEKLY-SUMMARY-*
+            recap/data/${{ env.WEEK }}.json
+          retention-days: 14
+
+      - name: File the release
+        if: (env.MODE == 'publish' && env.ALREADY != '1') || env.MODE == 'rerender'
+        run: |
+          FILES="recap/out/$BASE.mp4 recap/out/$BASE-SHORT.mp4 recap/out/$BASE-THUMB.png recap/out/$BASE-YOUTUBE.txt recap/data/$WEEK.json"
+          for f in $FILES; do [ -s "$f" ] || { echo "::error::missing $f"; exit 1; }; done
+          TITLE=$(node -e 'console.log(require("./recap/data/" + process.env.WEEK + ".json").meta.title)')
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" $FILES --clobber
+          else
+            gh release create "$TAG" $FILES --title "$TITLE" --notes-file "recap/out/$BASE-YOUTUBE.txt" --latest=false
+          fi
+
+      - name: Upload to YouTube
+        if: ((env.MODE == 'publish' && env.ALREADY != '1') || env.MODE == 'rerender') && vars.YT_UPLOAD == 'yes'
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          YT_PRIVACY: ${{ vars.YT_PRIVACY || 'public' }}
+        run: |
+          node recap/build/youtube.mjs "$WEEK"
+          gh release upload "$TAG" "recap/data/$WEEK.json" --clobber
+
+      - name: Publish the site
+        if: (env.MODE == 'publish' && env.ALREADY != '1') || env.MODE == 'rerender'
+        run: gh workflow run pages.yml

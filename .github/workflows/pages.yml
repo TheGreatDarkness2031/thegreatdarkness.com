@@ -180,6 +180,15 @@ jobs:
       - name: Build survival signals
         run: node survival/build/signals.js data/monitors.json data/signals.json || true
 
+      # OER WEEKLY SUMMARY (2026-11-27): /recap/index.json, data/<week>.json
+      # and feed.xml from the recap-<week> releases the Weekly summary
+      # workflow files. Keeps the published copy if GitHub can't be read;
+      # never fails the publish.
+      - name: Build weekly summary list
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node recap/build/site.mjs || true
+
       # Node 24 versions of the Pages actions (2026-11-21; the v3/v4/v5 set
       # ran on Node 20, which GitHub is retiring).
       - uses: actions/configure-pages@v6

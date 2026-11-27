@@ -3,11 +3,15 @@
 //
 //   node recap/build/voice.mjs 2026-W46                 voice from voice/voice.json
 //   node recap/build/voice.mjs 2026-W46 --voice am_michael --out out/x.wav
+//   node recap/build/voice.mjs 2026-W47 --short        the vertical cut's narration
 //
-// Reads recap/data/<week>.txt, applies voice/pronunciation.json, speaks
-// one paragraph at a time and joins them with fixed pauses into one
-// 24 kHz mono WAV (default recap/out/<week>.wav). Same text + voice =
-// same audio.
+// Reads the narration's paragraphs and sentences from recap/data/<week>.json
+// (the .txt for weeks built before 2026-11-27), applies
+// voice/pronunciation.json, speaks one sentence at a time and joins them
+// with fixed pauses into one 24 kHz mono WAV (default
+// recap/out/<week>.wav, or <week>-short.wav) plus <same name>.timing.json:
+// when each sentence starts and ends, which video.mjs times the cards to.
+// Same text + voice = same audio.
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,7 +24,8 @@ const settingsFile = path.join(ROOT, "voice", "voice.json");
 const settings = fs.existsSync(settingsFile) ? JSON.parse(fs.readFileSync(settingsFile, "utf8")) : {};
 const voice = opt("voice", settings.voice || "am_michael");
 const speed = Number(opt("speed", settings.speed || 1));
-const out = opt("out", path.join(ROOT, "out", week + ".wav"));
+const short = args.includes("--short");
+const out = opt("out", path.join(ROOT, "out", week + (short ? "-short" : "") + ".wav"));
 const PAUSE_SENTENCE = 0.35, PAUSE_SECTION = 0.9, PAUSE_EDGE = 0.6;   // seconds
 
 const NUM = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
@@ -52,26 +57,44 @@ function wav(samples, rate) {
   return buf;
 }
 
+// Paragraphs as lists of sentences, exactly as the narration made them.
+export function readParagraphs(data, text, useShort) {
+  const n = useShort ? data && data.short : data && data.narration;
+  if (n && Array.isArray(n.paragraphs)) return n.paragraphs.map((p) => p.sentences.map((x) => x.replace(/\s+/g, " ").trim()));
+  if (useShort) throw new Error("no short narration for this week");
+  return String(text || "").trim().split(/\n\s*\n/)
+    .map((p) => p.replace(/\s+/g, " ").split(/(?<=\.)\s+/).map((x) => x.trim()).filter(Boolean));
+}
+
 async function main() {
-  if (!/^\d{4}-W\d{2}$/.test(week)) { console.error("usage: voice.mjs 2026-W46 [--voice id] [--speed 1] [--out file.wav]"); process.exit(1); }
-  const text = fs.readFileSync(path.join(ROOT, "data", week + ".txt"), "utf8").trim();
+  if (!/^\d{4}-W\d{2}$/.test(week)) { console.error("usage: voice.mjs 2026-W46 [--short] [--voice id] [--speed 1] [--out file.wav]"); process.exit(1); }
+  const jsonFile = path.join(ROOT, "data", week + ".json");
+  const txtFile = path.join(ROOT, "data", week + ".txt");
+  const paragraphs = readParagraphs(
+    fs.existsSync(jsonFile) ? JSON.parse(fs.readFileSync(jsonFile, "utf8")) : null,
+    fs.existsSync(txtFile) ? fs.readFileSync(txtFile, "utf8") : "", short);
   const rules = JSON.parse(fs.readFileSync(path.join(ROOT, "voice", "pronunciation.json"), "utf8")).rules;
   const { KokoroTTS } = await import("kokoro-js");
   const tts = await KokoroTTS.from_pretrained("onnx-community/Kokoro-82M-v1.0-ONNX", { dtype: "q8", device: "cpu" });
   if (!tts.voices[voice]) throw new Error("unknown voice " + voice);
 
   const rate = 24000, pieces = [silence(PAUSE_EDGE, rate)];
-  const paragraphs = text.split(/\n\s*\n/);
+  const timing = { voice, speed, rate, paragraphs: [] };
+  let at = pieces[0].length;
   const t0 = Date.now();
   for (let p = 0; p < paragraphs.length; p++) {
     // One sentence at a time keeps Kokoro's per-call length limit far away
     // and gives every sentence the same flat delivery.
-    const sentences = forSpeech(paragraphs[p].replace(/\s+/g, " "), rules).split(/(?<=\.)\s+/).map((x) => x.trim()).filter(Boolean);
+    const tp = { start: at / rate, sentences: [] };
+    const sentences = paragraphs[p];
     for (let i = 0; i < sentences.length; i++) {
-      const a = await tts.generate(sentences[i], { voice, speed });
-      pieces.push(a.audio);
-      pieces.push(silence(i === sentences.length - 1 ? PAUSE_SECTION : PAUSE_SENTENCE, rate));
+      const a = await tts.generate(forSpeech(sentences[i], rules), { voice, speed });
+      tp.sentences.push({ start: at / rate, end: (at + a.audio.length) / rate });
+      const gap = silence(i === sentences.length - 1 ? PAUSE_SECTION : PAUSE_SENTENCE, rate);
+      pieces.push(a.audio, gap);
+      at += a.audio.length + gap.length;
     }
+    timing.paragraphs.push(tp);
     process.stdout.write("\r" + (p + 1) + "/" + paragraphs.length + " paragraphs");
   }
   pieces.push(silence(PAUSE_EDGE, rate));
@@ -80,7 +103,9 @@ async function main() {
   let o = 0; for (const a of pieces) { all.set(a, o); o += a.length; }
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, wav(all, rate));
-  console.log("\n" + out + ": " + (total / rate).toFixed(1) + " s, voice " + voice + ", built in " + Math.round((Date.now() - t0) / 1000) + " s");
+  timing.duration = total / rate;
+  fs.writeFileSync(out.replace(/\.wav$/, "") + ".timing.json", JSON.stringify(timing, null, 1) + "\n");
+  console.log("\n" + out + ": " + timing.duration.toFixed(1) + " s, voice " + voice + ", built in " + Math.round((Date.now() - t0) / 1000) + " s");
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) main().catch((e) => { console.error("STOP: " + e.message); process.exit(2); });

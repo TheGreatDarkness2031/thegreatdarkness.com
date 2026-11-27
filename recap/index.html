@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="OER Weekly Summary: a short video and written summary every Monday of what the live monitors recorded the week before.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Weekly Summary">
+<meta property="og:description" content="OER Weekly Summary: a short video and written summary every Monday of what the live monitors recorded the week before.">
+<meta property="og:url" content="https://thegreatdarkness.com/recap/">
+<link rel="canonical" href="https://thegreatdarkness.com/recap/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/console.css">
+<link rel="alternate" type="application/rss+xml" title="OER // Weekly Summary" href="https://thegreatdarkness.com/recap/feed.xml">
+<script src="/assets/console.js"></script>
+<title>OER // Weekly Summary</title>
+<style>
+  body { margin: 0; padding: 18px 10px 30px; background: #000000; color: #bbbbbb; font-family: "Courier New", Courier, monospace; }
+  .notice { max-width: 860px; margin: 0 auto; padding: 5px; background: #0a0a0a; border: 2px outset #888888; box-shadow: 4px 4px 0 #1a1a1a; }
+  .notice-inner { padding: 16px 20px 14px; border: 1px inset #777777; }
+  .label { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; text-align: center; }
+  h1 { margin: 8px 0 4px; color: #ffffff; font: bold clamp(1.2rem, 4vw, 1.7rem) Arial, Helvetica, sans-serif; letter-spacing: 2px; text-align: center; }
+  .sub { color: #8a8a8a; font-size: 0.66rem; letter-spacing: 2px; text-align: center; }
+  hr { margin: 14px 0; border: 0; border-top: 1px dashed #555555; }
+  h2 { margin: 18px 0 6px; color: #ffffff; font-size: 0.86rem; letter-spacing: 2px; }
+  p { font-size: 0.82rem; line-height: 1.6; margin: 0 0 8px; }
+  a { color: #00cc00; }
+  a:hover, a:focus { color: #00ff00; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; font-size: 0.78rem; }
+  .bar label { color: #8a8a8a; letter-spacing: 1px; }
+  select { background: #000; color: #00dd00; border: 1px solid #00aa00; font: inherit; padding: 2px 4px; }
+  .period { color: #ffbf00; font-size: 0.8rem; letter-spacing: 1px; margin-top: 10px; }
+  .video { margin-top: 12px; border: 1px solid #333; background: #050505; }
+  .video .frame { position: relative; width: 100%; aspect-ratio: 16 / 9; display: flex; align-items: center; justify-content: center; }
+  .video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .video .links { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 8px 10px; border-top: 1px solid #333; font-size: 0.76rem; }
+  .play { background: #000; color: #00ff00; border: 2px solid #00aa00; font: bold 0.9rem "Courier New", monospace; letter-spacing: 2px; padding: 10px 18px; cursor: pointer; }
+  .play:hover, .play:focus { background: #001a00; }
+  .hint { color: #8a8a8a; font-size: 0.66rem; letter-spacing: 1px; margin-top: 8px; text-align: center; }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 2px 18px; font-size: 0.76rem; }
+  .board div { display: flex; justify-content: space-between; border-bottom: 1px solid #1c1c1c; padding: 3px 0; }
+  .s-NOMINAL { color: #00ff00; } .s-WATCH { color: #ffff00; } .s-ELEVATED { color: #ff9900; } .s-CRITICAL { color: #ff4040; }
+  .summary p { padding-left: 10px; border-left: 2px solid #00aa00; color: #dddddd; }
+  .none { color: #8a8a8a; font-size: 0.8rem; letter-spacing: 1px; text-align: center; padding: 30px 0; }
+  .foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 16px; margin-top: 16px; color: #8a8a8a; font-size: 0.6rem; letter-spacing: 1px; }
+  @media (max-width: 560px) { .board { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<section class="notice" aria-label="Weekly summary">
+  <div class="notice-inner">
+    <div class="label">[ OER PUBLIC NETWORK ACCESS NODE // GDK-001 ]</div>
+    <h1>WEEKLY SUMMARY</h1>
+    <div class="sub">OPERATIONAL EVENT REGISTER // FILED EACH MONDAY</div>
+    <hr>
+    <p>Each week the register files a short summary of what its monitors recorded, Monday 00:00 to Sunday 23:59, U.S. Central time.
+      Counts, levels and contacts are the recorded data as logged; a monitor that was quiet or without data says so.
+      Narration is a synthetic voice. Not an official alert service.</p>
+    <div class="bar">
+      <label for="weekPick">WEEK</label>
+      <select id="weekPick" aria-label="Week"></select>
+      <a href="/recap/feed.xml">[ RSS ]</a>
+      <a href="/floor/">[ WATCH FLOOR ]</a>
+    </div>
+    <div id="week"><div class="none">RETRIEVING SUMMARIES...</div></div>
+    <div class="foot">
+      <span>OER/PAN // WEEKLY SUMMARY</span>
+      <span><a href="/sources/">[ DATA SOURCES ]</a> <a href="/">[ RETURN TO HOME ]</a></span>
+    </div>
+  </div>
+</section>
+<script>
+(function () {
+  "use strict";
+  var TZ = "America/Chicago";
+  var box = document.getElementById("week"), pick = document.getElementById("weekPick");
+  var weeks = [];
+  function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); }
+  function day(ms, o) { return new Intl.DateTimeFormat("en-GB", Object.assign({ timeZone: TZ }, o)).format(new Date(ms)).toUpperCase(); }
+  function label(w) { return w.week + " // ENDING " + day(Date.parse(w.to) - 1, { day: "2-digit", month: "short", year: "numeric" }); }
+  function status(s) { return '<span class="s-' + esc(s) + '">' + esc(s || "NO DATA") + "</span>"; }
+
+  function show(week) {
+    var w = weeks.filter(function (x) { return x.week === week; })[0] || weeks[0];
+    if (!w) return;
+    pick.value = w.week;
+    var url = new URL(location.href);
+    if (url.searchParams.get("week") !== w.week) { url.searchParams.set("week", w.week); history.replaceState(null, "", url); }
+    var video = "";
+    if (w.youtube) {
+      video = '<div class="frame" id="vframe"><div><button class="play" id="play" type="button">&#9654; PLAY SUMMARY</button>' +
+        '<div class="hint">PLAYS FROM YOUTUBE (LOADED ONLY WHEN PRESSED)</div></div></div>';
+    }
+    var links = [];
+    if (w.youtube) links.push('<a href="https://www.youtube.com/watch?v=' + esc(w.youtube) + '" rel="noopener" target="_blank">[ WATCH ON YOUTUBE ]</a>');
+    if (w.youtubeShort) links.push('<a href="https://www.youtube.com/shorts/' + esc(w.youtubeShort) + '" rel="noopener" target="_blank">[ SHORT CUT ON YOUTUBE ]</a>');
+    if (w.video) links.push('<a href="' + esc(w.video) + '">[ DOWNLOAD VIDEO (MP4) ]</a>');
+    if (w.short) links.push('<a href="' + esc(w.short) + '">[ VERTICAL CUT (MP4) ]</a>');
+    var board = (w.peaks || []).map(function (p) { return '<div><span style="color:' + esc(p[1] || "#bbbbbb") + '">' + esc(p[0]) + "</span>" + status(p[2]) + "</div>"; }).join("");
+    box.innerHTML = '<div class="period">' + esc(day(Date.parse(w.from), { weekday: "short", day: "2-digit", month: "short" }) + " 00:00 - " +
+        day(Date.parse(w.to) - 1, { weekday: "short", day: "2-digit", month: "short", year: "numeric" }) + " 23:59 CENTRAL") + "</div>" +
+      '<div class="video">' + video + (links.length ? '<div class="links">' + links.join("") + "</div>" : "") + "</div>" +
+      "<h2>HIGHEST STATUS BY MONITOR</h2><div class=\"board\">" + board + "</div>" +
+      '<h2>WRITTEN SUMMARY</h2><div class="summary" id="text"><p>RETRIEVING...</p></div>';
+    var play = document.getElementById("play");
+    if (play) play.addEventListener("click", function () {
+      document.getElementById("vframe").innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + encodeURIComponent(w.youtube) +
+        '?autoplay=1&rel=0" title="' + esc(w.title) + '" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>';
+    });
+    fetch("/recap/data/" + encodeURIComponent(w.week) + ".json").then(function (r) { return r.json(); }).then(function (d) {
+      document.getElementById("text").innerHTML = d.narration.paragraphs.slice(1, -1).map(function (p) { return "<p>" + esc(p.sentences.join(" ")) + "</p>"; }).join("");
+    }).catch(function () { document.getElementById("text").innerHTML = "<p>SUMMARY TEXT UNAVAILABLE.</p>"; });
+  }
+
+  fetch("/recap/index.json", { cache: "no-cache" }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); }).then(function (d) {
+    weeks = (d && d.weeks) || [];
+    if (!weeks.length) throw new Error("none");
+    pick.innerHTML = weeks.map(function (w) { return '<option value="' + esc(w.week) + '">' + esc(label(w)) + "</option>"; }).join("");
+    pick.addEventListener("change", function () { show(pick.value); });
+    show(new URLSearchParams(location.search).get("week"));
+  }).catch(function () {
+    pick.disabled = true;
+    box.innerHTML = '<div class="none">NO SUMMARIES ON FILE.</div>';
+  });
+})();
+</script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>

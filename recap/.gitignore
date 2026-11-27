@@ -1,3 +1,9 @@
 node_modules/
 .cache/
 out/
+.secrets/
+index.json
+feed.xml
+data/*
+!data/2026-W46.json
+!data/2026-W46.txt

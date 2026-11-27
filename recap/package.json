@@ -4,6 +4,8 @@
   "description": "OER WEEKLY SUMMARY build tools (not part of the website)",
   "license": "UNLICENSED",
   "dependencies": {
-    "kokoro-js": "1.2.1"
+    "ffmpeg-static": "5.2.0",
+    "kokoro-js": "1.2.1",
+    "playwright": "1.57.0"
   }
 }

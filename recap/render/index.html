@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="robots" content="noindex">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OER // WEEKLY SUMMARY RENDER</title>
+<!--
+  OER WEEKLY SUMMARY video cards (recap stage 3, 2026-11-27). Not a page
+  for visitors: recap/build/video.mjs opens it in headless Chromium,
+  calls showScene(scene, step) for every spoken line and takes a picture.
+    /recap/render/?week=2026-W47              1920x1080 cards
+    /recap/render/?week=2026-W47&fmt=tall     1080x1920 (vertical cut)
+    /recap/render/?week=2026-W47&fmt=thumb    1280x720 thumbnail
+    add &scene=N&step=K to look at one card in a browser.
+  Everything on a card comes from recap/data/<week>.json: recorded data only.
+-->
+<style>
+  :root { --g: #33ff66; --dim: #1f9940; --faint: #0e3d1b; --amber: #ffbf00; --bg: #020503; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--g); overflow: hidden; }
+  body { font-family: "Courier New", "Liberation Mono", "DejaVu Sans Mono", monospace; font-weight: bold; }
+  #card { position: relative; width: 1920px; height: 1080px; padding: 56px 72px; display: flex; flex-direction: column; }
+  body.tall #card { width: 1080px; height: 1920px; padding: 80px 64px; }
+  body.thumb #card { width: 1280px; height: 720px; padding: 40px 52px; }
+  #card::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.22) 0 2px, transparent 2px 4px); }
+  .top { display: flex; align-items: center; gap: 24px; border-bottom: 3px solid var(--dim); padding-bottom: 22px; }
+  .top img { width: 84px; height: 84px; opacity: 0.9; filter: grayscale(0.3); }
+  .top .reg { font-size: 34px; letter-spacing: 3px; }
+  .top .sub { font-size: 24px; color: var(--dim); letter-spacing: 2px; margin-top: 6px; }
+  .top .right { margin-left: auto; text-align: right; font-size: 26px; color: var(--amber); letter-spacing: 2px; }
+  .top .right div + div { color: var(--dim); font-size: 22px; margin-top: 6px; }
+  .body { flex: 1; display: flex; flex-direction: column; min-height: 0; padding-top: 40px; }
+  .foot { display: flex; justify-content: space-between; border-top: 3px solid var(--dim); padding-top: 18px;
+    font-size: 22px; color: var(--dim); letter-spacing: 2px; }
+  .foot .site { color: var(--amber); }
+  .name { font-size: 78px; letter-spacing: 4px; line-height: 1.05; }
+  .row { display: flex; gap: 40px; align-items: flex-end; margin-top: 26px; }
+  .fig { font-size: 120px; line-height: 0.9; }
+  .figlabel { font-size: 30px; color: var(--dim); letter-spacing: 2px; padding-bottom: 10px; }
+  .chip { display: inline-block; padding: 10px 22px; border: 3px solid currentColor; font-size: 36px; letter-spacing: 4px; }
+  .peak { margin-left: auto; text-align: right; }
+  .peak .lbl { font-size: 22px; color: var(--dim); letter-spacing: 3px; margin-bottom: 10px; }
+  .strip { margin-top: 34px; }
+  .strip .bar { position: relative; height: 34px; border: 2px solid var(--dim); background: #0a0a0a; }
+  .strip .seg { position: absolute; top: 0; bottom: 0; }
+  .strip .days { display: flex; font-size: 20px; color: var(--dim); margin-top: 8px; letter-spacing: 2px; }
+  .strip .days span { flex: 1; border-left: 2px solid var(--faint); padding-left: 8px; }
+  .strip .key { font-size: 18px; color: var(--dim); margin-top: 8px; letter-spacing: 2px; }
+  .lines { margin-top: 34px; font-size: 34px; line-height: 1.35; letter-spacing: 1px; }
+  .lines div { margin-bottom: 14px; padding-left: 40px; text-indent: -40px; }
+  .lines div::before { content: "> "; color: var(--dim); }
+  .lines div.now::after { content: "_"; animation: none; color: var(--g); }
+  .s-NOMINAL { color: #00ff00; } .s-WATCH { color: #ffff00; } .s-ELEVATED { color: #ff9900; } .s-CRITICAL { color: #ff3030; }
+  .s-DEGRADED { color: #8a8a8a; } .s-MISSING { color: #3a3a3a; }
+  .title { font-size: 110px; letter-spacing: 8px; line-height: 1; }
+  .period { font-size: 40px; color: var(--amber); letter-spacing: 4px; margin-top: 22px; }
+  .board { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px 40px; margin-top: 50px; font-size: 30px; }
+  .board div { display: flex; justify-content: space-between; border-bottom: 2px solid var(--faint); padding-bottom: 8px; }
+  .quiet { margin-top: 30px; font-size: 44px; line-height: 1.5; }
+  .quiet div { display: flex; justify-content: space-between; border-bottom: 2px solid var(--faint); }
+  .outro { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  .outro img { width: 300px; height: 300px; opacity: 0.85; }
+  .outro .big { font-size: 64px; letter-spacing: 6px; margin-top: 36px; }
+  .outro .site { font-size: 56px; color: var(--amber); letter-spacing: 4px; margin-top: 18px; }
+  .outro .small { font-size: 26px; color: var(--dim); letter-spacing: 2px; margin-top: 40px; line-height: 1.5; }
+  /* vertical cut: one column, bigger type */
+  body.tall .top { flex-wrap: wrap; }
+  body.tall .body { justify-content: center; padding-bottom: 120px; }
+  body.tall .top .right { margin-left: 0; text-align: left; width: 100%; }
+  body.tall .name { font-size: 92px; }
+  body.tall .row { flex-direction: column; align-items: flex-start; gap: 24px; }
+  body.tall .peak { margin-left: 0; text-align: left; }
+  body.tall .fig { font-size: 170px; }
+  body.tall .lines { font-size: 46px; }
+  body.tall .title { font-size: 104px; }
+  body.tall .board { grid-template-columns: 1fr; font-size: 40px; }
+  /* thumbnail */
+  body.thumb .title { font-size: 96px; }
+  body.thumb .period { font-size: 40px; }
+  body.thumb .tl { margin-top: 30px; font-size: 44px; line-height: 1.45; }
+  body.thumb .tl div { display: flex; justify-content: space-between; border-bottom: 3px solid var(--faint); }
+</style>
+</head>
+<body>
+<div id="card" aria-live="off"></div>
+<script>
+(function () {
+  "use strict";
+  var q = new URLSearchParams(location.search);
+  var week = String(q.get("week") || "").toUpperCase();
+  var fmt = q.get("fmt") === "tall" || q.get("fmt") === "thumb" ? q.get("fmt") : "wide";
+  document.body.classList.add(fmt);
+  var TZ = "America/Chicago";
+  var data = null, scenes = [];
+
+  function esc(s) { return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  function fmtDay(ms, opts) { return new Intl.DateTimeFormat("en-GB", Object.assign({ timeZone: TZ }, opts)).format(new Date(ms)).toUpperCase(); }
+  function periodText() {
+    var from = Date.parse(data.summary.from), end = Date.parse(data.summary.to) - 1;
+    return fmtDay(from, { day: "2-digit", month: "short" }) + " - " + fmtDay(end, { day: "2-digit", month: "short", year: "numeric" });
+  }
+  function status(s) { return '<span class="s-' + esc(s) + '">' + esc(s) + "</span>"; }
+  // Status words inside a line get their colour.
+  function colourLine(t) {
+    return esc(String(t).toUpperCase()).replace(/\b(NOMINAL|WATCH|ELEVATED|CRITICAL)\b/g, function (m) { return status(m); });
+  }
+  function monitor(id) { return data.summary.monitors.filter(function (m) { return m.id === id; })[0]; }
+
+  function top() {
+    return '<div class="top"><img src="/assets/img/oer-seal-300.png" alt="">' +
+      '<div><div class="reg">OPERATIONAL EVENT REGISTER</div><div class="sub">WEEKLY SUMMARY // ' + esc(data.summary.week) + "</div></div>" +
+      '<div class="right"><div>' + esc(periodText()) + "</div><div>U.S. CENTRAL TIME</div></div></div>";
+  }
+  function foot(n, total) {
+    return '<div class="foot"><span class="site">THEGREATDARKNESS.COM</span><span>NOT AN OFFICIAL ALERT SERVICE</span>' +
+      "<span>" + (total ? "CARD " + n + " / " + total : "") + "</span></div>";
+  }
+
+  // The figure that heads a monitor's card: the count the narration says
+  // first, else the week's measure.
+  var FIG = { USGS: "EARTHQUAKES RECORDED", NWS: "WARNINGS LOGGED", EIA: "GRID SECTOR CONTACTS", NIFC: "FIRES LOGGED",
+    VOLCANO: "VOLCANOES LOGGED", IODA: "OUTAGE ALERTS LOGGED", GPS: "SATELLITES LOGGED", AIINC: "PROVIDER INCIDENTS",
+    TEMP: "CITY READINGS OUT OF RANGE", TRANSPORT: "INCIDENTS LOGGED" };
+  function figure(m) {
+    if (m.id === "USGS" && m.quakes) return [m.quakes.count, FIG.USGS];
+    if (m.contacts && FIG[m.id]) return [m.contacts, FIG[m.id]];
+    if (m.measure) return [m.id === "NEO" ? Number(m.measure.value).toFixed(2) : m.measure.value, String(m.measure.what + (m.measure.unit ? " (" + m.measure.unit + ")" : "")).toUpperCase()];
+    return ["-", "NO CONTACTS"];
+  }
+
+  function strip(m) {
+    var from = Date.parse(data.summary.from), to = Date.parse(data.summary.to), span = to - from;
+    var tl = m.timeline || [], segs = "";
+    for (var i = 0; i < tl.length; i++) {
+      var a = Math.max(tl[i][0], from), b = i + 1 < tl.length ? tl[i + 1][0] : to;
+      if (b <= a) continue;
+      segs += '<div class="seg" style="left:' + ((a - from) / span * 100).toFixed(3) + "%;width:" + ((b - a) / span * 100).toFixed(3) +
+        "%;background:" + ({ NOMINAL: "#00a000", WATCH: "#d8d800", ELEVATED: "#ff9900", CRITICAL: "#ff2020", DEGRADED: "#6a6a6a", MISSING: "#1a1a1a" }[tl[i][1]] || "#1a1a1a") + '"></div>';
+    }
+    var days = "";
+    for (var d = 0; d < 7; d++) days += "<span>" + fmtDay(from + d * 86400000 + 43200000, { weekday: "short" }) + "</span>";
+    return '<div class="strip"><div class="bar">' + segs + '</div><div class="days">' + days + "</div>" +
+      '<div class="key">STATUS THROUGH THE WEEK // ' + status("NOMINAL") + " " + status("WATCH") + " " + status("ELEVATED") + " " +
+      status("CRITICAL") + ' <span class="s-DEGRADED">DEGRADED</span> <span style="color:#555">NO DATA</span></div></div>';
+  }
+
+  function lines(sentences, step) {
+    var out = "";
+    for (var i = 0; i < Math.min(step, sentences.length); i++) out += '<div class="' + (i === step - 1 ? "now" : "") + '">' + colourLine(sentences[i]) + "</div>";
+    return '<div class="lines">' + out + "</div>";
+  }
+
+  function introCard(p, step) {
+    var board = "";
+    data.summary.monitors.forEach(function (m) {
+      board += '<div><span style="color:' + esc(m.color || "#33ff66") + '">' + esc(m.name) + "</span>" + status(m.peak || "NO DATA") + "</div>";
+    });
+    return '<div class="title">OER WEEKLY<br>SUMMARY</div><div class="period">PERIOD ENDING ' +
+      esc(fmtDay(Date.parse(data.summary.to) - 1, { day: "numeric", month: "long", year: "numeric" })) + "</div>" +
+      (fmt === "tall" ? "" : '<div class="board">' + board + "</div>");
+  }
+  function monitorCard(p, step) {
+    var m = monitor(p.id), f = figure(m);
+    return '<div class="name" style="color:' + esc(m.color || "#33ff66") + '">' + esc(m.name) + "</div>" +
+      '<div class="row"><div><div class="fig">' + esc(f[0]) + '</div></div><div class="figlabel">' + esc(f[1]) + "</div>" +
+      '<div class="peak"><div class="lbl">HIGHEST STATUS THIS WEEK</div><span class="chip s-' + esc(m.peak) + '">' + esc(m.peak) + "</span></div></div>" +
+      strip(m) + lines(p.sentences, step);
+  }
+  function quietCard(p, step) {
+    var list = "";
+    p.ids.forEach(function (id) { var m = monitor(id); list += '<div><span style="color:' + esc(m.color) + '">' + esc(m.name) + "</span>" + status("NOMINAL") + "</div>"; });
+    return '<div class="name">NO SIGNIFICANT ACTIVITY</div><div class="quiet">' + list + "</div>" + lines(p.sentences.slice(1), Math.max(0, step - 1));
+  }
+  function outroCard() {
+    return '<div class="outro"><img src="/assets/img/oer-seal-300.png" alt=""><div class="big">MONITORING CONTINUES</div>' +
+      '<div class="site">THEGREATDARKNESS.COM</div><div class="small">INDEPENDENT CREATIVE PROJECT. NOT AN OFFICIAL ALERT SERVICE.<br>' +
+      "NARRATION IS A SYNTHETIC VOICE. DATA: USGS, NWS, NOAA, EIA, NIFC, IODA, NASA/JPL, FAA, U.S. DOT AND OTHERS.<br>FULL SOURCE LIST: THEGREATDARKNESS.COM/SOURCES</div></div>";
+  }
+  function thumbCard() {
+    var tl = "";
+    data.summary.monitors.filter(function (m) { return m.peak && m.peak !== "NOMINAL"; }).slice(0, 4).forEach(function (m) {
+      tl += '<div><span style="color:' + esc(m.color) + '">' + esc(m.name) + "</span>" + status(m.peak) + "</div>";
+    });
+    return '<div class="title">OER WEEKLY SUMMARY</div><div class="period">WEEK ENDING ' +
+      esc(fmtDay(Date.parse(data.summary.to) - 1, { day: "numeric", month: "short", year: "numeric" })) + '</div><div class="tl">' + tl + "</div>";
+  }
+
+  // showScene(scene, step): card `scene` with its first `step` lines.
+  window.showScene = function (scene, step) {
+    var card = document.getElementById("card");
+    if (fmt === "thumb") { card.innerHTML = '<div class="body">' + thumbCard() + "</div>"; return; }
+    var p = scenes[scene];
+    if (!p) return;
+    var inner = p.kind === "intro" ? introCard(p, step) : p.kind === "outro" ? outroCard() : p.kind === "quiet" ? quietCard(p, step) : monitorCard(p, step);
+    card.innerHTML = (p.kind === "outro" ? "" : top()) + '<div class="body">' + inner + "</div>" + (p.kind === "outro" ? "" : foot(scene + 1, scenes.length));
+  };
+
+  fetch("/recap/data/" + encodeURIComponent(week) + ".json", { cache: "no-store" }).then(function (r) { return r.json(); }).then(function (d) {
+    data = d;
+    scenes = (fmt === "tall" ? d.short : d.narration).paragraphs;
+    window.recapScenes = scenes.map(function (p) { return p.sentences.length; });
+    showScene(Number(q.get("scene") || 0), Number(q.get("step") || 99));
+    return document.fonts ? document.fonts.ready : null;
+  }).then(function () {
+    window.recapReady = true;
+  }).catch(function (e) {
+    document.getElementById("card").textContent = "NO DATA FOR " + week;
+    window.recapError = String(e && e.message || e);
+  });
+})();
+</script>
+</body>
+</html>
