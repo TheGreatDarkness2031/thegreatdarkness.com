@@ -107,13 +107,24 @@ jobs:
             echo "ALREADY=1" >> "$GITHUB_ENV"
           fi
 
-      - name: Install build tools
+      # Package install scripts are skipped (as on the PC): ffmpeg comes from
+      # Ubuntu, and the voice runs on the CPU files the packages already hold.
+      - name: Install build tools (npm)
         if: env.MODE != 'link-youtube' && env.ALREADY != '1'
         working-directory: recap
+        run: npm ci --no-audit --no-fund --ignore-scripts
+
+      - name: Install build tools (ffmpeg)
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
         run: |
-          npm ci --no-audit --no-fund
-          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
-          npx playwright install --with-deps chromium > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -version | head -1
+
+      - name: Install build tools (Chromium)
+        if: env.MODE != 'link-youtube' && env.ALREADY != '1'
+        working-directory: recap
+        run: npx playwright install --with-deps chromium
 
       - name: Voice model cache
         if: env.MODE != 'link-youtube' && env.ALREADY != '1'
