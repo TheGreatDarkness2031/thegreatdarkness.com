@@ -47,7 +47,7 @@ concurrency:
 
 jobs:
   recap:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04    # Playwright 1.57 has no Chromium for 26.04 (ubuntu-latest since late 2026)
     timeout-minutes: 150
     env:
       MODE: ${{ github.event.inputs.mode || 'publish' }}
