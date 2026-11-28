@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- OER-META -->
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta name="description" content="OER Event Map: every contact the live monitors logged, earthquakes, severe weather, power grid, outages and more, plotted on a US map by day or week.">
+<meta property="og:site_name" content="The Great Darkness">
+<meta property="og:type" content="website">
+<meta property="og:title" content="OER // Event Map">
+<meta property="og:description" content="OER Event Map: every contact the live monitors logged, earthquakes, severe weather, power grid, outages and more, plotted on a US map by day or week.">
+<meta property="og:url" content="https://thegreatdarkness.com/map/">
+<link rel="canonical" href="https://thegreatdarkness.com/map/">
+<meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="THE GREAT DARKNESS // 01 JULY 2031 // Operational Event Register">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="alternate" type="application/rss+xml" title="OER // Event Reporting Console" href="https://thegreatdarkness.com/feed.xml">
+<!-- /OER-META -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="/assets/console.css">
+<script src="/assets/source-register.js"></script>
+<script src="/assets/console.js"></script>
+<title>OER // Event Map</title>
+<style>
+  body { margin: 0; padding: 10px 12px 12px; background: #000000; color: #00ff00; font-family: "Courier New", Courier, monospace; }
+  .room { width: 100%; max-width: 1400px; margin: 0 auto; }
+  .door { text-align: center; margin: 0 0 8px; }
+  .door-plate { display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515); border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000; }
+  .door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+  h1.door-name { color: #ececec; font-size: 1.2rem; font-weight: bold; letter-spacing: 6px; margin: 3px 0 2px; }
+  .door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+  .controls { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 6px 10px; margin: 0 0 8px; font-size: 0.74rem; letter-spacing: 1px; }
+  .controls button { background: #000; color: #00dd00; border: 1px solid #00aa00; font: inherit; letter-spacing: 1px; padding: 3px 7px; cursor: pointer; }
+  .controls button:hover, .controls button:focus-visible { background: #001a00; }
+  .controls button.on { background: #00dd00; color: #000; }
+  .controls button:disabled { color: #4d7a4d; border-color: #2f5a2f; cursor: default; background: #000; }
+  .controls input { background: #000; color: #00dd00; border: 1px solid #00aa00; font: inherit; padding: 2px 4px; color-scheme: dark; }
+  .controls label { color: #8a8a8a; }
+  .frame { border: 2px solid #00c000; padding: 8px 12px 8px; transition: border-color .4s, box-shadow .4s; }
+  .top { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 16px; font-size: 0.72rem; letter-spacing: 2px; color: #00aa00; }
+  .top b { color: #00ff00; font-weight: normal; }
+  .sky { margin: 6px 0 0; padding: 4px 2px; border-top: 1px dashed #0a6a2a; border-bottom: 1px dashed #0a6a2a; display: flex; flex-wrap: wrap; gap: 2px 26px; font-size: 0.7rem; letter-spacing: 2px; color: #00aa00; }
+  .lv0 { color: #00ff00; } .lv1 { color: #ffd000; } .lv2 { color: #ff9a1a; } .lv3 { color: #ff5050; }
+  .map-wrap { position: relative; }
+  .map-wrap.loading svg { opacity: 0.45; }
+  svg.us { display: block; width: 100%; height: auto; }
+  .na { fill: none; stroke: #00ff00; stroke-width: 1.1; filter: drop-shadow(0 0 2px #00ff00); }
+  .st { fill: none; stroke: #00a800; stroke-width: 0.6; opacity: 0.75; }
+  .blip { cursor: pointer; outline: none; }
+  .blip:focus circle:nth-child(2) { stroke: #ffffff; stroke-width: 1.5; }
+  .n { fill: #e8ffe8; font: bold 10px "Courier New", monospace; pointer-events: none; }
+  .crit { animation: crit 1.6s ease-in-out infinite; }
+  @keyframes crit { 50% { opacity: 0.25; } }
+  .detail { position: absolute; right: 6px; top: 6px; width: min(340px, 60%); max-height: 70%; overflow: auto; background: rgba(0, 10, 0, 0.92); border: 1px solid #00aa00; padding: 6px 8px; font-size: 0.7rem; color: #cfe; }
+  .detail .dh { color: #ffffff; letter-spacing: 1px; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+  .detail i, .lg i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex: none; }
+  .detail .row { padding: 2px 0; border-top: 1px solid #0d2a12; overflow-wrap: anywhere; }
+  .detail .dim { color: #8a8a8a; }
+  .bot { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; margin-top: 4px; font-size: 0.7rem; letter-spacing: 1px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 2px 4px; }
+  .lg { display: inline-flex; align-items: center; gap: 6px; background: none; border: 1px solid transparent; color: #cceedd; font: inherit; letter-spacing: 1px; padding: 1px 5px; cursor: pointer; }
+  .lg b { color: #ffffff; }
+  .lg:hover, .lg:focus-visible { border-color: #0a6a2a; }
+  .lg.off { opacity: 0.4; text-decoration: line-through; }
+  .levels span { margin-left: 12px; }
+  .status { color: #8a8a8a; font-size: 0.66rem; letter-spacing: 1px; margin-top: 4px; text-align: center; }
+  /* Computers: the map fills the window (no page scroll). */
+  @media (min-width: 901px) and (min-height: 560px) {
+    .map-wrap svg.us { height: calc(100vh - 336px); min-height: 280px; }
+  }
+  @media (max-width: 560px) {
+    body { padding: 8px 6px 10px; }
+    .door-plate { padding: 7px 12px 6px; }
+    .door-room { letter-spacing: 1px; font-size: 0.6rem; }
+    .frame { padding: 6px 6px; }
+    .sky { gap: 2px 12px; letter-spacing: 1px; }
+    .detail { position: static; width: auto; max-height: none; margin-top: 6px; }
+    .levels span { margin: 0 10px 0 0; }
+  }
+</style>
+</head>
+<body>
+<div class="room">
+  <div class="door">
+    <div class="door-plate">
+      <div class="door-room">OPERATIONS ROOM // CORRELATION</div>
+      <h1 class="door-name oer-h1">EVENT MAP</h1>
+      <div class="door-hours">EVERY LOGGED CONTACT // FACILITY TIME</div>
+    </div>
+  </div>
+
+  <div class="controls" role="group" aria-label="Map period">
+    <button type="button" data-range="day">[ DAY ]</button>
+    <button type="button" data-range="week">[ WEEK ]</button>
+    <button type="button" id="prevBtn" aria-label="Earlier">&lt;&lt;</button>
+    <label for="dayInput">DATE</label>
+    <input type="date" id="dayInput" min="2026-10-22">
+    <button type="button" id="nextBtn" aria-label="Later">&gt;&gt;</button>
+    <button type="button" id="playBtn" hidden>[ PLAY WEEK ]</button>
+  </div>
+
+  <section class="frame" id="mapFrame" aria-label="Event map">
+    <div class="top"><span>OER // EVENT CORRELATION MAP</span><span id="mapRange">--</span></div>
+    <div class="sky" aria-label="Orbital monitors">
+      <span>ORBITAL //</span>
+      <span>SPACE WX <b id="skySpace">--</b></span>
+      <span>NEAR-EARTH <b id="skyNeo">--</b></span>
+      <span>GPS / NAV <b id="skyGps">--</b></span>
+    </div>
+    <div class="map-wrap loading" id="mapWrap">
+      <svg class="us" viewBox="0 0 975 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of the United States with the logged contacts">
+        <path class="na" id="nation" d=""/>
+        <path class="st" id="states" d=""/>
+        <g id="blips"></g>
+      </svg>
+      <div class="detail" id="detail" hidden aria-live="polite"></div>
+    </div>
+    <div class="bot">
+      <div class="legend" id="legend"></div>
+      <div class="levels" id="levels"></div>
+    </div>
+  </section>
+  <div class="status" id="mapStatus">RETRIEVING EVENT LOG...</div>
+</div>
+<script src="/map/map.js"></script>
+<script src="/assets/notice.js" defer></script>
+</body>
+</html>
