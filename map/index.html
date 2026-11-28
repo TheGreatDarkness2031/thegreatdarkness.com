@@ -48,11 +48,19 @@
   .map-wrap { position: relative; }
   .map-wrap.loading svg { opacity: 0.45; }
   svg.us { display: block; width: 100%; height: auto; }
-  .na { fill: none; stroke: #00ff00; stroke-width: 1.1; filter: drop-shadow(0 0 2px #00ff00); }
-  .st { fill: none; stroke: #00a800; stroke-width: 0.6; opacity: 0.75; }
+  .na { fill: none; stroke: #00a82a; stroke-width: 1; opacity: 0.8; filter: drop-shadow(0 0 1.5px #00802080); vector-effect: non-scaling-stroke; }
+  .st { fill: none; stroke: #006a1e; stroke-width: 0.6; opacity: 0.6; vector-effect: non-scaling-stroke; }
+  svg.us { cursor: zoom-in; touch-action: pan-y; }
+  svg.us.zoomed { cursor: grab; touch-action: none; }
+  svg.us.dragging { cursor: grabbing; }
+  .zoom { position: absolute; left: 6px; top: 6px; display: flex; gap: 4px; align-items: center; font-size: 0.7rem; }
+  .zoom button { background: rgba(0, 0, 0, 0.8); color: #00dd00; border: 1px solid #00aa00; font: inherit; min-width: 26px; padding: 2px 6px; cursor: pointer; }
+  .zoom button:hover, .zoom button:focus-visible { background: #001a00; }
+  .zoom button:disabled { color: #3f6a3f; border-color: #234a23; cursor: default; }
+  .zoom span { color: #8a8a8a; letter-spacing: 1px; margin-left: 4px; }
   .blip { cursor: pointer; outline: none; }
   .blip:focus circle:nth-child(2) { stroke: #ffffff; stroke-width: 1.5; }
-  .n { fill: #e8ffe8; font: bold 10px "Courier New", monospace; pointer-events: none; }
+  .n { fill: #e8ffe8; font-family: "Courier New", monospace; font-weight: bold; pointer-events: none; }
   .crit { animation: crit 1.6s ease-in-out infinite; }
   @keyframes crit { 50% { opacity: 0.25; } }
   .detail { position: absolute; right: 6px; top: 6px; width: min(340px, 60%); max-height: 70%; overflow: auto; background: rgba(0, 10, 0, 0.92); border: 1px solid #00aa00; padding: 6px 8px; font-size: 0.7rem; color: #cfe; }
@@ -80,6 +88,7 @@
     .sky { gap: 2px 12px; letter-spacing: 1px; }
     .detail { position: static; width: auto; max-height: none; margin-top: 6px; }
     .levels span { margin: 0 10px 0 0; }
+    .zoom { position: static; margin: 4px 0 2px; }
   }
 </style>
 </head>
@@ -112,11 +121,17 @@
       <span>GPS / NAV <b id="skyGps">--</b></span>
     </div>
     <div class="map-wrap loading" id="mapWrap">
-      <svg class="us" viewBox="0 0 975 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of the United States with the logged contacts">
+      <svg class="us" id="mapSvg" viewBox="0 0 975 610" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Map of the United States with the logged contacts">
         <path class="na" id="nation" d=""/>
         <path class="st" id="states" d=""/>
         <g id="blips"></g>
       </svg>
+      <div class="zoom" role="group" aria-label="Zoom">
+        <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+        <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+        <button type="button" id="zoomReset">RESET</button>
+        <span id="zoomLevel"></span>
+      </div>
       <div class="detail" id="detail" hidden aria-live="polite"></div>
     </div>
     <div class="bot">

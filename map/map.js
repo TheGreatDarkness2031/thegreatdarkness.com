@@ -134,7 +134,7 @@
   var SRC = {};
   ((window.OER_SOURCE_REGISTER && window.OER_SOURCE_REGISTER.lights) || []).forEach(function (s, i) { SRC[s.id] = { label: s.label, color: s.color, order: i }; });
   var NS = "http://www.w3.org/2000/svg";
-  var state = { range: "day", day: null, data: null, playing: null, upto: null, hidden: {} };
+  var state = { range: "day", day: null, data: null, playing: null, upto: null, hidden: {}, view: { x: 0, y: 0, w: W, h: H } };
 
   function el(name, attrs, parent) {
     var e = document.createElementNS(NS, name);
@@ -196,7 +196,8 @@
     var dayOf = dayIndexOf(list);
     var contacts = (data.contacts || []).filter(function (c) { return dayOf(c.at) <= upto && !state.hidden[c.src]; });
     var built = buildMarks(contacts, dayOf);
-    var stacks = stackMarks(built.marks);
+    var z = W / state.view.w;                       // zoom: dots, text and stacking keep their screen size
+    var stacks = stackMarks(built.marks, 6 / z);
     var all = buildMarks((data.contacts || []).filter(function (c) { return dayOf(c.at) <= upto; }), dayOf).marks;
 
     // space band + frame
@@ -216,15 +217,16 @@
     stacks.sort(function (a, b) { return a.r - b.r; }).forEach(function (s) {
       var col = (SRC[s.src] || {}).color || "#cccccc";
       var age = upto - s.day, fade = state.range === "week" ? Math.max(0.28, 1 - age * 0.12) : 1;
-      var rad = RADIUS[s.r] + (s.list.length > 1 ? Math.min(4, Math.log(s.list.length) / Math.LN2 * 1.4) : 0);
+      var rad = (RADIUS[s.r] + (s.list.length > 1 ? Math.min(4, Math.log(s.list.length) / Math.LN2 * 1.4) : 0)) / z;
       var b = el("g", { "class": "blip", tabindex: "0", role: "img", "aria-label": (SRC[s.src] || {}).label + ": " + s.list.length + " contact" + (s.list.length > 1 ? "s" : "") + ", " + LEVELS[s.r] }, g);
       b.style.opacity = fade;
-      el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: (rad * 2.3).toFixed(1), fill: col, opacity: "0.11" }, b);
-      el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: rad.toFixed(1), fill: col, opacity: "0.88" }, b);
-      if (s.r >= 3) el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: (rad + 5).toFixed(1), fill: "none", stroke: col, "stroke-width": "1.2", "class": "crit" }, b);
-      if (s.list.length > 1) { var t = el("text", { x: (s.x + rad + 2).toFixed(1), y: (s.y - rad).toFixed(1), "class": "n" }, b); t.textContent = s.list.length; }
+      el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: (rad * 2.3).toFixed(2), fill: col, opacity: "0.11" }, b);
+      el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: rad.toFixed(2), fill: col, opacity: "0.88" }, b);
+      if (s.r >= 3) el("circle", { cx: s.x.toFixed(1), cy: s.y.toFixed(1), r: (rad + 5 / z).toFixed(2), fill: "none", stroke: col, "stroke-width": (1.2 / z).toFixed(3), "class": "crit" }, b);
+      if (s.list.length > 1) { var t = el("text", { x: (s.x + rad + 2 / z).toFixed(2), y: (s.y - rad).toFixed(2), "class": "n", "font-size": (10 / z).toFixed(2) }, b); t.textContent = s.list.length; }
       var show = function () { showStack(s); };
-      b.addEventListener("mouseenter", show); b.addEventListener("focus", show); b.addEventListener("click", show);
+      b.addEventListener("mouseenter", function () { if (!drag) show(); }); b.addEventListener("focus", show);
+      b.addEventListener("click", function () { if (!moved) show(); });
     });
 
     // legend (click a source to hide / show it)
@@ -253,6 +255,82 @@
     $("dayInput").value = state.day;
     $("nextBtn").disabled = state.day >= facilityToday();
     [].forEach.call(document.querySelectorAll("[data-range]"), function (b) { b.classList.toggle("on", b.getAttribute("data-range") === state.range); });
+  }
+
+  // ---------- zoom (wheel, drag, double-click, pinch, buttons, + - 0 keys) ----------
+  var MAX_ZOOM = 12, drag = null, moved = false, pointers = {}, pinch = null, redraw = 0;
+  function setView(v) {
+    var w = Math.min(W, Math.max(W / MAX_ZOOM, v.w)), h = w * H / W;
+    var x = Math.min(W - w, Math.max(0, v.x)), y = Math.min(H - h, Math.max(0, v.y));
+    state.view = { x: x, y: y, w: w, h: h };
+    var svg = $("mapSvg");
+    svg.setAttribute("viewBox", x.toFixed(2) + " " + y.toFixed(2) + " " + w.toFixed(2) + " " + h.toFixed(2));
+    var z = W / w;
+    svg.classList.toggle("zoomed", z > 1.01);
+    $("zoomLevel").textContent = z > 1.01 ? "x" + (z < 10 ? z.toFixed(1) : Math.round(z)) : "";
+    $("zoomOut").disabled = $("zoomReset").disabled = z <= 1.01;
+    $("zoomIn").disabled = z >= MAX_ZOOM - 0.01;
+    if (!redraw) redraw = requestAnimationFrame(function () { redraw = 0; draw(); });
+  }
+  function zoomAt(px, py, factor) {           // px, py in map units; factor > 1 = closer
+    var v = state.view, w = Math.min(W, Math.max(W / MAX_ZOOM, v.w / factor)), k = w / v.w;
+    setView({ x: px - (px - v.x) * k, y: py - (py - v.y) * k, w: w });
+  }
+  function toMap(e) {
+    var svg = $("mapSvg"), pt = svg.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    return pt.matrixTransform(svg.getScreenCTM().inverse());
+  }
+  function centre() { var v = state.view; return { x: v.x + v.w / 2, y: v.y + v.h / 2 }; }
+  function zoomSetup() {
+    var svg = $("mapSvg");
+    svg.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var p = toMap(e);
+      zoomAt(p.x, p.y, Math.pow(1.0018, -e.deltaY * (e.deltaMode === 1 ? 30 : 1)));
+    }, { passive: false });
+    svg.addEventListener("dblclick", function (e) { e.preventDefault(); var p = toMap(e); zoomAt(p.x, p.y, 2); });
+    svg.addEventListener("pointerdown", function (e) {
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pointers);
+      if (ids.length === 2) {
+        var a = pointers[ids[0]], b = pointers[ids[1]];
+        pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), w: state.view.w };
+        drag = null;
+      } else if (ids.length === 1 && (e.pointerType !== "touch" || W / state.view.w > 1.01)) {
+        drag = { x: e.clientX, y: e.clientY, v: state.view, scale: 1 / svg.getScreenCTM().a };
+        moved = false;
+      }
+    });
+    svg.addEventListener("pointermove", function (e) {
+      if (!pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      var ids = Object.keys(pointers);
+      if (pinch && ids.length === 2) {
+        var a = pointers[ids[0]], b = pointers[ids[1]];
+        var mid = toMap({ clientX: (a.x + b.x) / 2, clientY: (a.y + b.y) / 2 });
+        var want = pinch.w * pinch.d / Math.max(1, Math.hypot(a.x - b.x, a.y - b.y));
+        zoomAt(mid.x, mid.y, state.view.w / want);
+        return;
+      }
+      if (!drag) return;
+      var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (!moved && Math.hypot(dx, dy) < 4) return;
+      if (!moved) { moved = true; try { svg.setPointerCapture(e.pointerId); } catch (x) {} svg.classList.add("dragging"); }
+      setView({ x: drag.v.x - dx * drag.scale, y: drag.v.y - dy * drag.scale, w: drag.v.w });
+    });
+    var end = function (e) {
+      delete pointers[e.pointerId];
+      if (Object.keys(pointers).length < 2) pinch = null;
+      if (!Object.keys(pointers).length) { drag = null; svg.classList.remove("dragging"); setTimeout(function () { moved = false; }, 0); }
+    };
+    svg.addEventListener("pointerup", end);
+    svg.addEventListener("pointercancel", end);
+    svg.addEventListener("pointerleave", function (e) { if (e.pointerType === "mouse") end(e); });
+    $("zoomIn").onclick = function () { var c = centre(); zoomAt(c.x, c.y, 2); };
+    $("zoomOut").onclick = function () { var c = centre(); zoomAt(c.x, c.y, 0.5); };
+    $("zoomReset").onclick = function () { setView({ x: 0, y: 0, w: W }); };
+    setView(state.view);
   }
 
   function showStack(s) {
@@ -297,7 +375,14 @@
     $("dayInput").max = facilityToday();
     $("dayInput").onchange = function () { if (parseDay(this.value)) go(this.value); };
     $("playBtn").onclick = play;
-    document.addEventListener("keydown", function (e) { if (e.key === "Escape") $("detail").hidden = true; });
+    zoomSetup();
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") $("detail").hidden = true;
+      if (e.target && /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+      if (e.key === "+" || e.key === "=") $("zoomIn").click();
+      if (e.key === "-" || e.key === "_") $("zoomOut").click();
+      if (e.key === "0") $("zoomReset").click();
+    });
     load();
     // Today: refresh every 5 minutes (the monitors check every 5).
     setInterval(function () { if (state.day === facilityToday() && !state.playing && !document.hidden) load(); }, 300000);
