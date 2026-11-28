@@ -6,11 +6,11 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-<meta name="description" content="OER arcade: eight games, eight leaderboards.">
+<meta name="description" content="OER break room: eight arcade cabinets, eight leaderboards.">
 <meta property="og:site_name" content="The Great Darkness">
 <meta property="og:type" content="website">
-<meta property="og:title" content="The Great Darkness - Arcade">
-<meta property="og:description" content="OER arcade: eight games, eight leaderboards.">
+<meta property="og:title" content="OER // Break Room">
+<meta property="og:description" content="OER break room: eight arcade cabinets, eight leaderboards.">
 <meta property="og:url" content="https://thegreatdarkness.com/arcade/">
 <link rel="canonical" href="https://thegreatdarkness.com/arcade/">
 <meta property="og:image" content="https://thegreatdarkness.com/assets/img/share-card.png">
@@ -28,7 +28,7 @@
   <meta name="viewport"
         content="width=device-width, initial-scale=1.0">
 
-  <title>The Great Darkness - Arcade</title>
+  <title>OER // Break Room</title>
 
   <style>
 
@@ -110,6 +110,26 @@
       text-shadow:
         0 0 4px #fff,
         0 0 12px rgba(255,255,255,.35);
+    }
+
+    /* BREAK ROOM door plate (2026-11-28): same plate as the other rooms (/support/, /hr/). */
+    .door { text-align: center; margin: 4px 0 18px; }
+    .door-plate {
+      display: inline-block; padding: 7px 30px 6px; background: linear-gradient(#2c2c2c, #151515);
+      border: 2px solid #8a8a8a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 4px #3a3a3a, 4px 4px 0 #000;
+      font-family: "Courier New", Courier, monospace;
+    }
+    .door-room { color: #9a9a9a; font-size: 0.66rem; letter-spacing: 4px; }
+    .door-plate h1.door-name {
+      font: bold 1.5rem "Courier New", Courier, monospace; color: #ececec; letter-spacing: 6px;
+      margin: 3px 0 2px; text-shadow: none; line-height: 1.2;
+    }
+    .door-hours { color: #8a8a8a; font-size: 0.62rem; letter-spacing: 2px; }
+    .arcade-message a { color: #00ff00; }
+    @media (max-width: 480px) {
+      .door-plate { padding: 7px 12px 6px; }
+      .door-room { letter-spacing: 1px; font-size: 0.6rem; }
+      .door-hours { letter-spacing: 0; font-size: 0.58rem; }
     }
 
     .subtitle {
@@ -958,14 +978,14 @@
          HEADER
          ====================================== -->
 
-    <h1>THE ARCADE</h1>
-
-    <div class="subtitle">
-      THE GREAT DARKNESS
-    </div>
-
-    <div class="tagline">
-      ENJOY IT - FOR NOW
+    <!-- BREAK ROOM (owner 2026-11-28): the arcade is the staff break room, a room
+         like the others (door plate), not a separate site section. -->
+    <div class="door">
+      <div class="door-plate">
+        <div class="door-room">BUILDING 2 // STAFF RECREATION</div>
+        <h1 class="door-name oer-h1">BREAK ROOM</h1>
+        <div class="door-hours">OPEN 24 HOURS // CABINETS ON FREE PLAY</div>
+      </div>
     </div>
 
 
@@ -976,7 +996,7 @@
     <div class="crt">
 
       <div class="crt-label">
-        &lt;&lt; THE GREAT DARKNESS ARCADE &gt;&gt;
+        &lt;&lt; BREAK ROOM CABINETS &gt;&gt;
       </div>
 
       <div class="crt-main">
@@ -987,7 +1007,7 @@
       <div class="crt-sub">
         8 GAMES &nbsp;•&nbsp; 8 LEADERBOARDS
         <br>
-        ONE DARKNESS
+        STAFF AND VISITOR SCORES
       </div>
 
     </div>
@@ -1252,40 +1272,38 @@
 
 
     <!-- ======================================
-         BOOTLEGGING WARNING
+         FACILITIES NOTICE (posted on the wall)
          ====================================== -->
 
     <div class="arcade-message">
 
-      <strong>WARNING:</strong>
+      <strong>NOTICE // FACILITIES</strong>
 
       <br><br>
 
-      THIS ARCADE IS FOR PERSONAL ENJOYMENT ONLY.
+      CABINETS ARE FOR STAFF ON BREAK.<br>
+      VISITORS MUST BE ESCORTED.
 
-      <br>
+      <br><br>
 
-      <span class="danger">
-        UNAUTHORIZED COPYING, REPRODUCTION,<br>
-        DISTRIBUTION, OR BOOTLEGGING OF THESE GAMES<br>
-        IS STRICTLY FORBIDDEN.
-      </span>
+      WATCH FLOOR STAFF: NOT DURING AN ACTIVE CONTACT.
 
       <br><br>
 
       <span class="danger">
-        VIOLATORS MAY BE SENT DIRECTLY<br>
-        INTO THE DARKNESS.
+        COPYING OR REMOVING CABINET SOFTWARE<br>
+        IS NOT PERMITTED.
       </span>
 
       <br><br>
 
-      <span class="danger">
-        PROLONGED EXPOSURE MAY ALSO RESULT IN<br>
-        LOST PRODUCTIVITY, QUESTIONABLE HIGH SCORES,<br>
-        AND THE SUDDEN REALIZATION<br>
-        THAT IT'S 2:00 AM.
-      </span>
+      HIGH SCORES ARE POSTED TO THE PUBLIC LOG.<br>
+      NO REAL NAMES.
+
+      <br><br>
+
+      CABINET FAULTS: FILE A TROUBLE TICKET<br>
+      (<a href="/support/?view=new">IT SUPPORT</a>).
 
     </div>
 
@@ -1298,7 +1316,7 @@
        href="/"
        target="_blank">
 
-      [ RETURN TO THE GREAT DARKNESS ]
+      [ RETURN TO THE LOBBY ]
 
     </a>
 
