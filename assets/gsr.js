@@ -107,6 +107,80 @@
     send();
   }
 
+  // Arcade boards on Supabase (2026-11-28): the score reads are answered from
+  // Supabase's copy of the Scores sheet (rpc arcade_read, publishable key,
+  // public by design), worked out the same way as Scores.js. Apps Script
+  // answers when Supabase fails, has no copy of that game, its copy job has
+  // been silent 30 min, or this browser saved a score in the last 3 min
+  // (the copy follows a save within a minute). Saving stays on Apps Script.
+  var SB_ARCADE = "https://lshgovxyhbaznshylzhq.supabase.co/rest/v1/rpc/arcade_read";
+  var SB_ARCADE_KEY = "sb_publishable_gy85z3j_jLrWu1xPluTOrg_n8AJ_fb-";
+  var SCORE_READS = ["getGameBoardScores", "getHighScores", "getArcadeLeaders", "qualifiesForHighScore", "getHighScoreNameLength"];
+  var arcadeCopy = null, arcadeCopyAt = 0, arcadeDownUntil = 0;
+
+  function ownScoreRecent() {
+    try { return Date.now() - Number(sessionStorage.getItem("oerScoreSavedAt") || 0) < 180000; } catch (e) { return false; }
+  }
+
+  function readArcadeCopy() {
+    if (arcadeCopy && Date.now() - arcadeCopyAt < 20000) return arcadeCopy;
+    arcadeCopyAt = Date.now();
+    var ctl = window.AbortController ? new AbortController() : null;
+    var t = ctl ? setTimeout(function() { ctl.abort(); }, 5000) : 0;
+    arcadeCopy = fetch(SB_ARCADE, { headers: { apikey: SB_ARCADE_KEY, Authorization: "Bearer " + SB_ARCADE_KEY }, cache: "no-store", signal: ctl ? ctl.signal : undefined })
+      .then(function(r) { clearTimeout(t); return r.ok ? r.json() : null; })
+      .then(function(d) {
+        if (d && d.games && Date.now() - Date.parse(d.checkedAt) < 1800000) return d;
+        throw new Error("no copy");
+      })
+      .catch(function() { arcadeDownUntil = Date.now() + 600000; arcadeCopy = null; return null; });
+    return arcadeCopy;
+  }
+
+  // The Apps Script answer from the copy, or undefined (= ask Apps Script).
+  function arcadeAnswer(d, name, args) {
+    var s = d.settings || {};
+    if (name === "getHighScoreNameLength") return s.score_name_length || undefined;
+    if (name === "getArcadeLeaders") {
+      if (!d.leaders || !d.leaders.length) return undefined;
+      var leaders = {};
+      for (var i = 0; i !== d.leaders.length; i++) {
+        var list = d.games[String(d.leaders[i]).toLowerCase()];
+        leaders[d.leaders[i]] = list && list[0] ? { name: list[0].name, score: list[0].score } : null;
+      }
+      return { success: true, leaders: leaders };
+    }
+    var board = d.games[String(args[0] || "").trim().toLowerCase()];
+    if (!board || !s.hall_of_fame_count || !s.score_display_count) return undefined;
+    var copy = function(n) { return board.slice(0, n).map(function(e) { return { name: e.name, score: e.score }; }); };
+    if (name === "getHighScores") return copy(s.score_display_count);
+    if (name === "getGameBoardScores") return copy(s.hall_of_fame_count);
+    if (name === "qualifiesForHighScore") {
+      var kept = board.slice(0, s.hall_of_fame_count);
+      return kept.length < s.hall_of_fame_count || Math.floor(Number(args[1])) > kept[s.hall_of_fame_count - 1].score;
+    }
+    return undefined;
+  }
+
+  function scoreCall(name, args, onOk, onFail, userObject) {
+    if (name === "submitHighScore") {
+      try { sessionStorage.setItem("oerScoreSavedAt", String(Date.now())); } catch (e) {}
+      arcadeCopy = null;
+      call(name, args, function(result, uo) {
+        try { sessionStorage.setItem("oerScoreSavedAt", String(Date.now())); } catch (e) {}
+        if (onOk) onOk(result, uo);
+      }, onFail, userObject);
+      return;
+    }
+    if (!window.fetch || ownScoreRecent() || Date.now() < arcadeDownUntil) { call(name, args, onOk, onFail, userObject); return; }
+    readArcadeCopy().then(function(d) {
+      var result;
+      try { result = d ? arcadeAnswer(d, name, args) : undefined; } catch (e) { result = undefined; }
+      if (result === undefined) { call(name, args, onOk, onFail, userObject); return; }
+      if (onOk) onOk(result, userObject);
+    });
+  }
+
   function runner(onOk, onFail, userObject) {
     return new Proxy({}, {
       get: function(target, prop) {
@@ -114,7 +188,11 @@
         if (prop === "withFailureHandler") return function(f) { return runner(onOk, f, userObject); };
         if (prop === "withUserObject") return function(o) { return runner(onOk, onFail, o); };
         if (typeof prop !== "string" || prop === "then") return undefined;
-        return function() { call(prop, Array.prototype.slice.call(arguments), onOk, onFail, userObject); };
+        return function() {
+          var args = Array.prototype.slice.call(arguments);
+          if (prop === "submitHighScore" || SCORE_READS.indexOf(prop) !== -1) scoreCall(prop, args, onOk, onFail, userObject);
+          else call(prop, args, onOk, onFail, userObject);
+        };
       }
     });
   }
