@@ -13,7 +13,7 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
-const { summarizeWeek, narrateWeek, narrateShort, videoMeta } = require("./recap");
+const { summarizeWeek, summarizeMap, narrateWeek, narrateShort, videoMeta } = require("./recap");
 
 const ROOT = path.join(__dirname, "..", "..");
 const args = process.argv.slice(2);
@@ -55,6 +55,25 @@ async function readSupabase() {
   return null;
 }
 
+// The week on the Event Map (/map/): Supabase rpc event_map, publishable key
+// (reads only). A failure leaves the map out; it never stops a week.
+const SUPABASE_MAP = "https://lshgovxyhbaznshylzhq.supabase.co/rest/v1/rpc/event_map";
+async function readMap(summary) {
+  const key = (/SB_KEY = "([^"]+)"/.exec(fs.readFileSync(path.join(ROOT, "map", "map.js"), "utf8")) || [])[1];
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(SUPABASE_MAP, { method: "POST", signal: AbortSignal.timeout(60000),
+        headers: { apikey: key, Authorization: "Bearer " + key, "Content-Type": "application/json" },
+        body: JSON.stringify({ p_from: summary.from, p_to: summary.to }) });
+      if (res.ok) return summarizeMap(await res.json(), require(path.join(ROOT, "map", "map.js")));
+      console.error("map attempt " + attempt + ": HTTP " + res.status);
+    } catch (e) {
+      console.error("map attempt " + attempt + ": " + e.message);
+    }
+  }
+  return null;
+}
+
 async function readExport() {
   if (fileArg >= 0) return JSON.parse(fs.readFileSync(args[fileArg + 1], "utf8"));
   if (week >= SUPABASE_FROM_WEEK) {
@@ -92,6 +111,11 @@ async function readExport() {
     try { exp = await readExport(); } catch (e) { console.error("STOP: " + e.message); process.exit(2); }
     if (!exp.ok) { console.error("STOP: export says " + exp.error); process.exit(2); }
     summary = summarizeWeek(exp);
+  }
+  if (!summary.map) {
+    const map = await readMap(summary);
+    if (map) summary.map = map;
+    console.log("map: " + (map ? map.total + " contacts, " + map.stacks.length + " marks" : "NOT READ (left out)"));
   }
   const narration = narrateWeek(summary);
   const short = narrateShort(summary);

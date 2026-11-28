@@ -376,9 +376,39 @@ function monitorSentences(m, weekFrom) {
   return s.concat(dataNotes(m, ""));
 }
 
+// ---------- event map (2026-11-28) ----------
+// The week's Event Map from the event_map answer (Supabase rpc), worked out
+// with the map page's own code (map/map.js passed in as M): one mark per
+// contact at its worst level, stacks as /map/ draws them, already placed on
+// the 975 x 610 outline. Space monitors: worst level of the week.
+function summarizeMap(ans, M) {
+  if (!ans || !Array.isArray(ans.contacts)) return null;
+  const built = M.buildMarks(ans.contacts);
+  const stacks = M.stackMarks(built.marks, 6);
+  const bySource = {}, byLevel = [0, 0, 0, 0];
+  for (const m of built.marks) { bySource[m.src] = (bySource[m.src] || 0) + 1; byLevel[m.r]++; }
+  const keys = new Set(ans.contacts.map((c) => c.src + "|" + c.ck));
+  const space = { spacewx: 0, neo: 0, gps: 0 };
+  for (const s of ans.space || []) if (s.p in space && s.worst > space[s.p]) space[s.p] = s.worst;
+  return {
+    total: keys.size, placed: built.placed, unplaced: built.unplaced,
+    raised: built.marks.filter((m) => m.r >= 1).length,
+    bySource, byLevel, space,
+    stacks: stacks.sort((a, b) => a.r - b.r).map((s) => [s.src, s.r, Math.round(s.x * 10) / 10, Math.round(s.y * 10) / 10, s.list.length])
+  };
+}
+
+function mapSentences(map) {
+  if (!map || !map.total) return [];
+  return ["On the event map, " + plural(map.total, "contact logged across the country this week", "contacts logged across the country this week") +
+    (map.raised ? ", " + map.raised + " of them above nominal." : ", all at nominal.")];
+}
+
 function narrateWeek(sum) {
   const end = Date.parse(sum.to) - 1;
   const paragraphs = [{ kind: "intro", sentences: [pick(INTRO, sum.week)(longDate(end))] }];
+  const ms = mapSentences(sum.map);
+  if (ms.length) paragraphs.push({ kind: "map", sentences: ms });
   const quiet = [];
   for (const m of sum.monitors) {
     if (m.peak !== null && isQuiet(m)) { quiet.push(m); continue; }
@@ -453,6 +483,6 @@ function videoMeta(sum, narration) {
 }
 
 module.exports = {
-  summarizeWeek, narrateWeek, narrateShort, videoMeta, summarizeHistory, summarizeContacts, summarizeQuakes,
+  summarizeWeek, summarizeMap, mapSentences, narrateWeek, narrateShort, videoMeta, summarizeHistory, summarizeContacts, summarizeQuakes,
   speakPlace, speakContact, plainCase, pick, longDate, dayName, isQuiet, RANK
 };

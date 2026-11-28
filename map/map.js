@@ -128,6 +128,8 @@
 
   var api = { project: project, fromRadar: fromRadar, buildMarks: buildMarks, stackMarks: stackMarks, facilityMidnight: facilityMidnight, facilityToday: facilityToday, addDays: addDays, dayStart: dayStart, rank: rank };
   if (typeof module !== "undefined" && module.exports) { module.exports = api; return; }
+  window.OER_MAP = api;
+  if (!document.getElementById("mapSvg")) return;   // another page using the code (recap video cards)
 
   // ---------- page ----------
   var $ = function (id) { return document.getElementById(id); };
