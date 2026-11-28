@@ -29,8 +29,39 @@ function apiUrl() {
   return m[1];
 }
 
+// From 2026-W50 (owner, 2026-11-28: "switch the recap to supabase after W49")
+// the export comes from Supabase (site-answer ?recap=, the same RecapExport.js
+// code on the monitor tables); Apps Script's copy (Sheets, filled from
+// Supabase) answers only when Supabase can't. Earlier weeks: Apps Script.
+const SUPABASE_FROM_WEEK = "2026-W50";
+const SUPABASE_RECAP = "https://lshgovxyhbaznshylzhq.supabase.co/functions/v1/site-answer?recap=";
+
+async function readSupabase() {
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const res = await fetch(SUPABASE_RECAP + encodeURIComponent(week) + (partial ? "&partial=1" : ""), { signal: AbortSignal.timeout(120000) });
+      const text = await res.text();
+      if (res.ok && text.trim().charAt(0) === "{") {
+        const exp = JSON.parse(text);
+        // "week not over" etc. is the answer; a read failure tries again.
+        if (exp.ok || /NOT OVER|NOT STARTED|BAD WEEK/.test(String(exp.error))) return exp;
+        console.error("supabase attempt " + attempt + ": " + exp.error);
+      } else console.error("supabase attempt " + attempt + ": HTTP " + res.status);
+    } catch (e) {
+      console.error("supabase attempt " + attempt + ": " + e.message);
+    }
+    await new Promise((r) => setTimeout(r, 5000 * attempt));
+  }
+  return null;
+}
+
 async function readExport() {
   if (fileArg >= 0) return JSON.parse(fs.readFileSync(args[fileArg + 1], "utf8"));
+  if (week >= SUPABASE_FROM_WEEK) {
+    const exp = await readSupabase();
+    if (exp) { console.log("export: SUPABASE"); return exp; }
+    console.error("supabase unreadable: asking Apps Script");
+  }
   const url = apiUrl() + "?logexport=recap&week=" + encodeURIComponent(week) + (partial ? "&partial=1" : "");
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
