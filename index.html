@@ -2019,6 +2019,9 @@
   .orient-nav { margin-top: 4px; }
   .orient-nav .orient-go { margin-right: 8px; }
   .page-shell > .oer-term-link { margin-top: 0; }
+  .project-strip { width: 95%; max-width: 800px; margin: 8px auto 24px; padding-top: 10px; border-top: 1px solid #444444; }
+  .project-strip .main-nav { width: 100%; margin: 0; }
+  .project-strip-title { margin-bottom: 8px; color: #9a9a9a; font: bold 11px Arial, Helvetica, sans-serif; letter-spacing: 2px; text-align: center; }
 </style>
 <style>
     /* ---- Entry notice over the homepage (2026-11-15; was the separate
@@ -2396,7 +2399,8 @@
           <a href="/schedule/" class="resource-box door"><span>WATCH SCHEDULE</span><small>CREWS // ROSTER // ROTATION</small></a>
           <a href="/maintenance/?view=projects" class="resource-box door"><span>ENGINEERING</span><small>PROJECTS // MAINTENANCE LOG // DOCUMENTS</small></a>
           <a href="/hr/" class="resource-box door"><span>PERSONNEL OFFICE</span><small>DIRECTORY // FORMS // HANDBOOK</small></a>
-          <a href="/support/" class="resource-box door door-wide"><span>IT SUPPORT</span><small>TROUBLE TICKETS // OPERATIONS WIKI</small></a>
+          <a href="/support/" class="resource-box door"><span>IT SUPPORT</span><small>TROUBLE TICKETS // OPERATIONS WIKI</small></a>
+          <a href="/arcade/" class="resource-box door"><span>BREAK ROOM</span><small>STAFF RECREATION // ARCADE // HIGH SCORES</small></a>
         </div>
       </div>
     </section>
@@ -2404,62 +2408,6 @@
     <section class="oer-term-link oer-alerts-box">
       <!-- OER ALERTS (owner 2026-11-16): own box under the directory, amber so it reads apart from the green support box. -->
       <a class="oer-alerts-link" href="/alerts/">&gt; OER ALERTS // GET MONITOR ALERTS ON YOUR PHONE OR COMPUTER<span class="dim">free // choose which monitors alert you: earthquakes, power grid, severe weather and 8 more</span></a>
-    </section>
-
-    <nav class="main-nav">
-
-
-      <a
-        href="/whatisit/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          WHAT IT IS
-        </span>
-      </a>
-
-
-      <a
-        href="/arcade/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          FUN - FOR NOW
-        </span>
-      </a>
-
-
-      <a
-        href="/merch/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          GET THE MERCH
-        </span>
-      </a>
-
-      <a
-        href="/share/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="merch-box"
-      >
-        <span class="merch-text">
-          SHARE
-        </span>
-      </a>
-
-    </nav>
-
-    <section class="oer-term-link">
-      <!-- Support link (Ko-fi). The NEXUS terminal link is on the LEGACY RECORD line above. -->
-      <a class="oer-support-link" href="https://ko-fi.com/thegreatdarkness" target="_blank" rel="noopener noreferrer">&gt; SUPPORT CONTINUED OPERATIONS<span class="dim">ko-fi.com/thegreatdarkness // keep the network online</span></a>
     </section>
 
     <div
@@ -2656,7 +2604,6 @@
       .oer-term-link .dim { display: block; margin-top: 4px; color: #00aa00; font-size: 11px; font-weight: normal; letter-spacing: 1px; }
       .oer-term-link .cur { animation: oer-term-link-blink 1s steps(1) infinite; }
       @keyframes oer-term-link-blink { 50% { opacity: 0; } }
-      .oer-term-link a.oer-support-link { padding: 12px 12px; font-size: 14px; }
       .oer-alerts-box a.oer-alerts-link {
         background: #0d0900; border-color: #cc8a00; color: #ffbf33;
         box-shadow: inset 0 0 18px rgba(255, 191, 51, 0.12); text-shadow: 0 0 4px rgba(255, 191, 51, 0.25);
@@ -2666,6 +2613,18 @@
     </style>
 
     
+
+    <!-- Outside the fiction (owner 2026-11-28): the project links in one plain strip
+         near the bottom, apart from the in-world page; the arcade is the BREAK ROOM door. -->
+    <nav class="project-strip" aria-label="About this project">
+      <div class="project-strip-title">ABOUT THIS PROJECT</div>
+      <div class="main-nav">
+        <a href="/whatisit/" target="_blank" rel="noopener noreferrer" class="merch-box"><span class="merch-text">WHAT IT IS</span></a>
+        <a href="/share/" target="_blank" rel="noopener noreferrer" class="merch-box"><span class="merch-text">SHARE</span></a>
+        <a href="/merch/" target="_blank" rel="noopener noreferrer" class="merch-box"><span class="merch-text">GET THE MERCH</span></a>
+        <a href="https://ko-fi.com/thegreatdarkness" target="_blank" rel="noopener noreferrer" class="merch-box"><span class="merch-text">SUPPORT THIS PROJECT</span></a>
+      </div>
+    </nav>
 
     <section class="counter-footer">
 

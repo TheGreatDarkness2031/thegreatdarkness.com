@@ -52,7 +52,7 @@
       ["WELLNESS", "/wellness/"]
     ]],
     ["PROFILE", "/profile/"],
-    ["ARCADE", "/arcade/"]
+    ["BREAK ROOM", "/arcade/"]
   ];
   var BANNER = "OER // INTERNAL NETWORK // NODE GDK-001 // AUTHORIZED ACCESS ONLY";
   // Screens sized to fit the window exactly: no footer below them.
